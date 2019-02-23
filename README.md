@@ -1,11 +1,11 @@
 # Bomb Man
 
 ## About Us
-Xiang Li
-Jinze Li
+* Xiang Li
+* Jinze Li
 
 ## About the Application
-Bomb Man is a WebGL based 3D multi-player game. The number of players in a single game can be 2-4. The goal of Bomber Man is to eliminate your opponent by placing your bombs in tactical positions. You can get closer to your opponent by blasting your way through the obstacles.
+Bomb Man is a WebGL based 3D multi-player game. The number of players in a single game can be 2-4. The goal of Bomber Man is to eliminate your opponent by placing your bombs in tactical positions. You can get closer to your opponent by blasting your way through the obstacles. The player side that eliminates all other players wins.  
 
 ## Beta Version 
 In the Beta version, all basic game mechanics will be implemented. We will not worry about user signin/signup or authentication. Players are put in a queue whenever they open the website. The server refreshes periodically to check the number of players in queue. A game can be started with at least 2 players in queue.
