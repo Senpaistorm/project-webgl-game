@@ -1,10 +1,12 @@
 const path = require('path');
 const express = require('express');
-const socketIO = require('socket.io');
-
 const app = express();
-const server = http.Server(app);
-const io = socketIO(server);
+
+const http = require('http');
+const httpServer = http.Server(app);
+
+const socketIO = require('socket.io');
+const io = socketIO(httpServer);
 app.use(express.static('static'));
 
 app.use(function (req, res, next){
@@ -12,10 +14,21 @@ app.use(function (req, res, next){
     next();
 });
 
-const http = require('http');
+
+
+// WebSocket handlers
+io.on('connection', function(socket) {
+    console.log("a user connected");
+});
+
+// emits a message every 1 second
+setInterval(function() {
+    io.sockets.emit('message', 'hi!');
+  }, 1000);
+
 const PORT = 3000;
 
-http.createServer(app).listen(PORT, function (err) {
+httpServer.listen(PORT, function (err) {
     if (err) console.log(err);
     else console.log("HTTP server on http://localhost:%s", PORT);
 });
