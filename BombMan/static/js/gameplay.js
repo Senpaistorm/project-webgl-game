@@ -6,7 +6,10 @@
 	 * with Core. This class is where all the game logic from
 	 */
 	function Gameplay() {
-
+		this.gameboard = [];
+		for(var i = 0; i < 15; i++){
+			this.gameboard.push([1,1,0,0,0,0,0,0,0,0,0,0,0,0,0]);
+		}
 	}
 
     // Export to window
