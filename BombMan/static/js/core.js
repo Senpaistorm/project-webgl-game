@@ -26,6 +26,7 @@
 		});
 	};
 
+	// keyboard handler
 	Core.prototype.onKeyDown = function(e) {
 		console.log(e.keyCode);
 		switch(e.keyCode){
@@ -40,6 +41,11 @@
 				break;
 			case 87: // W
 				this.gameplay.up();
+				break;
+			case 74: // J
+				this.gameplay.placeBomb();
+				break;
+			default:
 				break;
 		}
 		console.log(this.gameplay.character);

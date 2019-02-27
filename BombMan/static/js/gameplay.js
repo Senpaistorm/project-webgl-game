@@ -6,6 +6,11 @@
 	 * with Core. This class is where all the game logic from
 	 */
 	const GAMEBOARD_SIZE = 15;
+	const UNBLOCKED = 0;
+	const SOFTBLOCK = 1;
+	const BOMB = 2;
+	// const PLAYER1 = 3;
+	const HARDBLOCK = 4;
 
 	let character = function(name, xPos, yPos, speed, power, load){
 		return{
@@ -22,48 +27,58 @@
 		this.gameboard = emptyGameboard();
 		this.gameboard[7][8] = 1;
 		this.gameboard[10][11] = 1;
-		this.character = character('myChar', 0, 0, 1, 1, 1);
-		this.gameboard[this.character.yPos][this.character.xPos] = 3;
+		// initialize a character
+		this.character = character('myChar', 0, 0, 2, 1, 1);
 
 		this.left = () => {
-			if (this.character.xPos > 0){
-				this.gameboard[this.character.yPos][this.character.xPos] = 0;
+			let x = this.character.xPos, y = this.character.yPos;
+			if (this.character.xPos > 0 && unOccupied(this.gameboard[y][x-1])){
 				this.character.xPos--;
-				this.gameboard[this.character.yPos][this.character.xPos] = 3;
 			}
 		};
 
 		this.right = () =>{
-			if (this.character.xPos < GAMEBOARD_SIZE){
-				this.gameboard[this.character.yPos][this.character.xPos] = 0;
+			let x = this.character.xPos, y = this.character.yPos;
+			if (this.character.xPos < GAMEBOARD_SIZE && unOccupied(this.gameboard[y][x+1])){
 				this.character.xPos++;
-				this.gameboard[this.character.yPos][this.character.xPos] = 3;
 			}
 		};
 
 		this.up = () =>{
-			if (this.character.yPos > 0){
-				this.gameboard[this.character.yPos][this.character.xPos] = 0;
+			let x = this.character.xPos, y = this.character.yPos;
+			if (this.character.yPos > 0 && unOccupied(this.gameboard[y-1][x])){
 				this.character.yPos--;
-				this.gameboard[this.character.yPos][this.character.xPos] = 3;
 			}
 		};
 
-		this.down = () =>{
-			if (this.character.yPos < GAMEBOARD_SIZE){
-				this.gameboard[this.character.yPos][this.character.xPos] = 0;
+		this.down = () => {
+			let x = this.character.xPos, y = this.character.yPos;
+			if (this.character.yPos < GAMEBOARD_SIZE && unOccupied(this.gameboard[y+1][x])){
 				this.character.yPos++;
-				this.gameboard[this.character.yPos][this.character.xPos] = 3;
 			}
 		};
+
+		this.placeBomb = async () => {
+			let x = this.character.xPos, y = this.character.yPos;
+			this.gameboard[y][x] = BOMB;
+			console.log('bomb placed!');
+			// asynchronously wait [speed] seconds
+			await new Promise((resolve, reject) => setTimeout(resolve, this.character.speed* 1000));
+			console.log('bomb exploded!');
+			this.gameboard[y][x] = UNBLOCKED;
+		};
 	}
+
+	let unOccupied = (block) => {
+		return !(block == SOFTBLOCK || block == HARDBLOCK || block == BOMB);
+	};
 
 	function emptyGameboard(){
 		let gameboard = [];
 		for(let i = 0; i < GAMEBOARD_SIZE; i++){
 			let arr = [];
 			for (var j = 0; j < GAMEBOARD_SIZE; j++){
-				arr.push(0);
+				arr.push(UNBLOCKED);
 			}
 			gameboard.push(arr);
 		}
