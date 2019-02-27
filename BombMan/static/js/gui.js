@@ -14,6 +14,7 @@
 		this.camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 1, 10000);
 		this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 		this.container = document.getElementById('world');
+		this.keyboardEvent = {};
 	}
 
 	Gui.prototype.onNewGame = function(gameplay) {
@@ -30,8 +31,6 @@
 	};
 
 	Gui.prototype._createGameBoard = function(gameboard) {
-		console.log("hihihi");
-
 		let startingPoint = -185.5;
 		let startingPointy = -120;
 		let size = 24.2;
@@ -48,12 +47,14 @@
 					gameobject.createNormalBlock(startingPoint + i * size, startingPointy + j * size, this.scene);
 			}
 		}
+
+		gameobject.createCharactorModel(startingPoint, startingPointy, this.scene);
 	}
 
 	Gui.prototype._createScene = function() {
 		this.scene.fog = new THREE.Fog(0xf7d9aa, 100, 950);
 		this.camera.position.x = 0;
-		this.camera.position.y = 290;
+		this.camera.position.y = 320;
 		this.camera.position.z = 200;
 		this.camera.lookAt(new THREE.Vector3(0,-200,0));
 
@@ -64,7 +65,7 @@
 	}
 
 	Gui.prototype._createLights = function() {
-        let hemisphereLight = new THREE.HemisphereLight(0xaaaaaa,0x000000, .9)
+        let hemisphereLight = new THREE.HemisphereLight(0xaaaaaa,0x000000, 1.0)
         
         let shadowLight = new THREE.DirectionalLight(0xffffff, .9);
 
@@ -88,6 +89,14 @@
 		window.requestAnimationFrame(this._animate.bind(this));
 		this.renderer.render(this.scene, this.camera);
 	}
+
+	document.addEventListener('keydown', (event) => {
+		this.keyboardEvent[event.keyCode] = true;
+	});
+
+	document.addEventListener('keyup', (event) => {
+		this.keyboardEvent[event.keyCode] = false;
+	});
 
 	// Export to window
 	window.app = window.app || {};
