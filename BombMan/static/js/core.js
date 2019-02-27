@@ -25,6 +25,23 @@
 		});
 	};
 
+	window.addEventListener('keydown', (e) => {
+		console.log(e.keyCode);
+		switch(e.keyCode){
+			case 65: // A
+				console.log('move left');
+				break;
+			case 68: // D
+				console.log('move right');
+				break;
+			case 83: // S
+				console.log('move down');
+				break;
+			case 87: // W
+				console.log('move up');
+				break;
+		}
+	});
     // Export to window
     window.app = window.app || {};
     window.app.Core = Core;
