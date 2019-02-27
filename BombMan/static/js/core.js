@@ -1,5 +1,5 @@
 (function(window) {
-	'use strict'
+	'use strict';
 
 	/**
 	 * The core implementation, connectes gui(view) and gameplay(model) and act as
@@ -7,7 +7,8 @@
 	 */
 	function Core() {
 		this.gameListener = [];
-	};
+
+	}
 
 	Core.prototype.addGameListener = function(listener) {
 		this.gameListener.push(listener);
@@ -25,23 +26,32 @@
 		});
 	};
 
-	window.addEventListener('keydown', (e) => {
+	Core.prototype.onKeyDown = function(e) {
 		console.log(e.keyCode);
 		switch(e.keyCode){
 			case 65: // A
-				console.log('move left');
+				this.gameplay.left();
 				break;
 			case 68: // D
-				console.log('move right');
+				this.gameplay.right();
 				break;
 			case 83: // S
-				console.log('move down');
+				this.gameplay.down();
 				break;
 			case 87: // W
-				console.log('move up');
+				this.gameplay.up();
 				break;
 		}
-	});
+		console.log(this.gameplay.character);
+		//this._notifyGameChange(this.gameplay);
+	};
+
+	// Core.prototype._notifyGameChange = function(gameplay) {
+	// 	this.gameListener.forEach((listener) => {
+	// 		listener.onGameChange(gameplay);
+	// 	});
+	// };
+
     // Export to window
     window.app = window.app || {};
     window.app.Core = Core;

@@ -22,8 +22,40 @@
 		this.gameboard = emptyGameboard();
 		this.gameboard[7][8] = 1;
 		this.gameboard[10][11] = 1;
-		this.character = character('newChar', 0, 0, 1, 1, 1);
-		
+		this.character = character('myChar', 0, 0, 1, 1, 1);
+		this.gameboard[this.character.yPos][this.character.xPos] = 3;
+
+		this.left = () => {
+			if (this.character.xPos > 0){
+				this.gameboard[this.character.yPos][this.character.xPos] = 0;
+				this.character.xPos--;
+				this.gameboard[this.character.yPos][this.character.xPos] = 3;
+			}
+		};
+
+		this.right = () =>{
+			if (this.character.xPos < GAMEBOARD_SIZE){
+				this.gameboard[this.character.yPos][this.character.xPos] = 0;
+				this.character.xPos++;
+				this.gameboard[this.character.yPos][this.character.xPos] = 3;
+			}
+		};
+
+		this.up = () =>{
+			if (this.character.yPos > 0){
+				this.gameboard[this.character.yPos][this.character.xPos] = 0;
+				this.character.yPos--;
+				this.gameboard[this.character.yPos][this.character.xPos] = 3;
+			}
+		};
+
+		this.down = () =>{
+			if (this.character.yPos < GAMEBOARD_SIZE){
+				this.gameboard[this.character.yPos][this.character.xPos] = 0;
+				this.character.yPos++;
+				this.gameboard[this.character.yPos][this.character.xPos] = 3;
+			}
+		};
 	}
 
 	function emptyGameboard(){
@@ -37,6 +69,8 @@
 		}
 		return gameboard;
 	}
+
+	
 
     // Export to window
     window.app = window.app || {};

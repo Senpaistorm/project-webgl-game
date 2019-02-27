@@ -10,6 +10,10 @@
 
     window.addEventListener('load', function(){
     	var game = new BombMan();
-    	game.core.startNewGame(new app.Gameplay());
+		game.core.startNewGame(new app.Gameplay());
+		
+		window.addEventListener('keydown', function(e){
+			game.core.onKeyDown(e);
+		});
     });
 })();
