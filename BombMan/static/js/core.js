@@ -43,16 +43,22 @@
 				this.gameplay.up();
 				break;
 			case 74: // J
-				this.gameplay.placeBomb();
+				if(this.gameplay.canPlaceBomb()){
+					//this._notifyBombPlaced(myBomb)
+					let bombs = this.gameplay.placeBomb();
+					//this._notifyBombChange(bombs);
+					// this.gameplay.resolveBombs();
+				}
 				break;
 			default:
 				break;
 		}
+
 		console.log(this.gameplay.character);
-		//this._notifyGameChange(this.gameplay);
+		//this._notifyCharChange(this.character);
 	};
 
-	// Core.prototype._notifyGameChange = function(gameplay) {
+	// Core.prototype._notifyCharChange = function(this.character) {
 	// 	this.gameListener.forEach((listener) => {
 	// 		listener.onGameChange(gameplay);
 	// 	});
