@@ -53,7 +53,7 @@
 		this.gameboard = emptyGameboard();
 		this.gameboard = defaultGameboard(this.gameboard);
 		// initialize a character
-		this.character = character('myChar', 0, 0, 2, 2,2);
+		this.character = character('myChar', 0, 0, 2, 2,3);
 		// all the bombs this character currently is placing
 		this.bombs = [];
 		// power up items
@@ -139,7 +139,6 @@
 						if(affectedCoord.type == BOMB){ 
 							let impactBomb = this.getBomb(x+i, y);
 							bombQueue.push(impactBomb);
-							//affected.bombs.push(impactBomb);
 						}else{
 							affected.blocks.push(affectedCoord);
 						}
@@ -150,7 +149,6 @@
 						if(affectedCoord.type == BOMB){ 
 							let impactBomb = this.getBomb(x-i, y);
 							bombQueue.push(impactBomb);
-							//affected.bombs.push(impactBomb);
 						}else{
 							affected.blocks.push(affectedCoord);
 						}
@@ -161,7 +159,6 @@
 						if(affectedCoord.type == BOMB){ 
 							let impactBomb = this.getBomb(x, y+i);
 							bombQueue.push(impactBomb);
-							//affected.bombs.push(impactBomb);
 						}else{
 							affected.blocks.push(affectedCoord);
 						}
@@ -223,8 +220,6 @@
 		};
 
 	}
-
-
 	
 	let unOccupied = (block) => {
 		return !(block == SOFTBLOCK || block == HARDBLOCK || block == BOMB);

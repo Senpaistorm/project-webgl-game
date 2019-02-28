@@ -54,6 +54,18 @@
 		console.log(this.gameplay.character);
 	};
 
+	Core.prototype.onKeyUp = function(e){
+		console.log(e.keyCode);
+		switch(e.keyCode){
+			case 65:
+			case 68:
+			case 83:
+			case 87:
+				//stop moving
+				break;
+		}
+	};
+
 	Core.prototype._notifyGameChange = function(affectedBlocks) {
 		console.log(affectedBlocks);
 		// this.gameListener.forEach((listener) => {
