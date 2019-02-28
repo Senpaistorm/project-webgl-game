@@ -101,74 +101,78 @@
 			//asynchronously wait [speed] seconds
 			let promise = new Promise((resolve, reject) =>{
 				setTimeout(() => {
-					resolve(this.bombExists(myBomb) ? this.explodeBomb(myBomb) : null);
-					//res = this.bombExists(myBomb) ? this.explodeBomb(myBomb) : null;
+					resolve("done");
 				}, 
 				3000);
 			});
-			//let bombExploding = await promise;
-			let result = await promise;
-			if(result) callback(result);
+			await promise;
+			// explode bomb if it still exists
+			res = this.bombExists(myBomb) ? this.explodeBomb(myBomb) : null;
+			if(res) callback(res);
+			//this.destroyBomb(myBomb);
 		}
 
 		this.explodeBomb = (bombExplode) => {
-			let affected = {blocks: [], bombs: [bombExplode]};
+			let affected = {blocks: [], bombs: []};
 			let bombQueue = [bombExplode];
-			
+			let foundLeft , foundRight, foundUp, foundDown;
+			let x , y , i;
 			console.log('bomb exploding!');
-			let x = bombExplode.xPos, y = bombExplode.yPos, i = 1;
-			let foundLeft = false, foundRight = false, foundUp = false, foundDown = false;
+			
 			// bfs on queue of exploding bombs
 			while(bombQueue.length > 0){
+				let curBomb = bombQueue.shift();
+				x = curBomb.xPos, y = curBomb.yPos, i = 1;
+				
+				// check for boundaries
+				foundRight = x + i >= GAMEBOARD_SIZE;
+				foundLeft = x - i < 0;
+				foundDown = y + i >= GAMEBOARD_SIZE;
+				foundUp = y - i < 0;
 				// find closest impact
-				while(!(foundLeft && foundRight && foundUp && foundDown) && i <= bombExplode.power){
-					// check for boundaries
-					foundRight = x + i >= GAMEBOARD_SIZE;
-					foundLeft = x - i < 0;
-					foundDown = y + i >= GAMEBOARD_SIZE;
-					foundUp = y - i < 0;
+				while(!(foundLeft && foundRight && foundUp && foundDown) && i <= curBomb.power){
 					let affectedCoord;
 
 					// check every direction
-					if(!foundRight && !unOccupied(this.gameboard[x+i][y])){
+					if(!foundRight && x + i < GAMEBOARD_SIZE && !unOccupied(this.gameboard[x+i][y])){
 						affectedCoord = coord(x+i, y, this.gameboard[x+i][y]);
 						if(affectedCoord.type == BOMB){ 
 							let impactBomb = this.getBomb(x+i, y);
 							bombQueue.push(impactBomb);
-							affected.bombs.push(impactBomb);
+							//affected.bombs.push(impactBomb);
 						}else{
 							affected.blocks.push(affectedCoord);
 						}
 						foundRight = true;
 					}
-					if(!foundLeft && !unOccupied(this.gameboard[x-i][y])){
+					if(!foundLeft && x - i >= 0 && !unOccupied(this.gameboard[x-i][y])){
 						affectedCoord = coord(x-i, y, this.gameboard[x-i][y]);
 						if(affectedCoord.type == BOMB){ 
 							let impactBomb = this.getBomb(x-i, y);
 							bombQueue.push(impactBomb);
-							affected.bombs.push(impactBomb);
+							//affected.bombs.push(impactBomb);
 						}else{
 							affected.blocks.push(affectedCoord);
 						}
 						foundLeft = true;
 					}
-					if(!foundDown && !unOccupied(this.gameboard[x][y+i])){
+					if(!foundDown && !unOccupied(this.gameboard[x][y+i]) && y + i < GAMEBOARD_SIZE){
 						affectedCoord = coord(x, y+i, this.gameboard[x][y+i]);
 						if(affectedCoord.type == BOMB){ 
 							let impactBomb = this.getBomb(x, y+i);
 							bombQueue.push(impactBomb);
-							affected.bombs.push(impactBomb);
+							//affected.bombs.push(impactBomb);
 						}else{
 							affected.blocks.push(affectedCoord);
 						}
 						foundDown = true;
 					}
-					if(!foundUp && !unOccupied(this.gameboard[x][y-i])){
+					if(!foundUp && !unOccupied(this.gameboard[x][y-i]) && y - i >= 0){
 						affectedCoord = coord(x, y-i, this.gameboard[x][y-i]);
 						if(affectedCoord.type == BOMB){ 
 							let impactBomb = this.getBomb(x, y-i);
 							bombQueue.push(impactBomb);
-							affected.bombs.push(impactBomb);
+
 						}else{
 							affected.blocks.push(affectedCoord);
 						}
@@ -176,33 +180,30 @@
 					}
 					i++;
 				}
-				this.destroyBomb(bombQueue.shift());
-			}
-			for(let i = 0; i < affected.bombs.length; i++){
-				console.log(this.gameboard);
-				let bomb = affected.bombs[i];
-				this.gameboard[bomb.xPos][bomb.yPos] = UNBLOCKED;
+				affected.bombs.push(curBomb);
+				this.gameboard[curBomb.xPos][curBomb.yPos] = UNBLOCKED;
 			}
 			for(let i = 0; i < affected.blocks.length; i++){
 				let block = affected.blocks[i];
 				if(block.type == SOFTBLOCK){
-					console.log(this.gameboard);
 					this.gameboard[block.xPos][block.yPos] = UNBLOCKED;
 				}
 			}
-			console.log(affected);
-			console.log(this.bombs);
+			console.log("destroying bombs");
+			for(let i = 0; i < affected.bombs.length; i++){
+				this.destroyBomb(affected.bombs[i]);
+			}
 			return affected;
 		}
 
 		this.getBomb = (x, y) => {
 			for(let i = 0; i < this.bombs.length; i++){
-				if (this.bombs[i].xPos === x && this.bombs.yPos === y){
+				if (this.bombs[i].xPos == x && this.bombs[i].yPos == y){
 					return this.bombs[i];
 				}
 			}
 			return null;
-		}
+		};
 
 		this.destroyBomb = (bomb) =>{
 			for(let i = 0; i < this.bombs.length; i++){
@@ -210,8 +211,7 @@
 					return this.bombs.splice(i,1);
 				}
 			}
-			return null;
-		}
+		};
 
 		this.bombExists = (myBomb) => {
 			for (let i = 0; i < this.bombs.length; i++) {
@@ -220,9 +220,12 @@
 				}
 			}
 			return false;
-		}
+		};
+
 	}
 
+
+	
 	let unOccupied = (block) => {
 		return !(block == SOFTBLOCK || block == HARDBLOCK || block == BOMB);
 	};
@@ -243,6 +246,7 @@
 		
 		gameboard[7][8] = 1;
 		gameboard[10][11] = 1;
+		gameboard[1][2] = HARDBLOCK;
 		gameboard[3][3] = 1;
 		gameboard[2][2] = 1;
 		gameboard[2][3] = 1;

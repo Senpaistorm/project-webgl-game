@@ -51,7 +51,6 @@
 			default:
 				break;
 		}
-		console.log(this.gameplay.gameboard);
 		console.log(this.gameplay.character);
 	};
 
