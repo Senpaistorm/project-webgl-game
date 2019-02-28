@@ -113,7 +113,7 @@
 		}
 
 		this.explodeBomb = (bombExplode) => {
-			let affected = {blocks: [], bombs: []};
+			let affected = {blocks: [], bombs: [], expCoords: []};
 			let bombQueue = [bombExplode];
 			let foundLeft , foundRight, foundUp, foundDown;
 			let x , y , i;
@@ -123,7 +123,7 @@
 			while(bombQueue.length > 0){
 				let curBomb = bombQueue.shift();
 				x = curBomb.xPos, y = curBomb.yPos, i = 1;
-				
+				affected.expCoords.push(coord(x,y,0));
 				// check for boundaries
 				foundRight = x + i >= GAMEBOARD_SIZE;
 				foundLeft = x - i < 0;
@@ -132,48 +132,51 @@
 				// find closest impact
 				while(!(foundLeft && foundRight && foundUp && foundDown) && i <= curBomb.power){
 					let affectedCoord;
-
 					// check every direction
-					if(!foundRight && x + i < GAMEBOARD_SIZE && !unOccupied(this.gameboard[x+i][y])){
+					if(!foundRight && x + i < GAMEBOARD_SIZE){
 						affectedCoord = coord(x+i, y, this.gameboard[x+i][y]);
+						affected.expCoords.push(affectedCoord);
 						if(affectedCoord.type == BOMB){ 
 							let impactBomb = this.getBomb(x+i, y);
 							bombQueue.push(impactBomb);
-						}else{
+						}else if(affectedCoord.type != UNBLOCKED){
 							affected.blocks.push(affectedCoord);
 						}
-						foundRight = true;
+						foundRight = this.gameboard[x+i][y] != UNBLOCKED;
 					}
 					if(!foundLeft && x - i >= 0 && !unOccupied(this.gameboard[x-i][y])){
 						affectedCoord = coord(x-i, y, this.gameboard[x-i][y]);
+						affected.expCoords.push(affectedCoord);
 						if(affectedCoord.type == BOMB){ 
 							let impactBomb = this.getBomb(x-i, y);
 							bombQueue.push(impactBomb);
-						}else{
+						}else if(affectedCoord.type != UNBLOCKED){
 							affected.blocks.push(affectedCoord);
 						}
-						foundLeft = true;
+						foundLeft =  this.gameboard[x-i][y] != UNBLOCKED;
 					}
-					if(!foundDown && !unOccupied(this.gameboard[x][y+i]) && y + i < GAMEBOARD_SIZE){
+					if(!foundDown && y + i < GAMEBOARD_SIZE){
 						affectedCoord = coord(x, y+i, this.gameboard[x][y+i]);
+						
+						affected.expCoords.push(affectedCoord);
 						if(affectedCoord.type == BOMB){ 
 							let impactBomb = this.getBomb(x, y+i);
 							bombQueue.push(impactBomb);
-						}else{
+						}else if(affectedCoord.type != UNBLOCKED){
 							affected.blocks.push(affectedCoord);
 						}
-						foundDown = true;
+						foundDown = this.gameboard[x][y+i] != UNBLOCKED;
 					}
-					if(!foundUp && !unOccupied(this.gameboard[x][y-i]) && y - i >= 0){
+					if(!foundUp && y - i >= 0){
 						affectedCoord = coord(x, y-i, this.gameboard[x][y-i]);
+						affected.expCoords.push(affectedCoord);
 						if(affectedCoord.type == BOMB){ 
 							let impactBomb = this.getBomb(x, y-i);
 							bombQueue.push(impactBomb);
-
-						}else{
+						}else if(affectedCoord.type != UNBLOCKED){
 							affected.blocks.push(affectedCoord);
 						}
-						foundUp = true;
+						foundUp = this.gameboard[x][y-i] != UNBLOCKED;
 					}
 					i++;
 				}
@@ -190,6 +193,9 @@
 			for(let i = 0; i < affected.bombs.length; i++){
 				this.destroyBomb(affected.bombs[i]);
 			}
+			console.log(affected.expCoords);
+			// remove duplicate coordinates
+			affected.expCoords = removeDupCoords(affected.expCoords);
 			return affected;
 		}
 
@@ -247,6 +253,18 @@
 		gameboard[2][3] = 1;
 		gameboard[4][4] = 1;
 		return gameboard;
+	}
+
+	function removeDupCoords(coords) {
+		let unique = {};
+		let res = [];
+		coords.forEach(function(c) {
+		  if(!unique[[c.xPos,c.yPos]]) {
+			unique[[c.xPos,c.yPos]] = true;
+			res.push(coord(c.xPos,c.yPos,0));
+		  }
+		});
+		return res;
 	}
 	
 
