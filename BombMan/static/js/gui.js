@@ -14,24 +14,32 @@
 		this.camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 1, 10000);
 		this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 		this.container = document.getElementById('world');
+		this.keyboardEvent = {};
 	}
 
 	Gui.prototype.onNewGame = function(gameplay) {
 		this._init();
+		this.gameplay = gameplay;
 		this._createGameBoard(gameplay.gameboard);
+		console.log(gameplay.character + " get game charactor");
+		this._createCharactor(gameplay.character);
 	};
 
 	Gui.prototype._init = function() {
 		this._createScene();
 		this._createLights();
-
-		this.renderer.render(this.scene, this.camera);
 		this._animate();
 	};
 
-	Gui.prototype._createGameBoard = function(gameboard) {
-		console.log("hihihi");
+	Gui.prototype._createCharactor = function(character) {
+		gameobject.createCharactorModel(character.absoluteXPos, character.absoluteYPos, (mesh) => {
+			console.log(character.model + " set model");
+			character.setModel(mesh);
+			this.scene.add(mesh);
+		});
+	}
 
+	Gui.prototype._createGameBoard = function(gameboard) {
 		let startingPoint = -185.5;
 		let startingPointy = -120;
 		let size = 24.2;
@@ -53,7 +61,7 @@
 	Gui.prototype._createScene = function() {
 		this.scene.fog = new THREE.Fog(0xf7d9aa, 100, 950);
 		this.camera.position.x = 0;
-		this.camera.position.y = 290;
+		this.camera.position.y = 320;
 		this.camera.position.z = 200;
 		this.camera.lookAt(new THREE.Vector3(0,-200,0));
 
@@ -64,7 +72,7 @@
 	}
 
 	Gui.prototype._createLights = function() {
-        let hemisphereLight = new THREE.HemisphereLight(0xaaaaaa,0x000000, .9)
+        let hemisphereLight = new THREE.HemisphereLight(0xaaaaaa,0x000000, 1.0)
 
         let shadowLight = new THREE.DirectionalLight(0xffffff, .9);
 
@@ -85,8 +93,28 @@
     }
 
 	Gui.prototype._animate = function() {
-		window.requestAnimationFrame(this._animate.bind(this));
 		this.renderer.render(this.scene, this.camera);
+		window.requestAnimationFrame(this._animate.bind(this));
+
+		if(this.keyboardEvent[87]) { //w
+			this.gameplay.character.model.position.z -= 1;
+			this.gameplay.character.up();
+		}
+
+		if(this.keyboardEvent[83]) { //s
+			this.gameplay.character.model.position.z += 1;
+			this.gameplay.character.down();
+		}
+
+		if(this.keyboardEvent[65]) { //a
+			this.gameplay.character.model.position.x -= 1;
+			this.gameplay.character.left();
+		}
+
+		if(this.keyboardEvent[68]) { //d
+			this.gameplay.character.model.position.x += 1;
+			this.gameplay.character.right();
+		}
 	}
 
 	// Export to window

@@ -2,8 +2,34 @@ let gameobject = (function() {
 	'use strict';
 
 	let module = {};
+
+	module.createCharactorModel = function(x, y, callback) {
+		var mtlLoader = new THREE.MTLLoader();
+		mtlLoader.load("./media/models/charactor/basicCharacter.obj.mtl", function(materials){		
+			materials.preload();
+			var objLoader = new THREE.OBJLoader();
+			objLoader.setMaterials(materials);
+			
+			objLoader.load("./media/models/charactor/basicCharacter.obj", function(mesh){
+				mesh.traverse(function(node){
+					if( node instanceof THREE.Mesh ){
+						node.castShadow = true;
+						node.receiveShadow = true;
+					}
+				});
+
+				mesh.position.set(x, 3, y);
+				mesh.scale.set(3,3,3);
+
+				callback(mesh);
+				//mesh.rotation.y = -Math.PI/4;
+			});
+			
+		});
+	}
+
+	//TODO: Change the scene to callback
 	module.createStandardBox = function(x, y, scene) {
-		// Model/material loading!
 		var mtlLoader = new THREE.MTLLoader();
 		mtlLoader.load("./media/models/grass.mtl", function(materials){
 			
@@ -12,24 +38,16 @@ let gameobject = (function() {
 			objLoader.setMaterials(materials);
 			
 			objLoader.load("./media/models/grass.obj", function(mesh){
-				mesh.traverse(function(node){
-					if( node instanceof THREE.Mesh ){
-						node.castShadow = true;
-						node.receiveShadow = true;
-					}
-				});
-				
 				scene.add(mesh);
 				mesh.position.set(x, 0, y);
 				mesh.scale.set(3,3,3);
-				//mesh.rotation.y = -Math.PI/4;
 			});
 			
 		});
 	}
 
+	//TODO: Change the scene to callback
 	module.createNormalBlock = function(x, y, scene) {
-		// Model/material loading!
 		var mtlLoader = new THREE.MTLLoader();
 		mtlLoader.load("./media/models/block.mtl", function(materials){
 			
@@ -48,7 +66,6 @@ let gameobject = (function() {
 				scene.add(mesh);
     			mesh.position.set(x - 11, 3, y + 12);
     			mesh.scale.set(23,23,23);
-				//mesh.rotation.y = -Math.PI/4;
 			});
 			
 		});

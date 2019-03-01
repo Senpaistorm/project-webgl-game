@@ -14,8 +14,6 @@ app.use(function (req, res, next){
     next();
 });
 
-
-
 // WebSocket handlers
 io.on('connection', function(socket) {
     console.log("a user connected");

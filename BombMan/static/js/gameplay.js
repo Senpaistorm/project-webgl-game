@@ -9,6 +9,7 @@
 	const UNBLOCKED = 0;
 	const SOFTBLOCK = 1;
 	const BOMB = 2;
+
 	const HARDBLOCK = 4;
 
 	// representation of a player's character
@@ -49,11 +50,11 @@
 	};
 
 
-	function Gameplay() {
+	function Gameplay(character) {
 		this.gameboard = emptyGameboard();
 		this.gameboard = defaultGameboard(this.gameboard);
 		// initialize a character
-		this.character = character('myChar', 0, 0, 2, 2,3);
+		this.character = character;
 		// all the bombs this character currently is placing
 		this.bombs = [];
 		// power up items
@@ -68,24 +69,31 @@
 
 		this.right = () =>{
 			let x = this.character.xPos, y = this.character.yPos;
-			if (this.character.xPos < GAMEBOARD_SIZE && unOccupied(this.gameboard[x+1][y])){
+			this.character.isMoveingRight = true;
+
+			if (this.character.xPos < GAMEBOARD_SIZE && unOccupied(this.gameboard[y][x+1])){
 				this.character.xPos++;
 			}
 		};
 
 		this.up = () =>{
 			let x = this.character.xPos, y = this.character.yPos;
-			if (this.character.yPos > 0 && unOccupied(this.gameboard[x][y-1])){
+			this.character.isMoveingUp = true;
+
+			if (this.character.yPos > 0 && unOccupied(this.gameboard[y-1][x])){
 				this.character.yPos--;
 			}
 		};
 
 		this.down = () => {
 			let x = this.character.xPos, y = this.character.yPos;
-			if (this.character.yPos < GAMEBOARD_SIZE && unOccupied(this.gameboard[x][y+1])){
+			this.character.isMovingDown = true;
+
+			if (this.character.yPos < GAMEBOARD_SIZE && unOccupied(this.gameboard[y+1][x])){
 				this.character.yPos++;
 			}
 		};
+
 
 		this.canPlaceBomb = () => {
 			return this.bombs.length < this.character.load;
@@ -244,7 +252,6 @@
 	}
 
 	function defaultGameboard(gameboard){
-		
 		gameboard[7][8] = 1;
 		gameboard[10][11] = 1;
 		gameboard[1][2] = HARDBLOCK;
@@ -266,7 +273,6 @@
 		});
 		return res;
 	}
-	
 
     // Export to window
     window.app = window.app || {};
