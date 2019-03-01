@@ -33,7 +33,7 @@
 
 	Gui.prototype._createCharactor = function(character) {
 		gameobject.createCharactorModel(character.absoluteXPos, character.absoluteYPos, (mesh) => {
-			console.log(character.model + "set model");
+			console.log(character.model + " set model");
 			character.setModel(mesh);
 			this.scene.add(mesh);
 		});

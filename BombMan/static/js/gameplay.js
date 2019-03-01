@@ -50,11 +50,11 @@
 	};
 
 
-	function Gameplay() {
+	function Gameplay(character) {
 		this.gameboard = emptyGameboard();
 		this.gameboard = defaultGameboard(this.gameboard);
 		// initialize a character
-		this.character = character('myChar', 0, 0, 2, 2,3);
+		this.character = character;
 		// all the bombs this character currently is placing
 		this.bombs = [];
 		// power up items
@@ -252,7 +252,6 @@
 	}
 
 	function defaultGameboard(gameboard){
-		
 		gameboard[7][8] = 1;
 		gameboard[10][11] = 1;
 		gameboard[1][2] = HARDBLOCK;
@@ -274,25 +273,6 @@
 		});
 		return res;
 	}
-	
-
-	let unOccupied = (block) => {
-		return !(block == SOFTBLOCK || block == HARDBLOCK || block == BOMB);
-	};
-
-	function emptyGameboard(){
-		let gameboard = [];
-		for(let i = 0; i < GAMEBOARD_SIZE; i++){
-			let arr = [];
-			for (var j = 0; j < GAMEBOARD_SIZE; j++){
-				arr.push(UNBLOCKED);
-			}
-			gameboard.push(arr);
-		}
-		return gameboard;
-	}
-
-	
 
     // Export to window
     window.app = window.app || {};
