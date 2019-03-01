@@ -2,7 +2,6 @@
 	"use strict";
 
     window.addEventListener('load', function(){
-
     	/* Main Method */
 		function BombMan() {
 			this.core = new app.Core();
@@ -25,4 +24,5 @@
 			console.log("keyup");
 		});
     });
+
 })();
