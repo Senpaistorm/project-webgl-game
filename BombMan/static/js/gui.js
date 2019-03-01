@@ -19,16 +19,25 @@
 
 	Gui.prototype.onNewGame = function(gameplay) {
 		this._init();
+		this.gameplay = gameplay;
 		this._createGameBoard(gameplay.gameboard);
+		console.log(gameplay.character + " get game charactor");
+		this._createCharactor(gameplay.character);
 	};
 
 	Gui.prototype._init = function() {
 		this._createScene();
 		this._createLights();
-
-		this.renderer.render(this.scene, this.camera);
 		this._animate();
 	};
+
+	Gui.prototype._createCharactor = function(character) {
+		gameobject.createCharactorModel(character.absoluteXPos, character.absoluteYPos, (mesh) => {
+			console.log(character.model + "set model");
+			character.setModel(mesh);
+			this.scene.add(mesh);
+		});
+	}
 
 	Gui.prototype._createGameBoard = function(gameboard) {
 		let startingPoint = -185.5;
@@ -47,8 +56,6 @@
 					gameobject.createNormalBlock(startingPoint + i * size, startingPointy + j * size, this.scene);
 			}
 		}
-
-		gameobject.createCharactorModel(startingPoint, startingPointy, this.scene);
 	}
 
 	Gui.prototype._createScene = function() {
@@ -66,11 +73,11 @@
 
 	Gui.prototype._createLights = function() {
         let hemisphereLight = new THREE.HemisphereLight(0xaaaaaa,0x000000, 1.0)
-        
+
         let shadowLight = new THREE.DirectionalLight(0xffffff, .9);
 
         shadowLight.position.set(150, 350, 350);
-        
+
         shadowLight.castShadow = true;
         shadowLight.shadow.camera.left = -400;
         shadowLight.shadow.camera.right = 400;
@@ -86,19 +93,31 @@
     }
 
 	Gui.prototype._animate = function() {
-		window.requestAnimationFrame(this._animate.bind(this));
 		this.renderer.render(this.scene, this.camera);
+		window.requestAnimationFrame(this._animate.bind(this));
+
+		if(this.keyboardEvent[87]) { //w
+			this.gameplay.character.model.position.z -= 1;
+			this.gameplay.character.up();
+		}
+
+		if(this.keyboardEvent[83]) { //s
+			this.gameplay.character.model.position.z += 1;
+			this.gameplay.character.down();
+		}
+
+		if(this.keyboardEvent[65]) { //a
+			this.gameplay.character.model.position.x -= 1;
+			this.gameplay.character.left();
+		}
+
+		if(this.keyboardEvent[68]) { //d
+			this.gameplay.character.model.position.x += 1;
+			this.gameplay.character.right();
+		}
 	}
-
-	document.addEventListener('keydown', (event) => {
-		this.keyboardEvent[event.keyCode] = true;
-	});
-
-	document.addEventListener('keyup', (event) => {
-		this.keyboardEvent[event.keyCode] = false;
-	});
 
 	// Export to window
 	window.app = window.app || {};
 	window.app.Gui = Gui;
-})(window);
+})(window); 
