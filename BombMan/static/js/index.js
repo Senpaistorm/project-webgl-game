@@ -19,10 +19,26 @@
 			console.log('keydown');
 		});
 
-		window,addEventListener('keyup', function(e) {
+		window.addEventListener('keyup', function(e) {
 			game.gui.keyboardEvent[e.keyCode] = false;
 			console.log("keyup");
 		});
+
+		let socket = io();
+		let roomId = null;
+		document.getElementById('play_game_btn').addEventListener('click', async ()=>{
+			// notify server to enqueue player
+			socket.emit('enqueuePlayer');
+			let promise = new Promise((resolve, reject) =>{
+				setTimeout(() => {
+					resolve("done");
+				}, 
+				3000);
+			});
+			await promise;
+			// stay in queue for some seconds, then resolve
+			socket.emit('resolveQueue', socket.id);
+		})
     });
 
 })();
