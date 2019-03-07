@@ -14,15 +14,33 @@ app.use(function (req, res, next){
     next();
 });
 
+let playerQueue = [];
+
 // WebSocket handlers
 io.on('connection', function(socket) {
-    console.log("a user connected");
-});
+    console.log(`a user ${socket.id} connected. `);
+    socket.on('disconnect', function(){
+        console.log(`user ${socket.id} disconnected`);
+    });
 
-// emits a message every 1 second
-setInterval(function() {
-    io.sockets.emit('message', 'hi!');
-  }, 1000);
+    // push a player's socket id into the queue
+    socket.on('enqueuePlayer', function(){
+        playerQueue.push(socket);
+    });
+
+    socket.on('dequeuePlayer', function(){
+    });    
+
+    let resolveQueue = function(){
+        if(playerQueue.length >= 4){
+            let players = playerQueue.splice(0,4);
+            players.forEach(function(p){
+                p.emit()
+            })
+        }
+    }
+
+});
 
 const PORT = 3000;
 

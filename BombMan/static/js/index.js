@@ -12,7 +12,7 @@
 
 		var game = new BombMan();
     	var gameplay = new app.Gameplay(game.character);
-		game.core.startNewGame(gameplay);
+		//game.core.startNewGame(gameplay);
 
 		window.addEventListener('keydown', function(e){
 			game.gui.keyboardEvent[e.keyCode] = true;
