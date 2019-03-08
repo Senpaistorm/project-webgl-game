@@ -1,7 +1,7 @@
 (function(){
 	"use strict";
 
-    window.addEventListener('load', function(){
+  window.addEventListener('load', function(){
     	/* Main Method */
 		function BombMan() {
 			this.core = new app.Core();
@@ -25,20 +25,24 @@
 		});
 
 		let socket = io();
+
+		socket.on('gamestart', (msg) =>{
+			console.log(msg);
+			game.core.startNewGame(gameplay);
+		})
+
 		let roomId = null;
 		document.getElementById('play_game_btn').addEventListener('click', async ()=>{
 			// notify server to enqueue player
 			socket.emit('enqueuePlayer');
 			let promise = new Promise((resolve, reject) =>{
-				setTimeout(() => {
-					resolve("done");
-				}, 
-				3000);
+				setTimeout(() => {resolve("done");},3000);
 			});
 			await promise;
 			// stay in queue for some seconds, then resolve
 			socket.emit('resolveQueue', socket.id);
 		})
-    });
 
+
+	});	
 })();

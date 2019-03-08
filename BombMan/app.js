@@ -14,13 +14,18 @@ app.use(function (req, res, next){
     next();
 });
 
+// room status that contains all the queued players and their rooms
 let roomStatus = [];
+// all room ids that have started a game
+let startedGamerooms = [];
 
 // WebSocket handlers
 io.on('connection', function(socket) {
     console.log(`user ${socket.id} connected. `);
 
     socket.on('disconnect', function(){
+        let rooms = io.sockets.adapter.rooms;
+        console.log(rooms);
         console.log(`user ${socket.id} disconnected`);
     });
 
@@ -33,21 +38,35 @@ io.on('connection', function(socket) {
                 if(room.size < 4){
                     socket.join(room.name, (err) => {});
                     room.size++;
+                    return;
                 }
             })
-            console.log(roomStatus);
-        // there is no available room, create one with own name
-        }else{
-            let roomName = `${socket.id}room`;
-            socket.join(roomName, (err) => {});
-            roomStatus.push({name:roomName, size:1});
         }
-
+        // there is no available room, create one with own name
+        let roomName = `${socket.id}room`;
+        socket.join(roomName, (err) => {});
+        roomStatus.push({name:roomName, size:1});
     });
 
     socket.on('resolveQueue', () =>{
         console.log('resolving game queue');
-        resolveQueue(socket.id);
+        let rooms = io.sockets.adapter.rooms;
+        roomStatus.forEach((room) =>{
+            if(room.size >= 2){
+                // TODO: start game for room room.name
+                // store started room id
+                startedGamerooms.push(room.name);
+                // notify every player in the room to start game 
+                console.log(rooms[room.name]);
+                io.sockets.in(room.name).emit('gamestart', `game started for room ${room.name} for ${room.size} players`);
+            }else{
+                // TODO: leave room for room.name
+                if(room.name in rooms){
+                    socket.leave(room.name);
+                }
+            }
+        })
+        roomStatus = [];
     });    
 
     let resolveQueue = function(){
@@ -59,9 +78,9 @@ io.on('connection', function(socket) {
                 // notify every player in the room to start game 
             }else{
                 // TODO: leave room for room.name
-                io.sockets.clients(room.name).forEach(function(s){
-                    s.leave(room.name);
-                });
+                if(room.name in rooms){
+
+                }
             }
         })
         roomStatus = [];
