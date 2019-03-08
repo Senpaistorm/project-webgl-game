@@ -8,8 +8,8 @@
 		this.speed = speed;
 		this.power = power;
 		this.load = load;
-		this.absoluteXPos = this.xPos * 24.2;	//the aboslute position on the game board in pixel
-		this.absoluteYPos = this.yPos * 24.2;
+		this.absoluteXPos = -185.5;	//the aboslute position on the game board in pixel
+		this.absoluteYPos = -120;
 		this.model = null;
 
 		this.isMoveingLeft = false;

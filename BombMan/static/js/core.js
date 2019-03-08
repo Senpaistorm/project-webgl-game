@@ -25,41 +25,11 @@
 		});
 	};
 
-	// keyboard handler
-	Core.prototype.onKeyDown = function(e) {
-		console.log(e.keyCode);
-		if(this.gameplay != null) {
-			switch(e.keyCode){
-				case 65: // A
-					this.gameplay.left();
-					break;
-				case 68: // D
-					this.gameplay.right();
-					break;
-				case 83: // S
-					this.gameplay.down();
-					break;
-				case 87: // W
-					this.gameplay.up();
-					break;
-				case 74: // J
-					this.gameplay.placeBomb();
-					break;
-				default:
-					break;
-			}
-		}
-	};
-
-	Core.prototype.onKeyUp = function(e) {
-	}
-
 	// Core.prototype._notifyGameChange = function(gameplay) {
 	// 	this.gameListener.forEach((listener) => {
 	// 		listener.onGameChange(gameplay);
 	// 	});
 	// };
-
 
     // Export to window
     window.app = window.app || {};
