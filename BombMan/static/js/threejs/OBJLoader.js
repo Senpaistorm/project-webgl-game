@@ -784,7 +784,7 @@ THREE.OBJLoader = ( function () {
 
 			}
 
-			console.timeEnd( 'OBJLoader' );
+			//console.timeEnd( 'OBJLoader' );
 
 			return container;
 

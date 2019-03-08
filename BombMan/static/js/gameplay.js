@@ -37,11 +37,12 @@
 	};
 
 
-	function Gameplay(character) {
+	function Gameplay(characters) {
 		this.gameboard = emptyGameboard();
 		this.gameboard = defaultGameboard(this.gameboard);
 		// initialize a character
-		this.character = character;
+		//this.character = character;
+		this.characters = characters;
 		// all the bombs this character currently is placing
 		this.bombs = [];
 		// power up items
@@ -241,7 +242,7 @@
 	}
 
 	function defaultGameboard(gameboard){
-		gameboard = [[0,0,0,1,1,1,1,1,1,1,1,1,1,1,1],
+		gameboard = [[0,0,0,1,1,1,1,1,1,1,1,1,1,1,0],
                      [0,1,1,1,1,1,0,0,0,0,0,0,0,0,1],
                      [0,1,1,1,1,1,0,0,0,0,0,0,0,0,1],
                      [1,1,1,1,1,1,0,0,0,0,0,0,0,0,1],
@@ -254,8 +255,8 @@
                      [1,1,0,0,0,0,0,0,0,1,0,0,0,0,1],
                      [1,1,0,0,0,0,0,0,0,0,1,0,0,0,1],
                      [1,1,1,0,0,0,0,0,0,0,0,1,0,0,1],
-                     [1,1,1,0,0,0,0,0,0,0,0,0,0,0,1],
-                     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]];
+                     [0,0,1,0,0,0,0,0,0,0,0,0,0,0,1],
+                     [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0]];
 		return gameboard;
 	}
 
