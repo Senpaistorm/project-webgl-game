@@ -22,8 +22,12 @@
 	Gui.prototype.onNewGame = function(gameplay) {
 		this._init();
 		this.gameplay = gameplay;
+		console.log(this.gameplay.characters);
 		this._createGameBoard(gameplay.gameboard);
-		this._createCharactor(gameplay.character);
+		gameplay.characters.forEach((character) =>{
+			this._createCharactor(character);
+		})
+		//this._createCharactor(gameplay.character);
 	};
 
 	//Get the aboslute location of the player in an 2D array
@@ -92,6 +96,7 @@
 	};
 
 	Gui.prototype._createCharactor = function(character) {
+		console.log(`creating character ${character}`);
 		gameobject.createCharactorModel(character.absoluteXPos, character.absoluteYPos, (mesh) => {
 			character.setModel(mesh);
 			this.scene.add(mesh);

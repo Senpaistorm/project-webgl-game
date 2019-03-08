@@ -24,8 +24,6 @@ io.on('connection', function(socket) {
     console.log(`user ${socket.id} connected. `);
 
     socket.on('disconnect', function(){
-        let rooms = io.sockets.adapter.rooms;
-        console.log(rooms);
         console.log(`user ${socket.id} disconnected`);
     });
 
@@ -62,7 +60,7 @@ io.on('connection', function(socket) {
                 startedGamerooms.push(room.name);
                 // notify every player in the room to start game 
                 console.log(rooms[room.name]);
-                io.sockets.in(room.name).emit('gamestart', rooms[room.name].sockets);
+                io.sockets.in(room.name).emit('gamestart', rooms[room.name].sockets, room.name);
             }else{
                 // TODO: leave room for room.name
                 if(room.name in rooms){
@@ -73,22 +71,33 @@ io.on('connection', function(socket) {
         roomStatus = [];
     });    
 
-    let resolveQueue = function(){
-        let rooms = io.sockets.adapter.rooms;
-        roomStatus.forEach((room) =>{
-            if(room.size >= 2){
-                // TODO: start game for room room.name
-                // store started room id
-                // notify every player in the room to start game 
-            }else{
-                // TODO: leave room for room.name
-                if(room.name in rooms){
+    socket.on('playerKeydown', (data) =>{
+        let keyData = {keyCode: data.keyCode, sid:socket.id};
+        io.sockets.in(data.room).emit('playerKeydown', keyData);
+        console.log(data);
+    });
 
-                }
-            }
-        })
-        roomStatus = [];
-    }
+    socket.on('playerKeyup', (data) =>{
+        let keyData = {keyCode: data.keyCode, sid:socket.id};
+        io.sockets.in(data.room).emit('playerKeyup', keyData);
+        console.log(data);
+    });
+    // let resolveQueue = function(){
+    //     let rooms = io.sockets.adapter.rooms;
+    //     roomStatus.forEach((room) =>{
+    //         if(room.size >= 2){
+    //             // TODO: start game for room room.name
+    //             // store started room id
+    //             // notify every player in the room to start game 
+    //         }else{
+    //             // TODO: leave room for room.name
+    //             if(room.name in rooms){
+
+    //             }
+    //         }
+    //     })
+    //     roomStatus = [];
+    // }
 
 });
 
