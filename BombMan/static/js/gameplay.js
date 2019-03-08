@@ -9,20 +9,7 @@
 	const UNBLOCKED = 0;
 	const SOFTBLOCK = 1;
 	const BOMB = 2;
-
 	const HARDBLOCK = 4;
-
-	// representation of a player's character
-	let character = function(name, xPos, yPos, speed, power, load){
-		return{
-			name: name,
-			xPos: xPos,
-			yPos: yPos,
-			speed: speed,
-			power: power,
-			load: load
-		};
-	};
 
 	// representation of a bomb
 	let bomb = function(x, y, power){
@@ -59,6 +46,10 @@
 		this.bombs = [];
 		// power up items
 		this.items = [];
+
+		this.isValidPosition = (x, y) => {
+			return x >= 0 && x < GAMEBOARD_SIZE && y >= 0 && y < GAMEBOARD_SIZE && unOccupied(this.gameboard[x][y]);
+		}
 
 		this.left = () => {
 			let x = this.character.xPos, y = this.character.yPos;
@@ -99,15 +90,14 @@
 			return this.bombs.length < this.character.load;
 		};
 
-		this.placeBomb = async (callback) => {
-			let x = this.character.xPos, y = this.character.yPos;
+		this.placeBomb = async (x, y, callback) => {
 			let myBomb = bomb(x, y, this.character.power);
 			this.gameboard[x][y] = BOMB;
 			this.bombs.push(myBomb);
 			let res;
 			console.log('bomb placed!');
 			//asynchronously wait [speed] seconds
-			let promise = new Promise((resolve, reject) =>{
+			let promise = new Promise((resolve, reject) => {
 				setTimeout(() => {
 					resolve("done");
 				}, 
@@ -152,7 +142,7 @@
 						}
 						foundRight = this.gameboard[x+i][y] != UNBLOCKED;
 					}
-					if(!foundLeft && x - i >= 0 && !unOccupied(this.gameboard[x-i][y])){
+					if(!foundLeft && x - i >= 0){
 						affectedCoord = coord(x-i, y, this.gameboard[x-i][y]);
 						affected.expCoords.push(affectedCoord);
 						if(affectedCoord.type == BOMB){ 
@@ -164,8 +154,7 @@
 						foundLeft =  this.gameboard[x-i][y] != UNBLOCKED;
 					}
 					if(!foundDown && y + i < GAMEBOARD_SIZE){
-						affectedCoord = coord(x, y+i, this.gameboard[x][y+i]);
-						
+						affectedCoord = coord(x, y+i, this.gameboard[x][y+i]);	
 						affected.expCoords.push(affectedCoord);
 						if(affectedCoord.type == BOMB){ 
 							let impactBomb = this.getBomb(x, y+i);
@@ -252,13 +241,21 @@
 	}
 
 	function defaultGameboard(gameboard){
-		gameboard[7][8] = 1;
-		gameboard[10][11] = 1;
-		gameboard[1][2] = HARDBLOCK;
-		gameboard[3][3] = 1;
-		gameboard[2][2] = 1;
-		gameboard[2][3] = 1;
-		gameboard[4][4] = 1;
+		gameboard = [[0,0,0,1,1,1,1,1,1,1,1,1,1,1,1],
+                     [0,1,1,1,1,1,0,0,0,0,0,0,0,0,1],
+                     [0,1,1,1,1,1,0,0,0,0,0,0,0,0,1],
+                     [1,1,1,1,1,1,0,0,0,0,0,0,0,0,1],
+                     [1,1,1,1,1,1,0,0,0,0,0,0,0,0,1],
+                     [1,1,1,1,1,0,0,0,0,0,0,0,0,0,1],
+                     [1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                     [1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                     [1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                     [1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                     [1,1,0,0,0,0,0,0,0,1,0,0,0,0,1],
+                     [1,1,0,0,0,0,0,0,0,0,1,0,0,0,1],
+                     [1,1,1,0,0,0,0,0,0,0,0,1,0,0,1],
+                     [1,1,1,0,0,0,0,0,0,0,0,0,0,0,1],
+                     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]];
 		return gameboard;
 	}
 

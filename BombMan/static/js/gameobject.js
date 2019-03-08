@@ -46,8 +46,15 @@ let gameobject = (function() {
 		});
 	}
 
-	//TODO: Change the scene to callback
-	module.createNormalBlock = function(x, y, scene) {
+	module.createExplosion = function(x, y, callback) {
+		var cubeGeometry = new THREE.CubeGeometry(23,23,23,1,1,1);
+		var wireMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe:true } );
+		var box = new THREE.Mesh( cubeGeometry, wireMaterial );
+		box.position.set(x, 10, y);
+		callback(box);
+	}
+
+	module.createNormalBlock = function(x, y, callback) {
 		var mtlLoader = new THREE.MTLLoader();
 		mtlLoader.load("./media/models/block.mtl", function(materials){
 			
@@ -63,13 +70,31 @@ let gameobject = (function() {
 						node.receiveShadow = true;
 					}
 				});
-				scene.add(mesh);
     			mesh.position.set(x - 11, 3, y + 12);
+
+    			var cubeGeometry = new THREE.CubeGeometry(21,21,21,1,1,1);
+				var wireMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe:true } );
+				var collision = new THREE.Mesh( cubeGeometry, wireMaterial );
+				collision.position.set(x, 10, y);
+
+				mesh.children.push(collision);
     			mesh.scale.set(23,23,23);
+    			callback(mesh);
+    			//collision.visible = false;
+
 			});
 			
 		});
 	};
+
+	module.createBomb = function(x,y,callback) {
+		var sphere = new THREE.SphereGeometry(12, 20, 20);
+		var sphereMaterial = new THREE.MeshBasicMaterial({color:0xff0000});
+		var bomb = new THREE.Mesh(sphere, sphereMaterial);
+
+		bomb.position.set(-185.5 + x * 24.2, 5, -120 + y * 24.2);
+		callback(bomb);
+	}
 
 	module.createCloud = function(scene){
         let mesh = new THREE.Object3D();
