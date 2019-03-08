@@ -74,10 +74,14 @@ io.on('connection', function(socket) {
     });    
 
     socket.on('playerKeydown', (data) =>{
+        let keyData = {keyCode: data.keyCode, sid:socket.id};
+        io.sockets.in(data.room).emit('playerKeydown', keyData);
         console.log(data);
     });
 
     socket.on('playerKeyup', (data) =>{
+        let keyData = {keyCode: data.keyCode, sid:socket.id};
+        io.sockets.in(data.room).emit('playerKeyup', keyData);
         console.log(data);
     });
     // let resolveQueue = function(){

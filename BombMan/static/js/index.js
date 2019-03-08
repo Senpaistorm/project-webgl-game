@@ -18,14 +18,14 @@
 		window.addEventListener('keydown', function(e){
 			game.gui.keyboardEvent[e.keyCode] = true;
 			if(roomId){
-				socket.emit('playerKeydown', {room:roomId, e:e.keyCode});
+				socket.emit('playerKeydown', {room:roomId, keyCode:e.keyCode});
 			}
 			if(e.keyCode == 74) game.gui.onBombPlaced();
 		});
 
 		window.addEventListener('keyup', function(e) {
 			if(roomId){
-				socket.emit('playerKeyup', {room:roomId, e:e.keyCode});
+				socket.emit('playerKeyup', {room:roomId, keyCode:e.keyCode});
 			}
 			game.gui.keyboardEvent[e.keyCode] = false;
 		});
@@ -50,7 +50,14 @@
 			game.core.startNewGame(gameplay);
 		});
 
-		
+		socket.on('playerKeyup', (keyData) => {
+			console.log(keyData);
+		});
+
+		socket.on('playerKeydown', (keyData) => {
+			console.log(keyData);
+		});
+
 		document.getElementById('play_game_btn').addEventListener('click', async ()=>{
 			// notify server to enqueue player
 			socket.emit('enqueuePlayer');
