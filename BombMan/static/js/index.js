@@ -6,12 +6,13 @@
 		function BombMan() {
 			this.core = new app.Core();
 			this.gui = new app.Gui(this.core);
-			this.character = new app.Character('myChar', 0, 0, 2, 1, 1);
+			this.characters = [];
+			//this.character = new app.Character('myChar', 0, 0, 2, 1, 1);
 			this.core.addGameListener(this.gui);
 		}
 
 		var game = new BombMan();
-    	var gameplay = new app.Gameplay(game.character);
+    	var gameplay = new app.Gameplay(game.characters);
 		//game.core.startNewGame(gameplay);
 
 		window.addEventListener('keydown', function(e){
@@ -26,10 +27,15 @@
 
 		let socket = io();
 
-		socket.on('gamestart', (msg) =>{
-			console.log(msg);
+		socket.on('gamestart', (players) =>{
+			console.log(players);
+			Object.keys(players).forEach((player) =>{
+				let newChar = new app.Character(player, Math.floor(Math.random()*15), Math.floor(Math.random()*15), 2, 1, 1);
+				game.characters.push(newChar);
+			});
+			console.log(game.characters);
 			game.core.startNewGame(gameplay);
-		})
+		});
 
 		let roomId = null;
 		document.getElementById('play_game_btn').addEventListener('click', async ()=>{
@@ -41,8 +47,8 @@
 			await promise;
 			// stay in queue for some seconds, then resolve
 			socket.emit('resolveQueue', socket.id);
-		})
+		});
 
 
-	});	
+	});
 })();

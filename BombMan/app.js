@@ -36,7 +36,9 @@ io.on('connection', function(socket) {
             console.log(roomStatus);
             roomStatus.forEach((room) =>{
                 if(room.size < 4){
-                    socket.join(room.name, (err) => {});
+                    socket.join(room.name, (err) => {
+                        if(err) console.error("Error joining room");
+                    });
                     room.size++;
                     return;
                 }
@@ -44,7 +46,9 @@ io.on('connection', function(socket) {
         }
         // there is no available room, create one with own name
         let roomName = `${socket.id}room`;
-        socket.join(roomName, (err) => {});
+        socket.join(roomName, (err) => {
+            if(err) console.error("Error joining room");
+        });
         roomStatus.push({name:roomName, size:1});
     });
 
@@ -58,14 +62,14 @@ io.on('connection', function(socket) {
                 startedGamerooms.push(room.name);
                 // notify every player in the room to start game 
                 console.log(rooms[room.name]);
-                io.sockets.in(room.name).emit('gamestart', `game started for room ${room.name} for ${room.size} players`);
+                io.sockets.in(room.name).emit('gamestart', rooms[room.name].sockets);
             }else{
                 // TODO: leave room for room.name
                 if(room.name in rooms){
                     socket.leave(room.name);
                 }
             }
-        })
+        });
         roomStatus = [];
     });    
 
