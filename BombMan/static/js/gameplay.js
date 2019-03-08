@@ -9,7 +9,6 @@
 	const UNBLOCKED = 0;
 	const SOFTBLOCK = 1;
 	const BOMB = 2;
-
 	const HARDBLOCK = 4;
 
 	// representation of a bomb
@@ -49,7 +48,7 @@
 		this.items = [];
 
 		this.isValidPosition = (x, y) => {
-			return x > 0 && x < GAMEBOARD_SIZE && y > 0 && y < GAMEBOARD_SIZE && unOccupied(this.gameboard[x][y]);
+			return x >= 0 && x < GAMEBOARD_SIZE && y >= 0 && y < GAMEBOARD_SIZE && unOccupied(this.gameboard[x][y]);
 		}
 
 		this.left = () => {
@@ -242,13 +241,21 @@
 	}
 
 	function defaultGameboard(gameboard){
-		gameboard[7][8] = 1;
-		gameboard[10][11] = 1;
-		gameboard[1][2] = HARDBLOCK;
-		gameboard[3][3] = 1;
-		gameboard[2][2] = 1;
-		gameboard[2][3] = 1;
-		gameboard[4][4] = 1;
+		gameboard = [[0,0,0,1,1,1,1,1,1,1,1,1,1,1,1],
+                     [0,1,1,1,1,1,0,0,0,0,0,0,0,0,1],
+                     [0,1,1,1,1,1,0,0,0,0,0,0,0,0,1],
+                     [1,1,1,1,1,1,0,0,0,0,0,0,0,0,1],
+                     [1,1,1,1,1,1,0,0,0,0,0,0,0,0,1],
+                     [1,1,1,1,1,0,0,0,0,0,0,0,0,0,1],
+                     [1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                     [1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                     [1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                     [1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                     [1,1,0,0,0,0,0,0,0,1,0,0,0,0,1],
+                     [1,1,0,0,0,0,0,0,0,0,1,0,0,0,1],
+                     [1,1,1,0,0,0,0,0,0,0,0,1,0,0,1],
+                     [1,1,1,0,0,0,0,0,0,0,0,0,0,0,1],
+                     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]];
 		return gameboard;
 	}
 

@@ -18,13 +18,6 @@ let gameobject = (function() {
 					}
 				});
 
-				var cubeGeometry = new THREE.CubeGeometry(23,23,23,1,1,1);
-				var wireMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe:true } );
-				var collision = new THREE.Mesh( cubeGeometry, wireMaterial );
-				collision.position.set(-185.5, 15, -120);
-
-				mesh.children.push(collision);
-
 				mesh.position.set(x, 3, y);
 				mesh.scale.set(3,3,3);
 
@@ -79,15 +72,16 @@ let gameobject = (function() {
 				});
     			mesh.position.set(x - 11, 3, y + 12);
 
-    			var cubeGeometry = new THREE.CubeGeometry(23,23,23,1,1,1);
+    			var cubeGeometry = new THREE.CubeGeometry(21,21,21,1,1,1);
 				var wireMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe:true } );
 				var collision = new THREE.Mesh( cubeGeometry, wireMaterial );
-				collision.position.set(x, 15, y);
+				collision.position.set(x, 10, y);
 
 				mesh.children.push(collision);
-
     			mesh.scale.set(23,23,23);
     			callback(mesh);
+    			//collision.visible = false;
+
 			});
 			
 		});

@@ -15,8 +15,8 @@
 		this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 		this.container = document.getElementById('world');
 		this.keyboardEvent = {};
-		this.collidableMeshList = [];
 		this.collisionBox = null;
+		this.collidableMeshList = {};
 	}
 
 	Gui.prototype.onNewGame = function(gameplay) {
@@ -30,26 +30,24 @@
 	Gui.prototype.getLocation = function() {
 		var x = this.gameplay.character.model.position.x;
 		var y = this.gameplay.character.model.position.z;
-
-		console.log(x + " " + y);
-
-		console.log(Math.floor((x + 196)/24.2) + " " + Math.floor((y + 130.5)/24.2));
-
 		return {x: Math.floor((x + 196)/24.2), y: Math.floor((y + 130.5)/24.2)}
 	}
 
 	Gui.prototype.onBombPlaced = function() {
 		var location = this.getLocation()
 
-		gameobject.createBomb(location.x, location.y, (mesh) => {
-			this.gameboardMesh[location.x][location.y] = mesh
-			this.scene.add(mesh);
-		});
+		console.log(this.gameplay.isValidPosition(location.x, location.y));
+		if(this.gameplay.isValidPosition(location.x, location.y)) {
 
-		this.gameplay.placeBomb(location.x, location.y, (res) => {
-			console.log(res);
-			this.onExplode(res);
-		});
+			gameobject.createBomb(location.x, location.y, (mesh) => {
+				this.gameboardMesh[location.x][location.y] = mesh
+				this.scene.add(mesh);
+			});
+
+			this.gameplay.placeBomb(location.x, location.y, (res) => {
+				this.onExplode(res);
+			});
+		}
 	}
 
 	Gui.prototype.onExplode = function(positions) {
@@ -84,8 +82,7 @@
 	Gui.prototype.distoryMesh = function(mesh) {
 		console.log(mesh);
 		this.scene.remove(mesh);
-		// mesh.geometry.dispose();
-		// mesh.material.dispose();
+		delete this.collidableMeshList[mesh.uuid];
 	}
 
 	Gui.prototype._init = function() {
@@ -118,7 +115,7 @@
 					gameobject.createNormalBlock(startingPoint + i * size, startingPointy + j * size, (mesh) => {
 						this.gameboardMesh[i][j] = mesh;
 						this.scene.add(mesh);
-						this.collidableMeshList.push(mesh.children[2]);
+						this.collidableMeshList[mesh.uuid] = mesh.children[2];
 					});
 			}
 		}
@@ -131,10 +128,11 @@
 		this.camera.position.z = 200;
 		this.camera.lookAt(new THREE.Vector3(0,-200,0));
 
-		var cubeGeometry = new THREE.CubeGeometry(23,23,23,1,1,1);
+		var cubeGeometry = new THREE.CubeGeometry(20,20,20,1,1,1);
 		var wireMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe:true } );
 		this.collisionBox = new THREE.Mesh( cubeGeometry, wireMaterial );
 		this.collisionBox.position.y = 15;
+		this.collisionBox.visible = false;
 		this.scene.add(this.collisionBox);
 
 		this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -167,58 +165,48 @@
 
 		if(this.keyboardEvent[87]) { //w
 
-			this.collisionBox.position.z = this.gameplay.character.model.children[6].position.z - 1;
-			this.collisionBox.position.x = this.gameplay.character.model.children[6].position.x;
+			this.collisionBox.position.z = this.gameplay.character.model.position.z - 1;
+			this.collisionBox.position.x = this.gameplay.character.model.position.x;
 			this.gameplay.character.up();
 			this.renderer.render(this.scene, this.camera);
 
 			if(!this._collisionDetection()) {
 				this.gameplay.character.model.position.z -= 1;
-				this.gameplay.character.model.children[6].position.z -=1
 			}
-			this.getLocation();
-
 		}
 
 		if(this.keyboardEvent[83]) { //s
-			this.collisionBox.position.z = this.gameplay.character.model.children[6].position.z + 1;
-			this.collisionBox.position.x = this.gameplay.character.model.children[6].position.x;
+			this.collisionBox.position.z = this.gameplay.character.model.position.z + 1;
+			this.collisionBox.position.x = this.gameplay.character.model.position.x;
 			this.gameplay.character.down();
 
 			this.renderer.render(this.scene, this.camera);
 
 			if(!this._collisionDetection()) {
 				this.gameplay.character.model.position.z += 1;
-				this.gameplay.character.model.children[6].position.z +=1
 			}
-			this.getLocation();
 		}
 
 		if(this.keyboardEvent[65]) { //a
-			this.collisionBox.position.x = this.gameplay.character.model.children[6].position.x - 1;
-			this.collisionBox.position.z = this.gameplay.character.model.children[6].position.z;
+			this.collisionBox.position.x = this.gameplay.character.model.position.x - 1;
+			this.collisionBox.position.z = this.gameplay.character.model.position.z;
 			this.gameplay.character.left();
 			this.renderer.render(this.scene, this.camera);
 
 			if(!this._collisionDetection()) {
 				this.gameplay.character.model.position.x -= 1;
-				this.gameplay.character.model.children[6].position.x -=1
 			}		
-			this.getLocation();
-
 		}
 
 		if(this.keyboardEvent[68]) { //d
-			this.collisionBox.position.x = this.gameplay.character.model.children[6].position.x + 1;
-			this.collisionBox.position.z = this.gameplay.character.model.children[6].position.z;
+			this.collisionBox.position.x = this.gameplay.character.model.position.x + 1;
+			this.collisionBox.position.z = this.gameplay.character.model.position.z;
 			this.gameplay.character.right();
 			this.renderer.render(this.scene, this.camera);
 
 			if(!this._collisionDetection()) {
 				this.gameplay.character.model.position.x += 1;
-				this.gameplay.character.model.children[6].position.x +=1
 			}
-			this.getLocation();
 		}
 
 		this.renderer.render(this.scene, this.camera);
@@ -227,20 +215,24 @@
 
 	Gui.prototype._collisionDetection = function(x, y) {
 		var model = this.collisionBox;
-
 		var originPoint = model.position.clone();
 		
-		for (var vertexIndex = 0; vertexIndex < model.geometry.vertices.length; vertexIndex++)
-		{
+		for (var vertexIndex = 0; vertexIndex < model.geometry.vertices.length; vertexIndex++) {
 			var localVertex = model.geometry.vertices[vertexIndex].clone();
 			var globalVertex = localVertex.applyMatrix4( model.matrix );
 			var directionVector = globalVertex.sub( model.position );
 			
 			var ray = new THREE.Raycaster( originPoint, directionVector.clone().normalize() );
-			var collisionResults = ray.intersectObjects( this.collidableMeshList );
+
+			console.log(ray);
+			var collisionResults = ray.intersectObjects( Object.values(this.collidableMeshList));
+
+			console.log(collisionResults);
 			if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() ) 
 				return true;
 		}
+
+		console.log("FALSE");
 		return false;
 	}
 
