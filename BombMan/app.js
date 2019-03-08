@@ -24,8 +24,6 @@ io.on('connection', function(socket) {
     console.log(`user ${socket.id} connected. `);
 
     socket.on('disconnect', function(){
-        let rooms = io.sockets.adapter.rooms;
-        console.log(rooms);
         console.log(`user ${socket.id} disconnected`);
     });
 

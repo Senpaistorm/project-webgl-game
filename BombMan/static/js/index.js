@@ -11,8 +11,19 @@
 			this.core.addGameListener(this.gui);
 		}
 
+		let showGame = () =>{
+			document.getElementById('homepage').style.display = "none";
+			document.getElementById('world').style.display = "block";
+		}
+
+		let hideGame = () =>{
+			document.getElementById('homepage').style.display = "block";
+			document.getElementById('world').style.display = "none";
+		}
+
 		var game = new BombMan();
-    	var gameplay;
+		var gameplay;
+		hideGame();
 		//game.core.startNewGame(gameplay);
 
 		window.addEventListener('keydown', function(e){
@@ -48,6 +59,7 @@
 			console.log(game.characters);
 			gameplay = new app.Gameplay(game.characters);
 			game.core.startNewGame(gameplay);
+			showGame();
 		});
 
 		socket.on('playerKeyup', (keyData) => {
@@ -68,7 +80,5 @@
 			// stay in queue for some seconds, then resolve
 			socket.emit('resolveQueue', socket.id);
 		});
-
-
 	});
 })();
