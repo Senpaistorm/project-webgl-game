@@ -17,12 +17,12 @@
 
 		window.addEventListener('keydown', function(e){
 			game.gui.keyboardEvent[e.keyCode] = true;
-			console.log('keydown');
+
+			if(e.keyCode == 74) game.gui.onBombPlaced();
 		});
 
 		window.addEventListener('keyup', function(e) {
 			game.gui.keyboardEvent[e.keyCode] = false;
-			console.log("keyup");
 		});
 
 		let socket = io();
