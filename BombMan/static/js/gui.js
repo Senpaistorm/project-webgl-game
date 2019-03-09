@@ -8,6 +8,12 @@
 	 * In addition, Core calls these methods to notify the Gui
  	 * when it should update its display
 	 */
+	const GAMEBOARD_SIZE = 15;
+	const UNBLOCKED = 0;
+	const SOFTBLOCK = 1;
+	const BOMB = 2;
+	const HARDBLOCK = 4;
+
 	function Gui(core) {
 		this.core = core;
 		this.scene = new THREE.Scene();
@@ -23,7 +29,10 @@
 		this._init();
 		this.gameplay = gameplay;
 		this._createGameBoard(gameplay.gameboard);
-		this._createCharactor(gameplay.character);
+
+		this.gameplay.characters.forEach((character) => {
+			this._createCharactor(character);
+		});
 	};
 
 	//Get the aboslute location of the player in an 2D array

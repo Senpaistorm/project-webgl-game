@@ -37,11 +37,16 @@
 	};
 
 
-	function Gameplay(character) {
+	function Gameplay(characters) {
 		this.gameboard = emptyGameboard();
 		this.gameboard = defaultGameboard(this.gameboard);
-		// initialize a character
-		this.character = character;
+
+		console.log(characters);
+
+		// a list of players in a room
+		this.characters = characters;
+		// initialize a character -- the current player's character
+		this.character = this.characters[0];
 		// all the bombs this character currently is placing
 		this.bombs = [];
 		// power up items
