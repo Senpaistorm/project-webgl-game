@@ -49,15 +49,21 @@
 		socket.on('gamestart', (players, roomname) =>{
 			console.log(players);
 			let i = 0;
+			let myChar;
 			roomId = roomname;
 			Object.keys(players).forEach((player) =>{
 				let newChar = new app.Character(player, initPositions[i].xPos,
 					 initPositions[i].yPos, 2, 1, 1);
-				game.characters.push(newChar);
+				if(socket.id == player){
+					myChar =  newChar;
+				}else{
+					game.characters.push(newChar);
+				}
 				i++;
 			});
+			console.log(myChar);
 			console.log(game.characters);
-			gameplay = new app.Gameplay(game.characters);
+			gameplay = new app.Gameplay(myChar, game.characters);
 			game.core.startNewGame(gameplay);
 			showGame();
 		});

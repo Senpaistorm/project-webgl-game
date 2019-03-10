@@ -37,11 +37,11 @@
 	};
 
 
-	function Gameplay(characters) {
+	function Gameplay(character, characters) {
 		this.gameboard = emptyGameboard();
 		this.gameboard = defaultGameboard(this.gameboard);
 		// initialize a character
-		//this.character = character;
+		this.character = character;
 		this.characters = characters;
 		// all the bombs this character currently is placing
 		this.bombs = [];
@@ -50,7 +50,7 @@
 
 		this.isValidPosition = (x, y) => {
 			return x >= 0 && x < GAMEBOARD_SIZE && y >= 0 && y < GAMEBOARD_SIZE && unOccupied(this.gameboard[x][y]);
-		}
+		};
 
 		this.left = () => {
 			let x = this.character.xPos, y = this.character.yPos;

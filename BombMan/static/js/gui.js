@@ -24,10 +24,10 @@
 		this.gameplay = gameplay;
 		console.log(this.gameplay.characters);
 		this._createGameBoard(gameplay.gameboard);
+		this._createCharactor(gameplay.character);
 		gameplay.characters.forEach((character) =>{
 			this._createCharactor(character);
-		})
-		//this._createCharactor(gameplay.character);
+		});
 	};
 
 	//Get the aboslute location of the player in an 2D array
