@@ -22,9 +22,7 @@ let gameobject = (function() {
 				mesh.scale.set(3,3,3);
 
 				callback(mesh);
-				//mesh.rotation.y = -Math.PI/4;
-			});
-			
+			});			
 		});
 	}
 
@@ -80,8 +78,6 @@ let gameobject = (function() {
 				mesh.children.push(collision);
     			mesh.scale.set(23,23,23);
     			callback(mesh);
-    			//collision.visible = false;
-
 			});
 			
 		});
