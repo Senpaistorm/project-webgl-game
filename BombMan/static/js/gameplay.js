@@ -5,12 +5,6 @@
 	 * The game plug-in interface that use to implement and register games
 	 * with Core. This class is where all the game logic from
 	 */
-	const GAMEBOARD_SIZE = 15;
-	const UNBLOCKED = 0;
-	const SOFTBLOCK = 1;
-	const BOMB = 2;
-	const HARDBLOCK = 4;
-
 	// representation of a bomb
 	let bomb = function(x, y, power){
 		return{

@@ -8,6 +8,7 @@
 	 * In addition, Core calls these methods to notify the Gui
  	 * when it should update its display
 	 */
+
 	function Gui(core) {
 		this.core = core;
 		this.scene = new THREE.Scene();

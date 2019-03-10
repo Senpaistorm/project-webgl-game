@@ -7,7 +7,6 @@
 			this.core = new app.Core();
 			this.gui = new app.Gui(this.core);
 			this.characters = [];
-			//this.character = new app.Character('myChar', 0, 0, 2, 1, 1);
 			this.core.addGameListener(this.gui);
 		}
 
@@ -24,7 +23,6 @@
 		var game = new BombMan();
 		var gameplay;
 		hideGame();
-		//game.core.startNewGame(gameplay);
 
 		window.addEventListener('keydown', function(e){
 			game.gui.keyboardEvent[e.keyCode] = true;
@@ -44,8 +42,7 @@
 		let socket = io();
 		let roomId = null;
 		// initial positions for 4 players
-		let initPositions = [{xPos: 0, yPos:0}, {xPos:14, yPos:0},
-			 {xPos:0, yPos:14}, {xPos:14, yPos:14}];
+
 		socket.on('gamestart', (players, roomname) =>{
 			console.log(players);
 			let i = 0;
