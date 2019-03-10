@@ -8,11 +8,6 @@
 	 * In addition, Core calls these methods to notify the Gui
  	 * when it should update its display
 	 */
-	const GAMEBOARD_SIZE = 15;
-	const UNBLOCKED = 0;
-	const SOFTBLOCK = 1;
-	const BOMB = 2;
-	const HARDBLOCK = 4;
 
 	function Gui(core) {
 		this.core = core;
@@ -28,9 +23,10 @@
 	Gui.prototype.onNewGame = function(gameplay) {
 		this._init();
 		this.gameplay = gameplay;
+		console.log(this.gameplay.characters);
 		this._createGameBoard(gameplay.gameboard);
-
-		this.gameplay.characters.forEach((character) => {
+		this._createCharactor(gameplay.character);
+		gameplay.characters.forEach((character) =>{
 			this._createCharactor(character);
 		});
 	};
@@ -101,6 +97,7 @@
 	};
 
 	Gui.prototype._createCharactor = function(character) {
+		console.log(`creating character ${character}`);
 		gameobject.createCharactorModel(character.absoluteXPos, character.absoluteYPos, (mesh) => {
 			character.setModel(mesh);
 			this.scene.add(mesh);

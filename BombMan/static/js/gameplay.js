@@ -5,12 +5,6 @@
 	 * The game plug-in interface that use to implement and register games
 	 * with Core. This class is where all the game logic from
 	 */
-	const GAMEBOARD_SIZE = 15;
-	const UNBLOCKED = 0;
-	const SOFTBLOCK = 1;
-	const BOMB = 2;
-	const HARDBLOCK = 4;
-
 	// representation of a bomb
 	let bomb = function(x, y, power){
 		return{
@@ -37,16 +31,12 @@
 	};
 
 
-	function Gameplay(characters) {
+	function Gameplay(character, characters) {
 		this.gameboard = emptyGameboard();
 		this.gameboard = defaultGameboard(this.gameboard);
-
-		console.log(characters);
-
-		// a list of players in a room
+		// initialize a character
+		this.character = character;
 		this.characters = characters;
-		// initialize a character -- the current player's character
-		this.character = this.characters[0];
 		// all the bombs this character currently is placing
 		this.bombs = [];
 		// power up items
@@ -54,7 +44,7 @@
 
 		this.isValidPosition = (x, y) => {
 			return x >= 0 && x < GAMEBOARD_SIZE && y >= 0 && y < GAMEBOARD_SIZE && unOccupied(this.gameboard[x][y]);
-		}
+		};
 
 		this.left = () => {
 			let x = this.character.xPos, y = this.character.yPos;
@@ -246,7 +236,7 @@
 	}
 
 	function defaultGameboard(gameboard){
-		gameboard = [[0,0,0,1,1,1,1,1,1,1,1,1,1,1,1],
+		gameboard = [[0,0,0,1,1,1,1,1,1,1,1,1,1,1,0],
                      [0,1,1,1,1,1,0,0,0,0,0,0,0,0,1],
                      [0,1,1,1,1,1,0,0,0,0,0,0,0,0,1],
                      [1,1,1,1,1,1,0,0,0,0,0,0,0,0,1],
@@ -259,8 +249,8 @@
                      [1,1,0,0,0,0,0,0,0,1,0,0,0,0,1],
                      [1,1,0,0,0,0,0,0,0,0,1,0,0,0,1],
                      [1,1,1,0,0,0,0,0,0,0,0,1,0,0,1],
-                     [1,1,1,0,0,0,0,0,0,0,0,0,0,0,1],
-                     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]];
+                     [0,0,1,0,0,0,0,0,0,0,0,0,0,0,1],
+                     [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0]];
 		return gameboard;
 	}
 
