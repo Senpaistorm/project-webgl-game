@@ -20,7 +20,6 @@ let roomStatus = [];
 let startedGamerooms = [];
 // character statuses of all game rooms
 let characterStatus = {};
-let nameToRoom = {};
 
 // WebSocket handlers
 io.on('connection', function(socket) {
@@ -72,30 +71,23 @@ io.on('connection', function(socket) {
         roomStatus = [];
     });    
 
-    // socket.on('gamestarted', (players, roomId) =>{
-    //     if(!(roomId in characterStatus)){
-    //         characterStatus[roomId] = players;
-    //     }
-    // });
-
     socket.on('placeBomb', (roomId, player) =>{
         io.sockets.to(roomId).emit('placeBomb', player);
     });
 
-    // socket.on('playerKeyup', (roomId, keyCode) =>{
-    //     io.sockets.to(roomId).emit('playerKeyup', socket.id, keyCode);
-    // });
-
     socket.on('updateCharacters', (room, character) =>{
         if(!(character.name in characterStatus)){
             characterStatus[character.name] = character;
-            nameToRoom[character.name] = room;
         }else{
             characterStatus[character.name].absoluteXPos = character.absoluteXPos;
             characterStatus[character.name].absoluteYPos = character.absoluteYPos;   
         }
-        io.sockets.to(room).emit(
-            'updateCharacters', characterStatus[character.name]);
+        io.sockets.to(room).emit('updateCharacters', characterStatus[character.name]);
+    });
+
+    socket.on('gameover', (room) =>{
+        // leave room on gameover
+        socket.leave(room);
     });
 });
 

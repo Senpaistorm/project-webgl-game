@@ -62,17 +62,13 @@
 			gameplay = new app.Gameplay();
 			game.core.startNewGame(gameplay);
 			showGame();
-			socket.emit('gamestart', game.core.getPlayers(), roomId);
 		});
 
 		setInterval(function updateCharacters(){ 
 			if(game.core.getMainPlayer()){
 				socket.emit('updateCharacters', roomId, game.core.getMainPlayer());
 			}
-		},1000/40);
-		// socket.on('playerKeyup', (sid, keyCode) => {
-		// 	game.core.setStop(socket.id, keyCode);
-		// });
+		},1000/60);
 
 		socket.on('placeBomb', (character) => {
 			if(!game.core.getMainPlayer() || game.core.getMainPlayer().name != character.name){
@@ -91,5 +87,7 @@
 			// stay in queue for some seconds, then resolve
 			socket.emit('resolveQueue', socket.id);
 		});
+
+		//setInterval(refreshQueueMsg(),500);
 	});
 })();

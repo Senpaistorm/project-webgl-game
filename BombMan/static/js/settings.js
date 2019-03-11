@@ -16,6 +16,7 @@ const INIT_SPEED = 5;
 // powerup items
 const POWER_ITEM = 0;
 const SPEED_ITEM = 1;
+const BOMB_ITEM = 2;
 
 let movementToVector = { 65: {x:-1 ,y: 0, keyDown: false}, 
 83: {x: 0, y: 1, keyDown: false},

@@ -16,7 +16,7 @@
 		this.core = core;
 		this.scene = new THREE.Scene();
 		this.camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 1, 10000);
-		this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+		this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
 		this.container = document.getElementById('world');
 		this.keyboardEvent = {};
 		this.collisionBox = null;
@@ -161,9 +161,6 @@
 			}
 		}
 
-		// for(let i = 0; i < this.core.getPlayers().length; i++){
-		// 	this.core.getPlayers()[i].updatePositionAbs();
-		// } 
 		this.renderer.render(this.scene, this.camera);
 		window.requestAnimationFrame(this._animate.bind(this));
 	}
