@@ -11,11 +11,6 @@
 		this.absoluteXPos = -185.5 + xPos * 24.2;	//the aboslute position on the game board in pixel
 		this.absoluteYPos = -120 + yPos * 24.2;
 		this.model = null;
-
-		this.isMoveingLeft = false;
-		this.isMoveingRight = false;
-		this.isMoveingUp = false;
-		this.isMoveingDown = false;
 	}
 
 	Character.prototype.setModel = function(mesh) {
@@ -23,13 +18,22 @@
 	}
 
 	Character.prototype.updatePosition = function(vector) {
-
 		this.absoluteXPos += vector.x;
 		this.absoluteYPos += vector.y;
-		console.log("position update" + this.absoluteXPos+ " " + this.absoluteYPos + " " + vector);
 
 		this.model.position.x += vector.x;
 		this.model.position.z += vector.y;
+
+		this.xPos = Math.floor((this.absoluteXPos + 196)/24.2);
+		this.yPos = Math.floor((this.absoluteYPos + 130.5)/24.2);
+	}
+
+	Character.prototype.updatePositionAbs = function(x, y) {
+		this.absoluteXPos = x;
+		this.absoluteYPos = y;
+
+		this.model.position.x = x;
+		this.model.position.z = y;
 
 		this.xPos = Math.floor((this.absoluteXPos + 196)/24.2);
 		this.yPos = Math.floor((this.absoluteYPos + 130.5)/24.2);

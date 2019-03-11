@@ -23,26 +23,28 @@
 		var gameplay;
 		hideGame();
 
-		let socket = io();
 		let roomId = null;
 		// initial positions for 4 players
 
 		window.addEventListener('keydown', function(e){
-			if(roomId){
-				socket.emit('playerKeydown', {room:roomId, keyCode:e.keyCode});
-			}
-			if(game.core.isValidKey(e.keyCode) && game.core.getMainPlayer()) game.core.keyDown(e);
+			if(isValidKey(e.keyCode) && game.core.getMainPlayer()) game.core.keyDown(e);
+			// if(roomId && game.gui._hasMovement()){
+			// 	socket.emit('playerKeydown', roomId, e.keyCode);
+			// }
 		});
 
 		window,addEventListener('keyup', function(e) {
-			if(roomId){
-				socket.emit('playerKeyup', {room:roomId, keyCode:e.keyCode});
-			}
-			if(game.core.isValidKey(e.keyCode) && game.core.getMainPlayer()) game.core.keyUp(e);
+			if(isValidKey(e.keyCode) && game.core.getMainPlayer()) game.core.keyUp(e);
+			// if(roomId){
+			// 	socket.emit('playerKeyup', roomId, e.keyCode);
+			// }
+		});
+
+		socket.on('updateCharacters', (characters) =>{
+			game.core.updatePositions(characters);
 		});
 
 		socket.on('gamestart', (players, roomname) =>{
-			console.log(players);
 			let i = 0;
 			roomId = roomname;
 			Object.keys(players).forEach((player) =>{
@@ -51,7 +53,7 @@
 				if(socket.id == player){
 					game.core.addPlayer(newChar, true);
 				}else{
-					game.core.addPlayer(newChar)
+					game.core.addPlayer(newChar);
 				}
 				i++;
 			});
@@ -59,15 +61,20 @@
 			gameplay = new app.Gameplay();
 			game.core.startNewGame(gameplay);
 			showGame();
+			socket.emit("gamestarted", game.core.getPlayers(), roomId);
+
+			setInterval(function updateCharacters(){ 
+				socket.emit('updateCharacters', roomId, game.core.getPlayers());
+			},1000/600);
 		});
 
-		socket.on('playerKeyup', (keyData) => {
-			console.log(keyData);
-		});
+		// socket.on('playerKeyup', (sid, keyCode) => {
+		// 	game.core.setStop(socket.id, keyCode);
+		// });
 
-		socket.on('playerKeydown', (keyData) => {
-			console.log(keyData);
-		});
+		// socket.on('playerKeydown', (sid, keyCode) => {
+		// 	game.core.setMovement(socket.id, keyCode);
+		// });
 
 		document.getElementById('play_game_btn').addEventListener('click', async ()=>{
 			// notify server to enqueue player

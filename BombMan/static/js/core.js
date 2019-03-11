@@ -5,16 +5,6 @@
  	 * The interface by which gameplay can directly interact with the game
  	 * framework.
  	 */
-	const LEFT = 65;
-	const DOWN = 83;
-	const UP = 87;
-	const RIGHT = 68;
-	const PLACEBOMB = 74;
-
-	let movementToVector = { 65: {x:-1 ,y: 0, keyDown: false}, 
-						     83: {x: 0, y: 1, keyDown: false},
-						     87: {x: 0, y:-1, keyDown: false},
-						     68: {x: 1, y: 0, keyDown: false}};
 
 	let vector = {x:0, y:0};
 
@@ -45,9 +35,9 @@
      * change.
      */
 	Core.prototype.addPlayer = function(character, isMainPlayer = false) {
-		this.players.push(character);
 		this.gui.createCharacter(character);
 		if (isMainPlayer) this.setMainPlayer(character);
+		this.players.push(character);
 	}
 
 	/**
@@ -64,6 +54,20 @@
 		return this.mainPlayer;
 	}
 
+	Core.prototype.getPlayer = function(name){
+		return this.players.find(x => x.name === name);
+	}
+
+	/**
+	 * Update character position with a vector
+	 */
+	Core.prototype.updatePositions = function(players) {
+		let i = 0;
+		
+		for(i; i<players.length;i++){
+			this.getPlayer(players[i].name).updatePositionAbs(players[0].absoluteXPos, players[0].absoluteYPos);
+		}
+	};
 
 	/**
      * Removes a player from the game and notifies the GUI about the
@@ -130,10 +134,6 @@
 			vector.y -= movementToVector[e.keyCode].y;
 			this.gui.changePlayerMovement(vector);
 		}
-	}
-
-	Core.prototype.isValidKey = function(keyCode) {
-		return keyCode == UP || keyCode == DOWN || keyCode == LEFT || keyCode == RIGHT || keyCode == PLACEBOMB; 
 	}
 
     // Export to window

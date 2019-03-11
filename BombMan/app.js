@@ -18,6 +18,8 @@ app.use(function (req, res, next){
 let roomStatus = [];
 // all room ids that have started a game
 let startedGamerooms = [];
+// character statuses of all game rooms
+let characterStatus = {};
 
 // WebSocket handlers
 io.on('connection', function(socket) {
@@ -55,14 +57,12 @@ io.on('connection', function(socket) {
         let rooms = io.sockets.adapter.rooms;
         roomStatus.forEach((room) =>{
             if(room.size >= 2){
-                // TODO: start game for room room.name
                 // store started room id
                 startedGamerooms.push(room.name);
                 // notify every player in the room to start game 
                 console.log(rooms[room.name]);
                 io.sockets.in(room.name).emit('gamestart', rooms[room.name].sockets, room.name);
             }else{
-                // TODO: leave room for room.name
                 if(room.name in rooms){
                     socket.leave(room.name);
                 }
@@ -71,34 +71,30 @@ io.on('connection', function(socket) {
         roomStatus = [];
     });    
 
-    socket.on('playerKeydown', (data) =>{
-        let keyData = {keyCode: data.keyCode, sid:socket.id};
-        io.sockets.in(data.room).emit('playerKeydown', keyData);
-        console.log(data);
+    socket.on('gamestarted', (players, roomId) =>{
+        if(!(roomId in characterStatus)){
+            characterStatus[roomId] = players;
+        }
     });
 
-    socket.on('playerKeyup', (data) =>{
-        let keyData = {keyCode: data.keyCode, sid:socket.id};
-        io.sockets.in(data.room).emit('playerKeyup', keyData);
-        console.log(data);
+    socket.on('playerKeydown', (roomId, keyCode) =>{
+        io.sockets.to(roomId).emit('playerKeydown', socket.id, keyCode);
     });
-    // let resolveQueue = function(){
-    //     let rooms = io.sockets.adapter.rooms;
-    //     roomStatus.forEach((room) =>{
-    //         if(room.size >= 2){
-    //             // TODO: start game for room room.name
-    //             // store started room id
-    //             // notify every player in the room to start game 
-    //         }else{
-    //             // TODO: leave room for room.name
-    //             if(room.name in rooms){
 
-    //             }
-    //         }
-    //     })
-    //     roomStatus = [];
-    // }
+    socket.on('playerKeyup', (roomId, keyCode) =>{
+        io.sockets.to(roomId).emit('playerKeyup', socket.id, keyCode);
+    });
 
+    socket.on('updateCharacters', (room, characters) =>{
+        characterStatus[room] = characters;
+    });
+
+    setInterval(function updateCharacters(){ 
+        Object.keys(characterStatus).forEach((room) =>{
+            io.sockets.to(room).emit(
+                'updateCharacters', characterStatus[room]);
+        });
+    },1000/600);
 });
 
 const PORT = 3000;
