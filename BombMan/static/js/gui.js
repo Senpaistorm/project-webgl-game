@@ -27,7 +27,9 @@
 	Gui.prototype.onNewGame = function(gameplay) {
 		this._init();
 		this.gameplay = gameplay;
+		console.log(this.gameplay.characters);
 		this._createGameBoard(gameplay.gameboard);
+
 	};
 
 	// Called this method when player is moving along with the given vector 

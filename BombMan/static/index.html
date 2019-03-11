@@ -6,14 +6,24 @@
 	<script src="js/threejs/three.min.js"></script>
 	<script src="js/threejs/MTLLoader.js"></script>
 	<script src="js/threejs/OBJLoader.js"></script>
+	<script src="js/settings.js"></script>
 	<script src="js/gameobject.js"></script>
 	<script src="js/core.js"></script>
 	<script src="js/character.js"></script>
 	<script src="js/gameplay.js"></script>
 	<script src="js/gui.js"></script>
 	<script src="js/index.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
+	<div id ="homepage">
+		<div id="game_header">BombMan</div>
+		<div id = "username_form">
+			<span id = "username_hint">Username</span>
+			<input id = "username_input" type="text"/>
+		</div>
+		<button class = "btn" id = "play_game_btn">Play Game</button>
+	</div>
 	<div id ="world"></div>
 </body>
 </html> 

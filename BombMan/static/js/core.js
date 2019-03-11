@@ -44,7 +44,7 @@
      * Adds a player to the game and notifies the GUI about the
      * change.
      */
-	Core.prototype.addPlayer = function(character, isMainPlayer) {
+	Core.prototype.addPlayer = function(character, isMainPlayer = false) {
 		this.players.push(character);
 		this.gui.createCharacter(character);
 		if (isMainPlayer) this.setMainPlayer(character);
