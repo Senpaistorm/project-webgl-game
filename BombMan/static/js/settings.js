@@ -10,6 +10,8 @@ const UP = 87;
 const RIGHT = 68;
 const PLACEBOMB = 74;
 
+const INIT_SPEED = 5;
+
 let movementToVector = { 65: {x:-1 ,y: 0, keyDown: false}, 
 83: {x: 0, y: 1, keyDown: false},
 87: {x: 0, y:-1, keyDown: false},

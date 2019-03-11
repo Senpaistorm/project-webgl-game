@@ -33,7 +33,6 @@
 	// Called this method when player is moving along with the given vector 
 	// direction
 	Gui.prototype.changePlayerMovement = function(vector) {
-		console.log(vector);
 		if(vector.x != 0 || vector.y != 0)
 			this.playerMovement = vector;
 	}
@@ -155,13 +154,16 @@
 		if(this._hasMovement()) {
 			this.collisionBox.position.z = this.core.getMainPlayer().model.position.z + this.playerMovement.y;
 			this.collisionBox.position.x = this.core.getMainPlayer().model.position.x + this.playerMovement.x;
-			this.renderer.render(this.scene, this.camera);
+			//this.renderer.render(this.scene, this.camera);
 			
 			if(!this._collisionDetection()){
 				this.core.getMainPlayer().updatePosition(this.playerMovement);
-			} 
+			}
 		}
 
+		// for(let i = 0; i < this.core.getPlayers().length; i++){
+		// 	this.core.getPlayers()[i].updatePositionAbs();
+		// } 
 		this.renderer.render(this.scene, this.camera);
 		window.requestAnimationFrame(this._animate.bind(this));
 	}

@@ -59,13 +59,14 @@
 	}
 
 	/**
-	 * Update character position with a vector
+	 * Update character position 
 	 */
-	Core.prototype.updatePositions = function(players) {
-		let i = 0;
-		
-		for(i; i<players.length;i++){
-			this.getPlayer(players[i].name).updatePositionAbs(players[0].absoluteXPos, players[0].absoluteYPos);
+	Core.prototype.updatePositions = function(player) {
+		for(let i = 0; i < this.getPlayers().length; i++){
+
+			if(player.name == this.getPlayers()[i].name){
+				this.getPlayers()[i].updatePositionAbs(player.absoluteXPos, player.absoluteYPos);
+			}
 		}
 	};
 
@@ -109,7 +110,6 @@
 	// keyboard handler and notify gui about the change
 	Core.prototype.keyDown = function(e) {
 		let character = this.getMainPlayer();
-		console.log(character);
 		if(e.keyCode == PLACEBOMB && this.gameplay.isValidPosition(character.xPos, character.yPos)) {
 			this.gui.createBomb(character);
 			this.gameplay.placeBomb(character);
@@ -117,8 +117,6 @@
 
 		if(e.keyCode != PLACEBOMB 
 			&& movementToVector[e.keyCode].keyDown == false) {
-			console.log("move");
-
 			movementToVector[e.keyCode].keyDown = true;
 			vector.x += movementToVector[e.keyCode].x;
 			vector.y += movementToVector[e.keyCode].y;

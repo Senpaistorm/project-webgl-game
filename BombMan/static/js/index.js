@@ -40,8 +40,10 @@
 			// }
 		});
 
-		socket.on('updateCharacters', (characters) =>{
-			game.core.updatePositions(characters);
+		socket.on('updateCharacters', (character) =>{
+			if(character.name != game.core.getMainPlayer().name){
+				game.core.updatePositions(character);
+			}
 		});
 
 		socket.on('gamestart', (players, roomname) =>{
@@ -49,7 +51,7 @@
 			roomId = roomname;
 			Object.keys(players).forEach((player) =>{
 				let newChar = new app.Character(player, initPositions[i].xPos,
-					 initPositions[i].yPos, 2, 1, 1);
+					 initPositions[i].yPos, INIT_SPEED, 1, 1);
 				if(socket.id == player){
 					game.core.addPlayer(newChar, true);
 				}else{
@@ -61,13 +63,14 @@
 			gameplay = new app.Gameplay();
 			game.core.startNewGame(gameplay);
 			showGame();
-			socket.emit("gamestarted", game.core.getPlayers(), roomId);
-
-			setInterval(function updateCharacters(){ 
-				socket.emit('updateCharacters', roomId, game.core.getPlayers());
-			},1000/600);
+			socket.emit('gamestart', game.core.getPlayers(), roomId);
 		});
 
+		setInterval(function updateCharacters(){ 
+			if(game.core.getMainPlayer()){
+				socket.emit('updateCharacters', roomId, game.core.getMainPlayer());
+			}
+		},1000/30);
 		// socket.on('playerKeyup', (sid, keyCode) => {
 		// 	game.core.setStop(socket.id, keyCode);
 		// });
