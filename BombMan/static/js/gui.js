@@ -8,6 +8,9 @@
 	 * In addition, Core calls these methods to notify the Gui
  	 * when it should update its display
 	 */
+	const STARTING_X = -185.5;
+	const STARTING_Y = -120;
+	const BLOCK_SIZE = 24.2;
 
 	function Gui(core) {
 		this.core = core;
@@ -18,76 +21,67 @@
 		this.keyboardEvent = {};
 		this.collisionBox = null;
 		this.collidableMeshList = {};
+		this.playerMovement = {x:0, y:0};
 	}
 
 	Gui.prototype.onNewGame = function(gameplay) {
 		this._init();
 		this.gameplay = gameplay;
-		console.log(this.gameplay.characters);
 		this._createGameBoard(gameplay.gameboard);
-		this._createCharactor(gameplay.character);
-		gameplay.characters.forEach((character) =>{
-			this._createCharactor(character);
-		});
 	};
 
-	//Get the aboslute location of the player in an 2D array
-	Gui.prototype.getLocation = function() {
-		var x = this.gameplay.character.model.position.x;
-		var y = this.gameplay.character.model.position.z;
-		return {x: Math.floor((x + 196)/24.2), y: Math.floor((y + 130.5)/24.2)}
+	// Called this method when player is moving along with the given vector 
+	// direction
+	Gui.prototype.changePlayerMovement = function(vector) {
+		console.log(vector);
+		if(vector.x != 0 || vector.y != 0)
+			this.playerMovement = vector;
 	}
 
-	Gui.prototype.onBombPlaced = function() {
-		var location = this.getLocation()
+	Gui.prototype.createCharacter = function(character) {
+		gameobject.createCharactorModel(character.absoluteXPos, character.absoluteYPos, (mesh) => {
+			character.setModel(mesh);
+			this.scene.add(mesh);
+		});
+	}
 
-		console.log(this.gameplay.isValidPosition(location.x, location.y));
-		if(this.gameplay.isValidPosition(location.x, location.y)) {
+	Gui.prototype.createBomb = function(character) {
+		let x = character.xPos;
+		let y = character.yPos;
 
-			gameobject.createBomb(location.x, location.y, (mesh) => {
-				this.gameboardMesh[location.x][location.y] = mesh
+		if(this.gameplay.isValidPosition(x, y)) {
+			gameobject.createBomb(x, y, (mesh) => {
+				this.gameboardMesh[x][y] = mesh;
 				this.scene.add(mesh);
-			});
-
-			this.gameplay.placeBomb(location.x, location.y, (res) => {
-				this.onExplode(res);
 			});
 		}
 	}
-
-	Gui.prototype.onExplode = function(positions) {
-		let startingPoint = -185.5;
-		let startingPointy = -120;
-		let size = 24.2;
-
-		positions.blocks.forEach((block) => {
-			console.log(this.gameboardMesh[block.xPos][block.yPos]);
-
-			this.distoryMesh(this.gameboardMesh[block.xPos][block.yPos]);
-		});
-		
-		positions.bombs.forEach((bomb) => {
-			this.distoryMesh(this.gameboardMesh[bomb.xPos][bomb.yPos]);
-		});
-
-		let explosion = []
-
-		positions.expCoords.forEach((position) => {
-			gameobject.createExplosion(startingPoint + position.xPos * size, startingPointy + position.yPos * size, (mesh) => {
-				explosion.push(mesh);
-				this.scene.add(mesh);
-			});
-		});
-
-		setTimeout(() => {
-			explosion.forEach((e) => { this.scene.remove(e); });
-    	}, 200);
+	
+	/**
+	 * Destory charactor model of given character
+	 */
+	Gui.prototype.removePlayer = function(character) {
+		this.scene.remove(character.model);
 	}
 
-	Gui.prototype.distoryMesh = function(mesh) {
-		console.log(mesh);
-		this.scene.remove(mesh);
-		delete this.collidableMeshList[mesh.uuid];
+	/**
+	 * Destory everything (except ground) on the given position
+	 */
+	Gui.prototype.distoryObject = function(x, y) {
+		let mesh = this.gameboardMesh[x][y];
+
+		if(mesh) {
+			this.gameboardMesh[x][y] = null;
+			this.scene.remove(mesh);
+			delete this.collidableMeshList[mesh.uuid];
+		}
+	}
+
+	Gui.prototype.createExplosion = function(x, y) {
+		gameobject.createExplosion(STARTING_X + x * BLOCK_SIZE, STARTING_Y + y * BLOCK_SIZE, (mesh) => {
+			this.gameboardMesh[x][y] = mesh
+			this.scene.add(mesh);
+		});
 	}
 
 	Gui.prototype._init = function() {
@@ -96,29 +90,17 @@
 		this._animate();
 	};
 
-	Gui.prototype._createCharactor = function(character) {
-		console.log(`creating character ${character}`);
-		gameobject.createCharactorModel(character.absoluteXPos, character.absoluteYPos, (mesh) => {
-			character.setModel(mesh);
-			this.scene.add(mesh);
-		});
-	}
-
 	Gui.prototype._createGameBoard = function(gameboard) {
-		let startingPoint = -185.5;
-		let startingPointy = -120;
-		let size = 24.2;
-
 		this.gameboardMesh = new Array(gameboard.length);
 
 		for(let i = 0; i < gameboard.length; i ++) {
 			this.gameboardMesh[i] = new Array(gameboard[i].length);
 
 			for(let j = 0; j < gameboard[i].length; j ++) {
-				gameobject.createStandardBox(startingPoint + i * size, startingPointy + j * size, this.scene);
+				gameobject.createStandardBox(STARTING_X + i * BLOCK_SIZE, STARTING_Y + j * BLOCK_SIZE, this.scene);
 
 				if(gameboard[i][j] == 1)
-					gameobject.createNormalBlock(startingPoint + i * size, startingPointy + j * size, (mesh) => {
+					gameobject.createNormalBlock(STARTING_X + i * BLOCK_SIZE, STARTING_Y + j * BLOCK_SIZE, (mesh) => {
 						this.gameboardMesh[i][j] = mesh;
 						this.scene.add(mesh);
 						this.collidableMeshList[mesh.uuid] = mesh.children[2];
@@ -169,54 +151,21 @@
 
 	Gui.prototype._animate = function() {
 
-		if(this.keyboardEvent[87]) { //w
-
-			this.collisionBox.position.z = this.gameplay.character.model.position.z - 1;
-			this.collisionBox.position.x = this.gameplay.character.model.position.x;
-			this.gameplay.character.up();
+		//Player movement
+		if(this._hasMovement()) {
+			this.collisionBox.position.z = this.core.getMainPlayer().model.position.z + this.playerMovement.y;
+			this.collisionBox.position.x = this.core.getMainPlayer().model.position.x + this.playerMovement.x;
 			this.renderer.render(this.scene, this.camera);
-
-			if(!this._collisionDetection()) {
-				this.gameplay.character.model.position.z -= 1;
-			}
-		}
-
-		if(this.keyboardEvent[83]) { //s
-			this.collisionBox.position.z = this.gameplay.character.model.position.z + 1;
-			this.collisionBox.position.x = this.gameplay.character.model.position.x;
-			this.gameplay.character.down();
-
-			this.renderer.render(this.scene, this.camera);
-
-			if(!this._collisionDetection()) {
-				this.gameplay.character.model.position.z += 1;
-			}
-		}
-
-		if(this.keyboardEvent[65]) { //a
-			this.collisionBox.position.x = this.gameplay.character.model.position.x - 1;
-			this.collisionBox.position.z = this.gameplay.character.model.position.z;
-			this.gameplay.character.left();
-			this.renderer.render(this.scene, this.camera);
-
-			if(!this._collisionDetection()) {
-				this.gameplay.character.model.position.x -= 1;
-			}		
-		}
-
-		if(this.keyboardEvent[68]) { //d
-			this.collisionBox.position.x = this.gameplay.character.model.position.x + 1;
-			this.collisionBox.position.z = this.gameplay.character.model.position.z;
-			this.gameplay.character.right();
-			this.renderer.render(this.scene, this.camera);
-
-			if(!this._collisionDetection()) {
-				this.gameplay.character.model.position.x += 1;
-			}
+			
+			if(!this._collisionDetection()) this.core.getMainPlayer().updatePosition(this.playerMovement);
 		}
 
 		this.renderer.render(this.scene, this.camera);
 		window.requestAnimationFrame(this._animate.bind(this));
+	}
+
+	Gui.prototype._hasMovement = function() {
+		return this.playerMovement.x != 0 || this.playerMovement.y != 0;
 	}
 
 	Gui.prototype._collisionDetection = function(x, y) {
@@ -227,18 +176,13 @@
 			var localVertex = model.geometry.vertices[vertexIndex].clone();
 			var globalVertex = localVertex.applyMatrix4( model.matrix );
 			var directionVector = globalVertex.sub( model.position );
-			
 			var ray = new THREE.Raycaster( originPoint, directionVector.clone().normalize() );
-
-			console.log(ray);
 			var collisionResults = ray.intersectObjects( Object.values(this.collidableMeshList));
 
-			console.log(collisionResults);
 			if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() ) 
 				return true;
 		}
 
-		console.log("FALSE");
 		return false;
 	}
 

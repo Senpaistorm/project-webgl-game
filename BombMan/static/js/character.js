@@ -22,6 +22,17 @@
 		this.model = mesh;
 	}
 
+	Character.prototype.updatePosition = function(vector) {
+		this.absoluteXPos += vector.x;
+		this.absoluteYPos += vector.y;
+
+		this.model.position.x += vector.x;
+		this.model.position.z += vector.y;
+
+		this.xPos = Math.floor((this.absoluteXPos + 196)/24.2);
+		this.yPos = Math.floor((this.absoluteYPos + 130.5)/24.2);
+	}
+
 	Character.prototype.left = function() {
 		if(this.model != null)
 			this.model.rotation.y = -Math.PI/2;
