@@ -6,9 +6,15 @@
 		function BombMan() {
 			this.core = new app.Core();
 			this.gui = new app.Gui(this.core);
-			this.characters = [];
-			this.core.addGameListener(this.gui);
+			this.core.addGameGui(this.gui);
 		}
+
+		// var game = new BombMan();
+  //   	var gameplay = new app.Gameplay();
+		// game.core.startNewGame(gameplay);
+		// game.core.addPlayer(new app.Character('mainPlayer', 0, 0, 2, 1, 1), true);
+		// game.core.addPlayer(new app.Character('otherPlayer', 0, 0, 2, 1, 1));
+
 
 		let showGame = () =>{
 			document.getElementById('homepage').style.display = "none";
@@ -24,24 +30,23 @@
 		var gameplay;
 		hideGame();
 
-		window.addEventListener('keydown', function(e){
-			game.gui.keyboardEvent[e.keyCode] = true;
-			if(roomId){
-				socket.emit('playerKeydown', {room:roomId, keyCode:e.keyCode});
-			}
-			if(e.keyCode == 74) game.gui.onBombPlaced();
-		});
-
-		window.addEventListener('keyup', function(e) {
-			if(roomId){
-				socket.emit('playerKeyup', {room:roomId, keyCode:e.keyCode});
-			}
-			game.gui.keyboardEvent[e.keyCode] = false;
-		});
-
 		let socket = io();
 		let roomId = null;
 		// initial positions for 4 players
+
+		window.addEventListener('keydown', function(e){
+			if(roomId){
+				socket.emit('playerKeydown', {room:roomId, keyCode:e.keyCode});
+			}
+			if(game.core.isValidKey(e.keyCode) && game.core.getMainPlayer()) game.core.keyDown(e);
+		});
+
+		window,addEventListener('keyup', function(e) {
+			if(roomId){
+				socket.emit('playerKeyup', {room:roomId, keyCode:e.keyCode});
+			}
+			if(game.core.isValidKey(e.keyCode) && game.core.getMainPlayer()) game.core.keyUp(e);
+		});
 
 		socket.on('gamestart', (players, roomname) =>{
 			console.log(players);
@@ -52,15 +57,14 @@
 				let newChar = new app.Character(player, initPositions[i].xPos,
 					 initPositions[i].yPos, 2, 1, 1);
 				if(socket.id == player){
-					myChar =  newChar;
+					game.core.addPlayer(newChar, true);
 				}else{
-					game.characters.push(newChar);
+					game.core.addPlayer(newChar)
 				}
 				i++;
 			});
-			console.log(myChar);
-			console.log(game.characters);
-			gameplay = new app.Gameplay(myChar, game.characters);
+
+			gameplay = new app.Gameplay();
 			game.core.startNewGame(gameplay);
 			showGame();
 		});

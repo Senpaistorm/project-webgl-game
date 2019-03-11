@@ -30,13 +30,10 @@
 		};
 	};
 
-
-	function Gameplay(character, characters) {
+	function Gameplay() {
 		this.gameboard = emptyGameboard();
 		this.gameboard = defaultGameboard(this.gameboard);
-		// initialize a character
-		this.character = character;
-		this.characters = characters;
+
 		// all the bombs this character currently is placing
 		this.bombs = [];
 		// power up items
@@ -46,47 +43,25 @@
 			return x >= 0 && x < GAMEBOARD_SIZE && y >= 0 && y < GAMEBOARD_SIZE && unOccupied(this.gameboard[x][y]);
 		};
 
-		this.left = () => {
-			let x = this.character.xPos, y = this.character.yPos;
-			if (this.character.xPos > 0 && unOccupied(this.gameboard[x-1][y])){
-				this.character.xPos--;
-			}
-		};
+		// this.canPlaceBomb = () => {
+		// 	return this.bombs.length < this.character.load;
+		// };
 
-		this.right = () =>{
-			let x = this.character.xPos, y = this.character.yPos;
-			this.character.isMoveingRight = true;
+		// check if any player hit by the boom
+		this.checkPlayerHit = (areaAffected, players) => {
+			console.log(players);
 
-			if (this.character.xPos < GAMEBOARD_SIZE && unOccupied(this.gameboard[y][x+1])){
-				this.character.xPos++;
-			}
-		};
+			areaAffected.forEach((explodeArea) => {
+				players.forEach((player) => {
+					if (player.xPos == explodeArea.xPos && player.yPos == explodeArea.yPos) 
+						this.core.removePlayer(player.name);
+				});
+			});
+		}
 
-		this.up = () =>{
-			let x = this.character.xPos, y = this.character.yPos;
-			this.character.isMoveingUp = true;
-
-			if (this.character.yPos > 0 && unOccupied(this.gameboard[y-1][x])){
-				this.character.yPos--;
-			}
-		};
-
-		this.down = () => {
-			let x = this.character.xPos, y = this.character.yPos;
-			this.character.isMovingDown = true;
-
-			if (this.character.yPos < GAMEBOARD_SIZE && unOccupied(this.gameboard[y+1][x])){
-				this.character.yPos++;
-			}
-		};
-
-
-		this.canPlaceBomb = () => {
-			return this.bombs.length < this.character.load;
-		};
-
-		this.placeBomb = async (x, y, callback) => {
-			let myBomb = bomb(x, y, this.character.power);
+		this.placeBomb = async (character, callback) => {
+			let x = character.xPos, y = character.yPos
+			let myBomb = bomb(x, y, character.power);
 			this.gameboard[x][y] = BOMB;
 			this.bombs.push(myBomb);
 			let res;
@@ -101,8 +76,7 @@
 			await promise;
 			// explode bomb if it still exists
 			res = this.bombExists(myBomb) ? this.explodeBomb(myBomb) : null;
-			if(res) callback(res);
-			//this.destroyBomb(myBomb);
+			if(res)	this.core.explode(res.expCoords);
 		}
 
 		this.explodeBomb = (bombExplode) => {
@@ -217,6 +191,9 @@
 			return false;
 		};
 
+		this.register = (core) => {
+			this.core = core;
+		}
 	}
 	
 	let unOccupied = (block) => {
