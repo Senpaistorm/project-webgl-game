@@ -28,6 +28,10 @@
 		this._init();
 		this.gameplay = gameplay;
 		this._createGameBoard(gameplay.gameboard);
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	};
 
 	// Called this method when player is moving along with the given vector 
@@ -153,6 +157,7 @@
 
 		//Player movement
 		if(this._hasMovement()) {
+			console.log(this.core.getMainPlayer());
 			this.collisionBox.position.z = this.core.getMainPlayer().model.position.z + this.playerMovement.y;
 			this.collisionBox.position.x = this.core.getMainPlayer().model.position.x + this.playerMovement.x;
 			this.renderer.render(this.scene, this.camera);

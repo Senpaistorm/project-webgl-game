@@ -23,8 +23,10 @@
 	}
 
 	Character.prototype.updatePosition = function(vector) {
+
 		this.absoluteXPos += vector.x;
 		this.absoluteYPos += vector.y;
+		console.log("position update" + this.absoluteXPos+ " " + this.absoluteYPos + " " + vector);
 
 		this.model.position.x += vector.x;
 		this.model.position.z += vector.y;

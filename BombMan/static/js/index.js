@@ -6,7 +6,6 @@
 		function BombMan() {
 			this.core = new app.Core();
 			this.gui = new app.Gui(this.core);
-			this.characters = [];
 			this.core.addGameGui(this.gui);
 		}
 
@@ -24,12 +23,9 @@
 		var gameplay;
 		hideGame();
 
-		window.addEventListener('keyup', function(e) {
-			if(roomId){
-				socket.emit('playerKeyup', {room:roomId, keyCode:e.keyCode});
-			}
-			if(game.core.isValidKey(e.keyCode) && game.core.getMainPlayer()) game.core.keyUp(e);
-		});
+		let socket = io();
+		let roomId = null;
+		// initial positions for 4 players
 
 		window.addEventListener('keydown', function(e){
 			if(roomId){
@@ -38,16 +34,16 @@
 			if(game.core.isValidKey(e.keyCode) && game.core.getMainPlayer()) game.core.keyDown(e);
 		});
 
-
-
-		let socket = io();
-		let roomId = null;
-		// initial positions for 4 players
+		window,addEventListener('keyup', function(e) {
+			if(roomId){
+				socket.emit('playerKeyup', {room:roomId, keyCode:e.keyCode});
+			}
+			if(game.core.isValidKey(e.keyCode) && game.core.getMainPlayer()) game.core.keyUp(e);
+		});
 
 		socket.on('gamestart', (players, roomname) =>{
 			console.log(players);
 			let i = 0;
-			let myChar;
 			roomId = roomname;
 			Object.keys(players).forEach((player) =>{
 				let newChar = new app.Character(player, initPositions[i].xPos,
@@ -55,12 +51,11 @@
 				if(socket.id == player){
 					game.core.addPlayer(newChar, true);
 				}else{
-					game.core.addPlayer(newChar);
+					game.core.addPlayer(newChar)
 				}
 				i++;
 			});
-			console.log(myChar);
-			console.log(game.characters);
+
 			gameplay = new app.Gameplay();
 			game.core.startNewGame(gameplay);
 			showGame();
