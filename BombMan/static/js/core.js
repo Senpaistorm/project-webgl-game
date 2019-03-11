@@ -105,6 +105,7 @@
 	// keyboard handler and notify gui about the change
 	Core.prototype.keyDown = function(e) {
 		let character = this.getMainPlayer();
+		console.log(character);
 		if(e.keyCode == PLACEBOMB && this.gameplay.isValidPosition(character.xPos, character.yPos)) {
 			this.gui.createBomb(character);
 			this.gameplay.placeBomb(character);
@@ -112,6 +113,7 @@
 
 		if(e.keyCode != PLACEBOMB 
 			&& movementToVector[e.keyCode].keyDown == false) {
+			console.log("move");
 
 			movementToVector[e.keyCode].keyDown = true;
 			vector.x += movementToVector[e.keyCode].x;

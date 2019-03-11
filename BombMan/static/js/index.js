@@ -9,11 +9,11 @@
 			this.core.addGameGui(this.gui);
 		}
 
-		var game = new BombMan();
-    	var gameplay = new app.Gameplay();
-		game.core.startNewGame(gameplay);
-		game.core.addPlayer(new app.Character('mainPlayer', 0, 0, 2, 1, 1), true);
-		game.core.addPlayer(new app.Character('otherPlayer', 0, 0, 2, 1, 1));
+		// var game = new BombMan();
+  //   	var gameplay = new app.Gameplay();
+		// game.core.startNewGame(gameplay);
+		// game.core.addPlayer(new app.Character('mainPlayer', 0, 0, 2, 1, 1), true);
+		// game.core.addPlayer(new app.Character('otherPlayer', 0, 0, 2, 1, 1));
 
 
 		let showGame = () =>{
@@ -57,19 +57,14 @@
 				let newChar = new app.Character(player, initPositions[i].xPos,
 					 initPositions[i].yPos, 2, 1, 1);
 				if(socket.id == player){
-					myChar = newChar;
+					game.core.addPlayer(newChar, true);
 				}else{
 					game.core.addPlayer(newChar)
 				}
 				i++;
 			});
 
-
-			game.core.addPlayer(myChar, true);
 			gameplay = new app.Gameplay();
-
-			console.log(game.core.getPlayers());
-
 			game.core.startNewGame(gameplay);
 			showGame();
 		});
