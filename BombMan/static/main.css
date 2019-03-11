@@ -5,3 +5,17 @@
 	overflow: hidden;
 	background: linear-gradient(#e4e0ba, #f7d9aa);
 }
+
+#play_game_btn{
+	cursor: pointer;
+	background: transparent;
+	width: 200px;
+	height: 100px;
+	border-radius: 10px;
+	background-color: blue;
+	color: white;
+	border: none;
+}
+#play_game_btn:hover {
+	box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+}

@@ -9,13 +9,6 @@
 			this.core.addGameGui(this.gui);
 		}
 
-		// var game = new BombMan();
-  //   	var gameplay = new app.Gameplay();
-		// game.core.startNewGame(gameplay);
-		// game.core.addPlayer(new app.Character('mainPlayer', 0, 0, 2, 1, 1), true);
-		// game.core.addPlayer(new app.Character('otherPlayer', 0, 0, 2, 1, 1));
-
-
 		let showGame = () =>{
 			document.getElementById('homepage').style.display = "none";
 			document.getElementById('world').style.display = "block";
@@ -30,36 +23,38 @@
 		var gameplay;
 		hideGame();
 
-		let socket = io();
 		let roomId = null;
 		// initial positions for 4 players
 
 		window.addEventListener('keydown', function(e){
-			if(roomId){
-				socket.emit('playerKeydown', {room:roomId, keyCode:e.keyCode});
+			if(isValidKey(e.keyCode) && game.core.getMainPlayer()){
+				game.core.keyDown(e);
+				if(e.keyCode == PLACEBOMB){
+					socket.emit('placeBomb', roomId, game.core.getMainPlayer());
+				}
 			}
-			if(game.core.isValidKey(e.keyCode) && game.core.getMainPlayer()) game.core.keyDown(e);
 		});
 
 		window,addEventListener('keyup', function(e) {
-			if(roomId){
-				socket.emit('playerKeyup', {room:roomId, keyCode:e.keyCode});
+			if(isValidKey(e.keyCode) && game.core.getMainPlayer()) game.core.keyUp(e);
+		});
+
+		socket.on('updateCharacters', (character) =>{
+			if(!game.core.getMainPlayer() || game.core.getMainPlayer().name != character.name){
+				game.core.updatePositions(character);
 			}
-			if(game.core.isValidKey(e.keyCode) && game.core.getMainPlayer()) game.core.keyUp(e);
 		});
 
 		socket.on('gamestart', (players, roomname) =>{
-			console.log(players);
 			let i = 0;
-			let myChar;
 			roomId = roomname;
 			Object.keys(players).forEach((player) =>{
 				let newChar = new app.Character(player, initPositions[i].xPos,
-					 initPositions[i].yPos, 2, 1, 1);
+					 initPositions[i].yPos, INIT_SPEED, 1, 1);
 				if(socket.id == player){
 					game.core.addPlayer(newChar, true);
 				}else{
-					game.core.addPlayer(newChar)
+					game.core.addPlayer(newChar);
 				}
 				i++;
 			});
@@ -69,12 +64,17 @@
 			showGame();
 		});
 
-		socket.on('playerKeyup', (keyData) => {
-			console.log(keyData);
-		});
+		setInterval(function updateCharacters(){ 
+			if(game.core.getMainPlayer()){
+				socket.emit('updateCharacters', roomId, game.core.getMainPlayer());
+			}
+		},1000/60);
 
-		socket.on('playerKeydown', (keyData) => {
-			console.log(keyData);
+		socket.on('placeBomb', (character) => {
+			if(!game.core.getMainPlayer() || game.core.getMainPlayer().name != character.name){
+				game.core.gui.createBomb(character);
+				game.core.gameplay.placeBomb(character);
+			}
 		});
 
 		document.getElementById('play_game_btn').addEventListener('click', async ()=>{
@@ -87,5 +87,7 @@
 			// stay in queue for some seconds, then resolve
 			socket.emit('resolveQueue', socket.id);
 		});
+
+		//setInterval(refreshQueueMsg(),500);
 	});
 })();

@@ -16,7 +16,7 @@
 		this.core = core;
 		this.scene = new THREE.Scene();
 		this.camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 1, 10000);
-		this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+		this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
 		this.container = document.getElementById('world');
 		this.keyboardEvent = {};
 		this.collisionBox = null;
@@ -27,15 +27,12 @@
 	Gui.prototype.onNewGame = function(gameplay) {
 		this._init();
 		this.gameplay = gameplay;
-		console.log(this.gameplay.characters);
 		this._createGameBoard(gameplay.gameboard);
-
 	};
 
 	// Called this method when player is moving along with the given vector 
 	// direction
 	Gui.prototype.changePlayerMovement = function(vector) {
-		console.log(vector);
 		if(vector.x != 0 || vector.y != 0)
 			this.playerMovement = vector;
 	}
@@ -155,12 +152,13 @@
 
 		//Player movement
 		if(this._hasMovement()) {
-			console.log(this.core.getMainPlayer());
 			this.collisionBox.position.z = this.core.getMainPlayer().model.position.z + this.playerMovement.y;
 			this.collisionBox.position.x = this.core.getMainPlayer().model.position.x + this.playerMovement.x;
-			this.renderer.render(this.scene, this.camera);
+			//this.renderer.render(this.scene, this.camera);
 			
-			if(!this._collisionDetection()) this.core.getMainPlayer().updatePosition(this.playerMovement);
+			if(!this._collisionDetection()){
+				this.core.getMainPlayer().updatePosition(this.playerMovement);
+			}
 		}
 
 		this.renderer.render(this.scene, this.camera);

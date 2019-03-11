@@ -406,8 +406,6 @@ THREE.OBJLoader = ( function () {
 
 		parse: function ( text ) {
 
-			console.time( 'OBJLoader' );
-
 			var state = new ParserState();
 
 			if ( text.indexOf( '\r\n' ) !== - 1 ) {

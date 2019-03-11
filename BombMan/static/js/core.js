@@ -5,16 +5,6 @@
  	 * The interface by which gameplay can directly interact with the game
  	 * framework.
  	 */
-	const LEFT = 65;
-	const DOWN = 83;
-	const UP = 87;
-	const RIGHT = 68;
-	const PLACEBOMB = 74;
-
-	let movementToVector = { 65: {x:-1 ,y: 0, keyDown: false}, 
-						     83: {x: 0, y: 1, keyDown: false},
-						     87: {x: 0, y:-1, keyDown: false},
-						     68: {x: 1, y: 0, keyDown: false}};
 
 	let vector = {x:0, y:0};
 
@@ -45,9 +35,9 @@
      * change.
      */
 	Core.prototype.addPlayer = function(character, isMainPlayer = false) {
-		this.players.push(character);
 		this.gui.createCharacter(character);
 		if (isMainPlayer) this.setMainPlayer(character);
+		this.players.push(character);
 	}
 
 	/**
@@ -64,6 +54,17 @@
 		return this.mainPlayer;
 	}
 
+	/**
+	 * Update character position 
+	 */
+	Core.prototype.updatePositions = function(player) {
+		for(let i = 0; i < this.getPlayers().length; i++){
+			if(player.name == this.getPlayers()[i].name){
+				this.getPlayers()[i].updatePositionAbs(player.absoluteXPos, player.absoluteYPos);
+				return;
+			}
+		}
+	};
 
 	/**
      * Removes a player from the game and notifies the GUI about the
@@ -105,7 +106,6 @@
 	// keyboard handler and notify gui about the change
 	Core.prototype.keyDown = function(e) {
 		let character = this.getMainPlayer();
-		console.log(character);
 		if(e.keyCode == PLACEBOMB && this.gameplay.isValidPosition(character.xPos, character.yPos)) {
 			this.gui.createBomb(character);
 			this.gameplay.placeBomb(character);
@@ -113,8 +113,6 @@
 
 		if(e.keyCode != PLACEBOMB 
 			&& movementToVector[e.keyCode].keyDown == false) {
-			console.log("move");
-
 			movementToVector[e.keyCode].keyDown = true;
 			vector.x += movementToVector[e.keyCode].x;
 			vector.y += movementToVector[e.keyCode].y;
@@ -130,10 +128,6 @@
 			vector.y -= movementToVector[e.keyCode].y;
 			this.gui.changePlayerMovement(vector);
 		}
-	}
-
-	Core.prototype.isValidKey = function(keyCode) {
-		return keyCode == UP || keyCode == DOWN || keyCode == LEFT || keyCode == RIGHT || keyCode == PLACEBOMB; 
 	}
 
     // Export to window

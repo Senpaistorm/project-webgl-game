@@ -14,16 +14,18 @@
 	<script src="js/gui.js"></script>
 	<script src="js/index.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
+	<script>let socket = io();</script>
 </head>
 <body>
 	<div id ="homepage">
 		<div id="game_header">BombMan</div>
 		<div id = "username_form">
-			<span id = "username_hint">Username</span>
-			<input id = "username_input" type="text"/>
+			<!-- <span id = "username_hint">Username</span>
+			<input id = "username_input" type="text"/> -->
 		</div>
 		<button class = "btn" id = "play_game_btn">Play Game</button>
 	</div>
+	<div id = "queue_msg"></div>
 	<div id ="world"></div>
 </body>
 </html> 
