@@ -78,9 +78,9 @@ io.on('connection', function(socket) {
     //     }
     // });
 
-    // socket.on('playerKeydown', (roomId, keyCode) =>{
-    //     io.sockets.to(roomId).emit('playerKeydown', socket.id, keyCode);
-    // });
+    socket.on('placeBomb', (roomId, player) =>{
+        io.sockets.to(roomId).emit('placeBomb', player);
+    });
 
     // socket.on('playerKeyup', (roomId, keyCode) =>{
     //     io.sockets.to(roomId).emit('playerKeyup', socket.id, keyCode);
@@ -97,13 +97,6 @@ io.on('connection', function(socket) {
         io.sockets.to(room).emit(
             'updateCharacters', characterStatus[character.name]);
     });
-
-    // setInterval(function updateCharacters(){ 
-    //     Object.keys(characterStatus).forEach((name) =>{
-    //         io.sockets.to(nameToRoom[name]).emit(
-    //             'updateCharacters', characterStatus[name]);
-    //     });
-    // },1000);
 });
 
 const PORT = 3000;

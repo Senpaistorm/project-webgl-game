@@ -54,18 +54,14 @@
 		return this.mainPlayer;
 	}
 
-	Core.prototype.getPlayer = function(name){
-		return this.players.find(x => x.name === name);
-	}
-
 	/**
 	 * Update character position 
 	 */
 	Core.prototype.updatePositions = function(player) {
 		for(let i = 0; i < this.getPlayers().length; i++){
-
 			if(player.name == this.getPlayers()[i].name){
 				this.getPlayers()[i].updatePositionAbs(player.absoluteXPos, player.absoluteYPos);
+				return;
 			}
 		}
 	};

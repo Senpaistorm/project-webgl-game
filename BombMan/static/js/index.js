@@ -27,21 +27,20 @@
 		// initial positions for 4 players
 
 		window.addEventListener('keydown', function(e){
-			if(isValidKey(e.keyCode) && game.core.getMainPlayer()) game.core.keyDown(e);
-			// if(roomId && game.gui._hasMovement()){
-			// 	socket.emit('playerKeydown', roomId, e.keyCode);
-			// }
+			if(isValidKey(e.keyCode) && game.core.getMainPlayer()){
+				game.core.keyDown(e);
+				if(e.keyCode == PLACEBOMB){
+					socket.emit('placeBomb', roomId, game.core.getMainPlayer());
+				}
+			}
 		});
 
 		window,addEventListener('keyup', function(e) {
 			if(isValidKey(e.keyCode) && game.core.getMainPlayer()) game.core.keyUp(e);
-			// if(roomId){
-			// 	socket.emit('playerKeyup', roomId, e.keyCode);
-			// }
 		});
 
 		socket.on('updateCharacters', (character) =>{
-			if(character.name != game.core.getMainPlayer().name){
+			if(!game.core.getMainPlayer() || game.core.getMainPlayer().name != character.name){
 				game.core.updatePositions(character);
 			}
 		});
@@ -70,14 +69,17 @@
 			if(game.core.getMainPlayer()){
 				socket.emit('updateCharacters', roomId, game.core.getMainPlayer());
 			}
-		},1000/30);
+		},1000/40);
 		// socket.on('playerKeyup', (sid, keyCode) => {
 		// 	game.core.setStop(socket.id, keyCode);
 		// });
 
-		// socket.on('playerKeydown', (sid, keyCode) => {
-		// 	game.core.setMovement(socket.id, keyCode);
-		// });
+		socket.on('placeBomb', (character) => {
+			if(!game.core.getMainPlayer() || game.core.getMainPlayer().name != character.name){
+				game.core.gui.createBomb(character);
+				game.core.gameplay.placeBomb(character);
+			}
+		});
 
 		document.getElementById('play_game_btn').addEventListener('click', async ()=>{
 			// notify server to enqueue player
