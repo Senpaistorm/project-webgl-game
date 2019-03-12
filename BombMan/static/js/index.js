@@ -9,22 +9,10 @@
 			this.core.addGameGui(this.gui);
 		}
 
-		let showGame = () =>{
-			document.getElementById('homepage').style.display = "none";
-			document.getElementById('world').style.display = "block";
-		}
-
-		let hideGame = () =>{
-			document.getElementById('homepage').style.display = "block";
-			document.getElementById('world').style.display = "none";
-		}
-
 		var game = new BombMan();
 		var gameplay;
 		hideGame();
-
 		let roomId = null;
-		// initial positions for 4 players
 
 		window.addEventListener('keydown', function(e){
 			if(isValidKey(e.keyCode) && game.core.getMainPlayer()){
@@ -39,12 +27,14 @@
 			if(isValidKey(e.keyCode) && game.core.getMainPlayer()) game.core.keyUp(e);
 		});
 
+		// socket handler for updating character position
 		socket.on('updateCharacters', (character) =>{
 			if(!game.core.getMainPlayer() || game.core.getMainPlayer().name != character.name){
 				game.core.updatePositions(character);
 			}
 		});
 
+		// socket handler for starting a game
 		socket.on('gamestart', (players, roomname) =>{
 			let i = 0;
 			roomId = roomname;
@@ -64,12 +54,7 @@
 			showGame();
 		});
 
-		setInterval(function updateCharacters(){ 
-			if(game.core.getMainPlayer()){
-				socket.emit('updateCharacters', roomId, game.core.getMainPlayer());
-			}
-		},1000/60);
-
+		// socket handler for bombs being placed
 		socket.on('placeBomb', (character) => {
 			if(!game.core.getMainPlayer() || game.core.getMainPlayer().name != character.name){
 				game.core.gui.createBomb(character);
@@ -81,13 +66,30 @@
 			// notify server to enqueue player
 			socket.emit('enqueuePlayer');
 			let promise = new Promise((resolve, reject) =>{
-				setTimeout(() => {resolve("done");},3000);
+				setTimeout(() => {resolve("done");},6000);
 			});
 			await promise;
 			// stay in queue for some seconds, then resolve
-			socket.emit('resolveQueue', socket.id);
+			if(!roomId)	socket.emit('resolveQueue', socket.id);
 		});
 
+		// send to the server information about main player on this client
+		setInterval(function updateCharacters(){ 
+			if(game.core.getMainPlayer()){
+				socket.emit('updateCharacters', roomId, game.core.getMainPlayer());
+			}
+		},1000/60);
 		//setInterval(refreshQueueMsg(),500);
 	});
+
+
+	let showGame = () =>{
+		document.getElementById('homepage').style.display = "none";
+		document.getElementById('world').style.display = "block";
+	}
+
+	let hideGame = () =>{
+		document.getElementById('homepage').style.display = "block";
+		document.getElementById('world').style.display = "none";
+	}
 })();
