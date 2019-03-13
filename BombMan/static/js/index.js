@@ -72,7 +72,7 @@
 			await promise;
 			// stay in queue for some seconds, then resolve
 			if(!roomId)	socket.emit('resolveQueue', socket.id);
-			setNoGameFoundMsg();
+			if(!roomId) setNoGameFoundMsg();
 		});
 
 		// send to the server information about main player on this client
@@ -81,7 +81,7 @@
 				socket.emit('updateCharacters', roomId, game.core.getMainPlayer());
 			}
 		},1000/60);
-		//setInterval(refreshQueueMsg(),500);
+
 	});
 
 
