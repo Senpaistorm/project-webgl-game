@@ -65,12 +65,14 @@
 		document.getElementById('play_game_btn').addEventListener('click', async ()=>{
 			// notify server to enqueue player
 			socket.emit('enqueuePlayer');
+			setQueueMsg();
 			let promise = new Promise((resolve, reject) =>{
 				setTimeout(() => {resolve("done");},6000);
 			});
 			await promise;
 			// stay in queue for some seconds, then resolve
 			if(!roomId)	socket.emit('resolveQueue', socket.id);
+			setNoGameFoundMsg();
 		});
 
 		// send to the server information about main player on this client
@@ -92,4 +94,20 @@
 		document.getElementById('homepage').style.display = "block";
 		document.getElementById('world').style.display = "none";
 	}
+
+	let setQueueMsg = () => {
+		let msg = document.getElementById('queue_msg');
+		msg.innerHTML = `
+		Looking for players <div class="loader"></div>
+		`;
+	}
+
+	let setNoGameFoundMsg = () => {
+		let msg = document.getElementById('queue_msg');
+		msg.innerHTML = `
+		<div id="game_not_found">No games were found. Please try again later</div>
+		`;
+	}
+
+
 })();
