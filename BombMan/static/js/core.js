@@ -114,18 +114,22 @@
 		if(e.keyCode != PLACEBOMB 
 			&& movementToVector[e.keyCode].keyDown == false) {
 			movementToVector[e.keyCode].keyDown = true;
-			vector.x += movementToVector[e.keyCode].x;
-			vector.y += movementToVector[e.keyCode].y;
+			vector.x += movementToVector[e.keyCode].x * character.speed;
+			vector.y += movementToVector[e.keyCode].y * character.speed;
+
+			console.log(vector.x, vector.y);
 			//A vector represents the player's movement
 			this.gui.changePlayerMovement(vector);
 		}
 	}
 
 	Core.prototype.keyUp = function(e) {
+	    let character = this.getMainPlayer();
+
 		if (e.keyCode != PLACEBOMB && this.getMainPlayer()) {
 			movementToVector[e.keyCode].keyDown = false;
-			vector.x -= movementToVector[e.keyCode].x;
-			vector.y -= movementToVector[e.keyCode].y;
+			vector.x -= movementToVector[e.keyCode].x * character.speed;
+			vector.y -= movementToVector[e.keyCode].y * character.speed;
 			this.gui.changePlayerMovement(vector);
 		}
 	}

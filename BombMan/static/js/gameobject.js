@@ -27,7 +27,7 @@ let gameobject = (function() {
 	}
 
 	//TODO: Change the scene to callback
-	module.createStandardBox = function(x, y, scene) {
+	module.createStandardBox = function(x, y,  callback) {
 		var mtlLoader = new THREE.MTLLoader();
 		mtlLoader.load("./media/models/grass.mtl", function(materials){
 			
@@ -36,9 +36,11 @@ let gameobject = (function() {
 			objLoader.setMaterials(materials);
 			
 			objLoader.load("./media/models/grass.obj", function(mesh){
-				scene.add(mesh);
 				mesh.position.set(x, 0, y);
 				mesh.scale.set(3,3,3);
+				mesh.matrixAutoUpdate = false;
+				mesh.updateMatrix();
+				callback(mesh);
 			});
 			
 		});
@@ -49,6 +51,8 @@ let gameobject = (function() {
 		var wireMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe:true } );
 		var box = new THREE.Mesh( cubeGeometry, wireMaterial );
 		box.position.set(x, 10, y);
+		box.matrixAutoUpdate = false;
+		box.updateMatrix();
 		callback(box);
 	}
 
@@ -77,6 +81,8 @@ let gameobject = (function() {
 
 				mesh.children.push(collision);
     			mesh.scale.set(23,23,23);
+    			mesh.matrixAutoUpdate = false;
+				mesh.updateMatrix();
     			callback(mesh);
 			});
 			
@@ -89,6 +95,9 @@ let gameobject = (function() {
 		var bomb = new THREE.Mesh(sphere, sphereMaterial);
 
 		bomb.position.set(-185.5 + x * 24.2, 5, -120 + y * 24.2);
+
+		bomb.matrixAutoUpdate = false;
+		bomb.updateMatrix();
 		callback(bomb);
 	}
 

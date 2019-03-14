@@ -26,5 +26,6 @@ let movementToVector = { 65: {x:-1 ,y: 0, keyDown: false},
 let isValidKey = function(keyCode) {
     return keyCode == UP || keyCode == DOWN || keyCode == LEFT || keyCode == RIGHT || keyCode == PLACEBOMB; 
 }
+
 let initPositions = [{xPos: 0, yPos:0}, {xPos:14, yPos:0},
     {xPos:0, yPos:14}, {xPos:14, yPos:14}];
