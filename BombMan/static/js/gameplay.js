@@ -59,8 +59,9 @@
 			});
 		}
 
-		this.placeBomb = async (character, callback) => {
-			let x = character.xPos, y = character.yPos
+		this.placeBomb = async (character) => {
+			let x = character.xPos, y = character.yPos;
+			if(!this.isValidPosition(x,y)) return null;
 			let myBomb = bomb(x, y, character.power);
 			this.gameboard[x][y] = BOMB;
 			this.bombs.push(myBomb);
