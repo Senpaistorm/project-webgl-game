@@ -156,7 +156,7 @@
 	Gui.prototype._animate = function() {
 
 		//Player movement
-		if(this._hasMovement()) {
+		if(this._hasMovement() && this.core.getMainPlayer()) {
 			this.collisionBox.position.z = this.core.getMainPlayer().model.position.z + this.playerMovement.y;
 			this.collisionBox.position.x = this.core.getMainPlayer().model.position.x + this.playerMovement.x;
 			this.renderer.render(this.scene, this.camera);

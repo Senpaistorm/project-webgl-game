@@ -14,9 +14,10 @@ const PLACEBOMB = 74;
 // initial speed of the characters
 const INIT_SPEED = 5;
 // powerup items
-const POWER_ITEM = 0;
-const SPEED_ITEM = 1;
-const BOMB_ITEM = 2;
+const POWER_ITEM = 1;
+const SPEED_ITEM = 2;
+const BOMB_ITEM = 3;
+const ITEM_PROC_RATE = 0.5;
 
 let movementToVector = { 65: {x:-1 ,y: 0, keyDown: false}, 
 83: {x: 0, y: 1, keyDown: false},
