@@ -14,14 +14,6 @@
 		};
 	};
 
-	let item = function(x, y, itemType){
-		return{
-			xPos: x,
-			yPos: y,
-			type: itemType,
-		};
-	};
-
 	let coord = function(x, y, type){
 		return{
 			xPos: x,
@@ -37,7 +29,7 @@
 		// all the bombs this character currently is placing
 		this.bombs = [];
 		// power up items
-		this.items = [];
+		this.items = setRandomItems(this.gameboard);
 
 		this.isValidPosition = (x, y) => {
 			return x >= 0 && x < GAMEBOARD_SIZE && y >= 0 && y < GAMEBOARD_SIZE && unOccupied(this.gameboard[x][y]);
@@ -59,8 +51,9 @@
 			});
 		}
 
-		this.placeBomb = async (character, callback) => {
-			let x = character.xPos, y = character.yPos
+		this.placeBomb = async (character) => {
+			let x = character.xPos, y = character.yPos;
+			if(!this.isValidPosition(x,y)) return null;
 			let myBomb = bomb(x, y, character.power);
 			this.gameboard[x][y] = BOMB;
 			this.bombs.push(myBomb);
@@ -213,23 +206,40 @@
 	}
 
 	function defaultGameboard(gameboard){
-		gameboard =     [[0,0,1,1,1,1,1,1,1,1,1,1,1,0,0],
+		gameboard = [[0,0,1,1,1,1,1,1,1,1,1,1,1,0,0],
                      [0,0,1,1,1,0,0,0,0,0,1,1,1,0,0],
                      [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
+                     [1,1,1,1,1,0,0,2,0,0,1,1,1,1,1],
                      [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
-                     [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
-                     [1,1,1,0,0,0,0,0,0,0,0,0,1,1,1],
+                     [1,1,1,0,0,2,0,2,0,2,0,0,1,1,1],
                      [1,1,1,0,0,0,1,1,1,0,0,0,1,1,1],
+                     [1,1,1,2,0,2,1,1,1,2,0,2,1,1,1],
                      [1,1,1,0,0,0,1,1,1,0,0,0,1,1,1],
-                     [1,1,1,0,0,0,1,1,1,0,0,0,1,1,1],
-                     [1,1,1,0,0,0,0,0,0,0,0,0,1,1,1],
+                     [1,1,1,0,0,2,0,2,0,2,0,0,1,1,1],
                      [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
-                     [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
+                     [1,1,1,1,1,0,0,2,0,0,1,1,1,1,1],
                      [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
                      [0,0,1,1,1,0,0,0,0,0,1,1,1,0,0],
                      [0,0,1,1,1,1,1,1,1,1,1,1,1,0,0]];
 		return gameboard;
 	}
+
+	function setRandomItems(gameboard){
+		let res = [];
+		for(let i = 0; i < GAMEBOARD_SIZE; i++){
+			let arr = [];
+			for (var j = 0; j < GAMEBOARD_SIZE; j++){
+				if(Math.random() > ITEM_PROC_RATE && gameboard[i][j]){
+					arr.push(Math.floor(Math.random() * 3 + 1));
+				}else{
+					arr.push(0);
+				}
+			}
+			res.push(arr);
+		}
+		return res;
+	}
+
 
 	function removeDupCoords(coords) {
 		let unique = {};

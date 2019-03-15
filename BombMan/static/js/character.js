@@ -11,6 +11,11 @@
 		this.absoluteXPos = -185.5 + xPos * 24.2;	//the aboslute position on the game board in pixel
 		this.absoluteYPos = -120 + yPos * 24.2;
 		this.model = null;
+		this.rotation = 0;
+
+		this.updateModelRotation = (rotationRate=this.rotation) => {
+			if(this.model != null) this.model.rotation.y = this.rotation;
+		}
 	}
 
 	Character.prototype.setModel = function(mesh) {
@@ -26,9 +31,17 @@
 
 		this.xPos = Math.floor((this.absoluteXPos + 196)/24.2);
 		this.yPos = Math.floor((this.absoluteYPos + 130.5)/24.2);
+
+		console.log("vector " + vector.x + " " + vector.y);
+
+		if (vector.x <= -1) this.rotation = -Math.PI/2;
+		if (vector.x >= 1) this.rotation = -Math.PI/2;
+		if (vector.y <= -1) this.rotation = Math.PI;
+		if (vector.y >= 1) this.rotation = 0;
+		this.updateModelRotation();
 	}
 
-	Character.prototype.updatePositionAbs = function(x, y) {
+	Character.prototype.updatePositionAbs = function(x, y, rotation) {
 		this.absoluteXPos = x;
 		this.absoluteYPos = y;
 
@@ -37,26 +50,7 @@
 
 		this.xPos = Math.floor((this.absoluteXPos + 196)/24.2);
 		this.yPos = Math.floor((this.absoluteYPos + 130.5)/24.2);
-	}
-
-	Character.prototype.left = function() {
-		if(this.model != null)
-			this.model.rotation.y = -Math.PI/2;
-	}
-
-	Character.prototype.right = function() {
-		if(this.model != null)
-			this.model.rotation.y = Math.PI/2;
-	}
-
-	Character.prototype.up = function() {
-		if(this.model != null)
-			this.model.rotation.y = Math.PI;
-	}
-
-	Character.prototype.down = function() {
-		if(this.model != null)
-			this.model.rotation.y = 0;
+		this.updateModelRotation(rotation);
 	}
 
     // Export to window

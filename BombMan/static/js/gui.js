@@ -14,9 +14,12 @@
 
 	function Gui(core) {
 		this.core = core;
+		this.scene1 = new THREE.Scene();
 		this.scene = new THREE.Scene();
 		this.camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 1, 10000);
-		this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+		this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+		this.renderer.autoClear = false;
+		this.renderer.autoClearDepth = false;
 		this.container = document.getElementById('world');
 		this.keyboardEvent = {};
 		this.collisionBox = null;
@@ -96,7 +99,9 @@
 			this.gameboardMesh[i] = new Array(gameboard[i].length);
 
 			for(let j = 0; j < gameboard[i].length; j ++) {
-				gameobject.createStandardBox(STARTING_X + i * BLOCK_SIZE, STARTING_Y + j * BLOCK_SIZE, this.scene);
+				gameobject.createStandardBox(STARTING_X + i * BLOCK_SIZE, STARTING_Y + j * BLOCK_SIZE, (mesh) => {
+					this.scene.add(mesh);
+				});
 
 				if(gameboard[i][j] == 1)
 					gameobject.createNormalBlock(STARTING_X + i * BLOCK_SIZE, STARTING_Y + j * BLOCK_SIZE, (mesh) => {
@@ -115,7 +120,7 @@
 		this.camera.position.z = 200;
 		this.camera.lookAt(new THREE.Vector3(0,-200,0));
 
-		var cubeGeometry = new THREE.CubeGeometry(20,20,20,1,1,1);
+		var cubeGeometry = new THREE.CubeGeometry(15,15,15,1,1,1);
 		var wireMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe:true } );
 		this.collisionBox = new THREE.Mesh( cubeGeometry, wireMaterial );
 		this.collisionBox.position.y = 15;
@@ -151,10 +156,10 @@
 	Gui.prototype._animate = function() {
 
 		//Player movement
-		if(this._hasMovement()) {
+		if(this._hasMovement() && this.core.getMainPlayer()) {
 			this.collisionBox.position.z = this.core.getMainPlayer().model.position.z + this.playerMovement.y;
 			this.collisionBox.position.x = this.core.getMainPlayer().model.position.x + this.playerMovement.x;
-			//this.renderer.render(this.scene, this.camera);
+			this.renderer.render(this.scene, this.camera);
 			
 			if(!this._collisionDetection()){
 				this.core.getMainPlayer().updatePosition(this.playerMovement);
@@ -162,7 +167,12 @@
 		}
 
 		this.renderer.render(this.scene, this.camera);
-		window.requestAnimationFrame(this._animate.bind(this));
+
+		var that = this;
+		//Fix FPS to 30
+	    setTimeout( function() {
+			window.requestAnimationFrame(that._animate.bind(that));
+	    }, 1000 / 30 );
 	}
 
 	Gui.prototype._hasMovement = function() {

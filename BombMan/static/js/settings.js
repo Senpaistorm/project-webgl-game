@@ -14,9 +14,10 @@ const PLACEBOMB = 74;
 // initial speed of the characters
 const INIT_SPEED = 5;
 // powerup items
-const POWER_ITEM = 0;
-const SPEED_ITEM = 1;
-const BOMB_ITEM = 2;
+const POWER_ITEM = 1;
+const SPEED_ITEM = 2;
+const BOMB_ITEM = 3;
+const ITEM_PROC_RATE = 0.5;
 
 let movementToVector = { 65: {x:-1 ,y: 0, keyDown: false}, 
 83: {x: 0, y: 1, keyDown: false},
@@ -26,5 +27,6 @@ let movementToVector = { 65: {x:-1 ,y: 0, keyDown: false},
 let isValidKey = function(keyCode) {
     return keyCode == UP || keyCode == DOWN || keyCode == LEFT || keyCode == RIGHT || keyCode == PLACEBOMB; 
 }
+
 let initPositions = [{xPos: 0, yPos:0}, {xPos:14, yPos:0},
     {xPos:0, yPos:14}, {xPos:14, yPos:14}];
