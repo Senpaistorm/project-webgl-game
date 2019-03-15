@@ -16,14 +16,12 @@ app.use(function (req, res, next){
 
 // room status that contains all the queued players and their rooms
 let roomStatus = [];
-// all room ids that have started a game
-let startedGamerooms = [];
-// character statuses of all game rooms
+// character status of all game rooms
 let characterStatus = {};
 
 // WebSocket handlers
 io.on('connection', function(socket) {
-    console.log(`user ${socket.id} connected. `);
+    console.log(`user ${socket.id} connected.`);
 
     socket.on('disconnect', function(){
         console.log(`user ${socket.id} disconnected`);
@@ -33,7 +31,6 @@ io.on('connection', function(socket) {
     socket.on('enqueuePlayer', function(){
         // if there's an available room, join it
         if(roomStatus.length > 0){
-            console.log(roomStatus);
             roomStatus.forEach((room) =>{
                 if(room.size < 4){
                     socket.join(room.name, (err) => {
@@ -57,11 +54,7 @@ io.on('connection', function(socket) {
         let rooms = io.sockets.adapter.rooms;
         roomStatus.forEach((room) =>{
             if(room.size >= 2){
-                // store started room id
-                //startedGamerooms.push(room.name);
-                // notify every player in the room to start game 
-                console.log(rooms[room.name]);
-                console.log(rooms);
+                // notify every player in the room to start game                 
                 io.sockets.in(room.name).emit('gamestart', rooms[room.name].sockets, room.name);
             }else{
                 if(room.name in rooms){

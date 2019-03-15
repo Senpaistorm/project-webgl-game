@@ -14,14 +14,6 @@
 		};
 	};
 
-	let item = function(x, y, itemType){
-		return{
-			xPos: x,
-			yPos: y,
-			type: itemType,
-		};
-	};
-
 	let coord = function(x, y, type){
 		return{
 			xPos: x,
