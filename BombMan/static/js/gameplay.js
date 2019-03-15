@@ -95,7 +95,8 @@
 					// check every direction
 					if(!foundRight && x + i < GAMEBOARD_SIZE){
 						affectedCoord = coord(x+i, y, this.gameboard[x+i][y]);
-						affected.expCoords.push(affectedCoord);
+						if(affectedCoord.type != HARDBLOCK)
+							affected.expCoords.push(affectedCoord);
 						if(affectedCoord.type == BOMB){ 
 							let impactBomb = this.getBomb(x+i, y);
 							bombQueue.push(impactBomb);
@@ -106,7 +107,8 @@
 					}
 					if(!foundLeft && x - i >= 0){
 						affectedCoord = coord(x-i, y, this.gameboard[x-i][y]);
-						affected.expCoords.push(affectedCoord);
+						if(affectedCoord.type != HARDBLOCK)
+							affected.expCoords.push(affectedCoord);
 						if(affectedCoord.type == BOMB){ 
 							let impactBomb = this.getBomb(x-i, y);
 							bombQueue.push(impactBomb);
@@ -116,8 +118,9 @@
 						foundLeft =  this.gameboard[x-i][y] != UNBLOCKED;
 					}
 					if(!foundDown && y + i < GAMEBOARD_SIZE){
-						affectedCoord = coord(x, y+i, this.gameboard[x][y+i]);	
-						affected.expCoords.push(affectedCoord);
+						affectedCoord = coord(x, y+i, this.gameboard[x][y+i]);
+						if(affectedCoord.type != HARDBLOCK)	
+							affected.expCoords.push(affectedCoord);
 						if(affectedCoord.type == BOMB){ 
 							let impactBomb = this.getBomb(x, y+i);
 							bombQueue.push(impactBomb);
@@ -128,7 +131,8 @@
 					}
 					if(!foundUp && y - i >= 0){
 						affectedCoord = coord(x, y-i, this.gameboard[x][y-i]);
-						affected.expCoords.push(affectedCoord);
+						if(affectedCoord.type != HARDBLOCK)
+							affected.expCoords.push(affectedCoord);
 						if(affectedCoord.type == BOMB){ 
 							let impactBomb = this.getBomb(x, y-i);
 							bombQueue.push(impactBomb);
@@ -155,6 +159,7 @@
 			console.log(affected.expCoords);
 			// remove duplicate coordinates
 			affected.expCoords = removeDupCoords(affected.expCoords);
+			console.log(this.gameboard);
 			return affected;
 		}
 
@@ -209,15 +214,15 @@
 		gameboard = [[0,0,1,1,1,1,1,1,1,1,1,1,1,0,0],
                      [0,0,1,1,1,0,0,0,0,0,1,1,1,0,0],
                      [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
-                     [1,1,1,1,1,0,0,2,0,0,1,1,1,1,1],
+                     [1,1,1,1,1,0,0,4,0,0,1,1,1,1,1],
                      [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
-                     [1,1,1,0,0,2,0,2,0,2,0,0,1,1,1],
+                     [1,1,1,0,0,4,0,4,0,4,0,0,1,1,1],
                      [1,1,1,0,0,0,1,1,1,0,0,0,1,1,1],
-                     [1,1,1,2,0,2,1,1,1,2,0,2,1,1,1],
+                     [1,1,1,4,0,4,1,1,1,4,0,4,1,1,1],
                      [1,1,1,0,0,0,1,1,1,0,0,0,1,1,1],
-                     [1,1,1,0,0,2,0,2,0,2,0,0,1,1,1],
+                     [1,1,1,0,0,4,0,4,0,4,0,0,1,1,1],
                      [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
-                     [1,1,1,1,1,0,0,2,0,0,1,1,1,1,1],
+                     [1,1,1,1,1,0,0,4,0,0,1,1,1,1,1],
                      [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
                      [0,0,1,1,1,0,0,0,0,0,1,1,1,0,0],
                      [0,0,1,1,1,1,1,1,1,1,1,1,1,0,0]];
