@@ -103,12 +103,19 @@
 					this.scene.add(mesh);
 				});
 
-				if(gameboard[i][j] == 1)
+				if(gameboard[i][j] == SOFTBLOCK){
 					gameobject.createNormalBlock(STARTING_X + i * BLOCK_SIZE, STARTING_Y + j * BLOCK_SIZE, (mesh) => {
 						this.gameboardMesh[i][j] = mesh;
 						this.scene.add(mesh);
 						this.collidableMeshList[mesh.uuid] = mesh.children[2];
 					});
+				}else if(gameboard[i][j] == HARDBLOCK){
+					gameobject.createHardBlock(STARTING_X + i * BLOCK_SIZE, STARTING_Y + j * BLOCK_SIZE, (mesh) => {
+						this.gameboardMesh[i][j] = mesh;
+						this.scene.add(mesh);
+						this.collidableMeshList[mesh.uuid] = mesh.children[1];
+					});
+				}
 			}
 		}
 	}
@@ -156,7 +163,7 @@
 	Gui.prototype._animate = function() {
 
 		//Player movement
-		if(this._hasMovement()) {
+		if(this._hasMovement() && this.core.getMainPlayer()) {
 			this.collisionBox.position.z = this.core.getMainPlayer().model.position.z + this.playerMovement.y;
 			this.collisionBox.position.x = this.core.getMainPlayer().model.position.x + this.playerMovement.x;
 			this.renderer.render(this.scene, this.camera);

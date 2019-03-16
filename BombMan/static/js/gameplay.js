@@ -14,14 +14,6 @@
 		};
 	};
 
-	let item = function(x, y, itemType){
-		return{
-			xPos: x,
-			yPos: y,
-			type: itemType,
-		};
-	};
-
 	let coord = function(x, y, type){
 		return{
 			xPos: x,
@@ -37,7 +29,7 @@
 		// all the bombs this character currently is placing
 		this.bombs = [];
 		// power up items
-		this.items = [];
+		this.items = setRandomItems(this.gameboard);
 
 		this.isValidPosition = (x, y) => {
 			return x >= 0 && x < GAMEBOARD_SIZE && y >= 0 && y < GAMEBOARD_SIZE && unOccupied(this.gameboard[x][y]);
@@ -59,8 +51,9 @@
 			});
 		}
 
-		this.placeBomb = async (character, callback) => {
-			let x = character.xPos, y = character.yPos
+		this.placeBomb = async (character) => {
+			let x = character.xPos, y = character.yPos;
+			if(!this.isValidPosition(x,y)) return null;
 			let myBomb = bomb(x, y, character.power);
 			this.gameboard[x][y] = BOMB;
 			this.bombs.push(myBomb);
@@ -102,7 +95,8 @@
 					// check every direction
 					if(!foundRight && x + i < GAMEBOARD_SIZE){
 						affectedCoord = coord(x+i, y, this.gameboard[x+i][y]);
-						affected.expCoords.push(affectedCoord);
+						if(affectedCoord.type != HARDBLOCK)
+							affected.expCoords.push(affectedCoord);
 						if(affectedCoord.type == BOMB){ 
 							let impactBomb = this.getBomb(x+i, y);
 							bombQueue.push(impactBomb);
@@ -113,7 +107,8 @@
 					}
 					if(!foundLeft && x - i >= 0){
 						affectedCoord = coord(x-i, y, this.gameboard[x-i][y]);
-						affected.expCoords.push(affectedCoord);
+						if(affectedCoord.type != HARDBLOCK)
+							affected.expCoords.push(affectedCoord);
 						if(affectedCoord.type == BOMB){ 
 							let impactBomb = this.getBomb(x-i, y);
 							bombQueue.push(impactBomb);
@@ -123,8 +118,9 @@
 						foundLeft =  this.gameboard[x-i][y] != UNBLOCKED;
 					}
 					if(!foundDown && y + i < GAMEBOARD_SIZE){
-						affectedCoord = coord(x, y+i, this.gameboard[x][y+i]);	
-						affected.expCoords.push(affectedCoord);
+						affectedCoord = coord(x, y+i, this.gameboard[x][y+i]);
+						if(affectedCoord.type != HARDBLOCK)	
+							affected.expCoords.push(affectedCoord);
 						if(affectedCoord.type == BOMB){ 
 							let impactBomb = this.getBomb(x, y+i);
 							bombQueue.push(impactBomb);
@@ -135,7 +131,8 @@
 					}
 					if(!foundUp && y - i >= 0){
 						affectedCoord = coord(x, y-i, this.gameboard[x][y-i]);
-						affected.expCoords.push(affectedCoord);
+						if(affectedCoord.type != HARDBLOCK)
+							affected.expCoords.push(affectedCoord);
 						if(affectedCoord.type == BOMB){ 
 							let impactBomb = this.getBomb(x, y-i);
 							bombQueue.push(impactBomb);
@@ -162,6 +159,7 @@
 			console.log(affected.expCoords);
 			// remove duplicate coordinates
 			affected.expCoords = removeDupCoords(affected.expCoords);
+			console.log(this.gameboard);
 			return affected;
 		}
 
@@ -216,20 +214,37 @@
 		gameboard = [[0,0,1,1,1,1,1,1,1,1,1,1,1,0,0],
                      [0,0,1,1,1,0,0,0,0,0,1,1,1,0,0],
                      [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
+                     [1,1,1,1,1,0,0,4,0,0,1,1,1,1,1],
                      [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
-                     [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
-                     [1,1,1,0,0,0,0,0,0,0,0,0,1,1,1],
+                     [1,1,1,0,0,4,0,4,0,4,0,0,1,1,1],
                      [1,1,1,0,0,0,1,1,1,0,0,0,1,1,1],
+                     [1,1,1,4,0,4,1,1,1,4,0,4,1,1,1],
                      [1,1,1,0,0,0,1,1,1,0,0,0,1,1,1],
-                     [1,1,1,0,0,0,1,1,1,0,0,0,1,1,1],
-                     [1,1,1,0,0,0,0,0,0,0,0,0,1,1,1],
+                     [1,1,1,0,0,4,0,4,0,4,0,0,1,1,1],
                      [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
-                     [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
+                     [1,1,1,1,1,0,0,4,0,0,1,1,1,1,1],
                      [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
                      [0,0,1,1,1,0,0,0,0,0,1,1,1,0,0],
                      [0,0,1,1,1,1,1,1,1,1,1,1,1,0,0]];
 		return gameboard;
 	}
+
+	function setRandomItems(gameboard){
+		let res = [];
+		for(let i = 0; i < GAMEBOARD_SIZE; i++){
+			let arr = [];
+			for (var j = 0; j < GAMEBOARD_SIZE; j++){
+				if(Math.random() > ITEM_PROC_RATE && gameboard[i][j]){
+					arr.push(Math.floor(Math.random() * 3 + 1));
+				}else{
+					arr.push(0);
+				}
+			}
+			res.push(arr);
+		}
+		return res;
+	}
+
 
 	function removeDupCoords(coords) {
 		let unique = {};

@@ -52,6 +52,13 @@
 			gameplay = new app.Gameplay();
 			game.core.startNewGame(gameplay);
 			showGame();
+	
+			// send to the server information about main player on this client
+			setInterval(function updateCharacters(){ 
+				if(game.core.getMainPlayer()){
+					socket.emit('updateCharacters', roomId, game.core.getMainPlayer());
+				}
+			},1000/30);
 		});
 
 		// socket handler for bombs being placed
@@ -75,12 +82,7 @@
 			if(!roomId) setNoGameFoundMsg();
 		});
 
-		// send to the server information about main player on this client
-		setInterval(function updateCharacters(){ 
-			if(game.core.getMainPlayer()){
-				socket.emit('updateCharacters', roomId, game.core.getMainPlayer());
-			}
-		},1000/60);
+
 
 	});
 
