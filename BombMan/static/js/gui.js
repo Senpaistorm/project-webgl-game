@@ -113,7 +113,7 @@
 					gameobject.createHardBlock(STARTING_X + i * BLOCK_SIZE, STARTING_Y + j * BLOCK_SIZE, (mesh) => {
 						this.gameboardMesh[i][j] = mesh;
 						this.scene.add(mesh);
-						this.collidableMeshList[mesh.uuid] = mesh.children[2];
+						this.collidableMeshList[mesh.uuid] = mesh.children[1];
 					});
 				}
 			}

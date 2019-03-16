@@ -91,13 +91,13 @@ let gameobject = (function() {
 
 	module.createHardBlock = function(x, y, callback) {
 		var mtlLoader = new THREE.MTLLoader();
-		mtlLoader.load("./media/models/block.mtl", function(materials){
+		mtlLoader.load("./media/models/towerSquare.mtl", function(materials){
 			
 			materials.preload();
 			var objLoader = new THREE.OBJLoader();
 			objLoader.setMaterials(materials);
 			
-			objLoader.load("./media/models/block.obj", function(mesh){
+			objLoader.load("./media/models/towerSquare.obj", function(mesh){
 			
 				mesh.traverse(function(node){
 					if( node instanceof THREE.Mesh ){
@@ -105,7 +105,7 @@ let gameobject = (function() {
 						node.receiveShadow = true;
 					}
 				});
-    			mesh.position.set(x - 11, 3, y + 12);
+    			mesh.position.set(x+12, 0, y-11);
 
     			var cubeGeometry = new THREE.CubeGeometry(21,21,21,1,1,1);
 				var wireMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe:true } );
@@ -113,7 +113,7 @@ let gameobject = (function() {
 				collision.position.set(x, 10, y);
 
 				mesh.children.push(collision);
-    			mesh.scale.set(23,23,23);
+    			mesh.scale.set(2.4,2,2.4);
     			mesh.matrixAutoUpdate = false;
 				mesh.updateMatrix();
     			callback(mesh);
