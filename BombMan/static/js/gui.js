@@ -18,8 +18,8 @@
 		this.scene = new THREE.Scene();
 		this.camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 1, 10000);
 		this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-		// this.renderer.autoClear = false;
-		// this.renderer.autoClearDepth = false;
+		this.renderer.autoClear = false;
+		this.renderer.autoClearDepth = false;
 		this.container = document.getElementById('world');
 		this.keyboardEvent = {};
 		this.collisionBox = null;
