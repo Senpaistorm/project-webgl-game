@@ -9,8 +9,9 @@
 			this.core.addGameGui(this.gui);
 		}
 
-		var game = new BombMan();
-		var gameplay;
+		let game = new BombMan();
+		let gameplay;
+		let updateInterval;
 		hideGame();
 		let roomId = null;
 
@@ -40,7 +41,7 @@
 			roomId = roomname;
 			Object.keys(players).forEach((player) =>{
 				let newChar = new app.Character(player, initPositions[i].xPos,
-					 initPositions[i].yPos, INIT_SPEED, 1, 1);
+					 initPositions[i].yPos, INIT_SPEED, 2, 1);
 				if(socket.id == player){
 					game.core.addPlayer(newChar, true);
 				}else{
@@ -54,11 +55,7 @@
 			showGame();
 	
 			// send to the server information about main player on this client
-			setInterval(function updateCharacters(){ 
-				if(game.core.getMainPlayer()){
-					socket.emit('updateCharacters', roomId, game.core.getMainPlayer());
-				}
-			},1000/30);
+			updateInterval = setInterval(updateCharacters,1000/30);
 		});
 
 		// socket handler for bombs being placed
@@ -78,12 +75,28 @@
 			});
 			await promise;
 			// stay in queue for some seconds, then resolve
-			if(!roomId)	socket.emit('resolveQueue', socket.id);
+			promise = new Promise((resolve, reject) =>{
+				resolve(socket.emit('resolveQueue', socket.id));
+			});
+			await promise;
 			if(!roomId) setNoGameFoundMsg();
 		});
 
+		function updateCharacters(){ 
+			if(game.core.getMainPlayer()){
+				socket.emit('updateCharacters', roomId, game.core.getMainPlayer());
+			}
+			// gameover condition
+			if(game.core.getPlayers().length == 1){
+				gameOver(game.core.getMainPlayer() != null);
+			}
+		}
 
-
+		let gameOver = (didwin) => {
+			if(didwin) console.log("I won");
+			else console.log("I lost");
+			clearInterval(updateInterval);
+		}
 	});
 
 

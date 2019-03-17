@@ -15,7 +15,6 @@
 
 		this.updateModelRotation = (rotationRate=this.rotation) => {
 			if(this.model != null) this.model.rotation.y = this.rotation;
-			console.log(this.model);
 		}
 	}
 
@@ -32,8 +31,6 @@
 
 		this.xPos = Math.floor((this.absoluteXPos + 196)/24.2);
 		this.yPos = Math.floor((this.absoluteYPos + 130.5)/24.2);
-
-		console.log("vector " + vector.x + " " + vector.y);
 
 		if (vector.x <= -1) this.rotation = -Math.PI/2;
 		if (vector.x >= 1) this.rotation = -Math.PI/2;
