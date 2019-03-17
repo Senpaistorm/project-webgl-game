@@ -182,7 +182,7 @@
     }
 
 	Gui.prototype._animate = function() {
-		//this.animationFrameID = window.requestAnimationFrame(this._animate.bind(this));
+		this.animationFrameID = window.requestAnimationFrame(this._animate.bind(this));
 		//Player movement
 		this._frame();
 	}
@@ -193,17 +193,15 @@
 			this.collisionBox.position.x = this.core.getMainPlayer().model.position.x + this.playerMovement.x;
 			
 			if(!this._collisionDetection()){
-				this.core.getMainPlayer().updatePosition(this.playerMovement);
-				this.renderer.render(this.scene, this.camera);
-				
+				this.core.getMainPlayer().updatePosition(this.playerMovement);	
 			}
 		} else {
-			this.core.getMainPlayer().resetAnimation();
+			if(this.core.getMainPlayer()) this.core.getMainPlayer().resetAnimation();
 		}
 		this.renderer.render(this.scene, this.camera);
 	}
 
-	Gui.prototype._stopAnimate = function() {
+	Gui.prototype.stopAnimate = function() {
 		if(this.animationFrameID) window.cancelAnimationFrame(this.animationFrameID);
 	}
 

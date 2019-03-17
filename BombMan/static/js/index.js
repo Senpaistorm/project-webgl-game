@@ -90,13 +90,13 @@
 			if(game.core.getPlayers().length == 1){
 				gameOver(game.core.getMainPlayer() != null);
 			}
-			game.gui._frame();
 		}
 
 		let gameOver = (didwin) => {
 			if(didwin) console.log("I won");
 			else console.log("I lost");
 			clearInterval(updateInterval);
+			game.gui.stopAnimate();
 		};
 	});
 
