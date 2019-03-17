@@ -197,6 +197,8 @@
 				this.renderer.render(this.scene, this.camera);
 				
 			}
+		} else {
+			this.core.getMainPlayer().resetAnimation();
 		}
 		this.renderer.render(this.scene, this.camera);
 	}
