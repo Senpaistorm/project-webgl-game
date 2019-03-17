@@ -193,6 +193,8 @@
 				this.core.getMainPlayer().updatePosition(this.playerMovement);
 				
 			}
+		} else {
+			this.core.getMainPlayer().resetAnimation();
 		}
 
 		this.renderer.render(this.scene, this.camera);
