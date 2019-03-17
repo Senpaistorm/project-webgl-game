@@ -23,6 +23,10 @@ let movementToVector = { 65: {x:-1 ,y: 0, keyDown: false},
 87: {x: 0, y:-1, keyDown: false},
 68: {x: 1, y: 0, keyDown: false}};
 
+// let movementToRotation = {
+// 	f
+// }
+
 let isValidKey = function(keyCode) {
     return keyCode == UP || keyCode == DOWN || keyCode == LEFT || keyCode == RIGHT || keyCode == PLACEBOMB; 
 }

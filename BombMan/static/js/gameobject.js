@@ -4,29 +4,28 @@ let gameobject = (function() {
 	let module = {};
 
 	module.createCharactorModel = function(x, y, callback) {
-		var mtlLoader = new THREE.MTLLoader();
-		mtlLoader.load("./media/models/charactor/basicCharacter.obj.mtl", function(materials){		
-			materials.preload();
-			var objLoader = new THREE.OBJLoader();
-			objLoader.setMaterials(materials);
-			
-			objLoader.load("./media/models/charactor/basicCharacter.obj", function(mesh){
-				mesh.traverse(function(node){
-					if( node instanceof THREE.Mesh ){
-						node.castShadow = true;
-						node.receiveShadow = true;
-					}
-				});
+		var textureLoader = new THREE.TextureLoader();
+		var map = textureLoader.load('./media/textures/skin_man.png');
+		var material = new THREE.MeshPhongMaterial({map: map});
 
-				mesh.position.set(x, 3, y);
-				mesh.scale.set(3,3,3);
+		var loader = new THREE.OBJLoader();
+		loader.load("./media/models/charactor/basicCharacter.obj", function ( object ) {
 
-				callback(mesh);
-			});			
+		  // For any meshes in the model, add our material.
+			object.traverse( function ( node ) {
+		    	if ( node.isMesh ) {
+		    		node.material = material;
+		    		node.castShadow = true;
+		 			node.receiveShadow = true;
+		    	}
+		  	});
+			object.position.set(x, 3, y);
+			object.scale.set(3,3,3);
+		  	// Add the model to the scene.
+		  	callback(object);
 		});
 	}
 
-	//TODO: Change the scene to callback
 	module.createStandardBox = function(x, y,  callback) {
 		var mtlLoader = new THREE.MTLLoader();
 		mtlLoader.load("./media/models/grass.mtl", function(materials){
@@ -65,15 +64,8 @@ let gameobject = (function() {
 			objLoader.setMaterials(materials);
 			
 			objLoader.load("./media/models/block.obj", function(mesh){
-			
-				mesh.traverse(function(node){
-					if( node instanceof THREE.Mesh ){
-						node.castShadow = true;
-						node.receiveShadow = true;
-					}
-				});
-    			mesh.position.set(x - 11, 3, y + 12);
 
+    			mesh.position.set(x - 11, 3, y + 12);
     			var cubeGeometry = new THREE.CubeGeometry(21,21,21,1,1,1);
 				var wireMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe:true } );
 				var collision = new THREE.Mesh( cubeGeometry, wireMaterial );
@@ -90,46 +82,21 @@ let gameobject = (function() {
 	};
 
 	module.createBomb = function(x,y,callback) {
-		var sphere = new THREE.SphereGeometry(12, 20, 20);
-		var sphereMaterial = new THREE.MeshBasicMaterial({color:0xff0000});
-		var bomb = new THREE.Mesh(sphere, sphereMaterial);
-
-		bomb.position.set(-185.5 + x * 24.2, 5, -120 + y * 24.2);
-
-		bomb.matrixAutoUpdate = false;
-		bomb.updateMatrix();
-		callback(bomb);
-	}
-
-	module.createCloud = function(scene){
-        let mesh = new THREE.Object3D();
-        
-        var geom = new THREE.BoxGeometry(20,20,20);
-        
-        var mat = new THREE.MeshPhongMaterial({
-        	color: 0xd8d0d1,  
-        });
-        
-        var nBlocs = 3+Math.floor(Math.random()*3);
-        for (var i=0; i<nBlocs; i++ ){
-                
-                var m = new THREE.Mesh(geom, mat); 
-                
-                m.position.x = i*15;
-                m.position.y = Math.random()*10;
-                m.position.z = Math.random()*10;
-                m.rotation.z = Math.random()*Math.PI*2;
-                m.rotation.y = Math.random()*Math.PI*2;
-                
-                var s = .1 + Math.random()*.9;
-                m.scale.set(s,s,s);
-                
-                m.castShadow = true;
-                m.receiveShadow = true;
-                
-                mesh.add(m);
-        } 
-        scene.add(mesh);
+		var mtlLoader = new THREE.MTLLoader();
+		mtlLoader.load("./media/models/bomb.mtl", function(materials){
+			
+			materials.preload();
+			var objLoader = new THREE.OBJLoader();
+			objLoader.setMaterials(materials);
+			
+			objLoader.load("./media/models/bomb.obj", function(mesh){
+				mesh.position.set(-185.5 + (x+1.65) * 24.2, 10, -120 + y * 24.2);
+				mesh.scale.set(18,18,18);
+				mesh.matrixAutoUpdate = false;
+				mesh.updateMatrix();
+				callback(mesh);
+			});
+		});
 	}
 
 	return module;
