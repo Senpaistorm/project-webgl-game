@@ -67,6 +67,12 @@
 	}
 
 	Character.prototype.updatePositionAbs = function(x, y, rotation) {
+
+		if(this.absoluteXPos == x && this.absoluteYPos == y) {
+			this.resetAnimation();
+			return;
+		}
+
 		this.absoluteXPos = x;
 		this.absoluteYPos = y;
 

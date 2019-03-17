@@ -23,19 +23,21 @@ const FORWARD = 1;
 const BACKWARD = -1;
 const STATIC = 0;
 
-let movementToVector = { 65: {x:-1 ,y: 0, keyDown: false}, 
-83: {x: 0, y: 1, keyDown: false},
-87: {x: 0, y:-1, keyDown: false},
-68: {x: 1, y: 0, keyDown: false}};
+let movementToVector = { 
+	65: {x:-1 ,y: 0, keyDown: false}, 
+	83: {x: 0, y: 1, keyDown: false},
+	87: {x: 0, y:-1, keyDown: false},
+	68: {x: 1, y: 0, keyDown: false}
+};
 
 //Body part of the character model
 //the value is the index of child model of the character model
 let CHARACTER_BODY_PART = {
-	body : 0,
-	head : 1,
-	leftArm : 2,
+	body     : 0,
+	head     : 1,
+	leftArm  : 2,
 	rightArm : 3,
-	leftLeg : 4,
+	leftLeg  : 4,
 	rightLeg : 5
 }
 
