@@ -27,6 +27,7 @@ io.on('connection', function(socket) {
 
     socket.on('disconnect', function(){
         console.log(`user ${socket.id} disconnected`);
+        delete characterStatus[socket.id];
     });
 
     // check all game rooms, join if there exists an unfilled room

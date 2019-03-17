@@ -15,8 +15,7 @@
 	function Gui(core) {
 		this.core = core;
 		this.scene = new THREE.Scene();
-		this.camera = new THREE.PerspectiveCamera(73, (window.innerWidth)/(window.innerHeight), 1, 10000);
-		this.camera.aspect = 800/600;
+		this.camera = new THREE.PerspectiveCamera(72, (window.innerWidth)/(window.innerHeight), 1, 10000);
 		this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 		this.renderer.autoClear = false;
 		this.renderer.autoClearDepth = false;

@@ -12,7 +12,7 @@ const UP = 87;
 const RIGHT = 68;
 const PLACEBOMB = 74;
 // initial speed of the characters
-const INIT_SPEED = 2;
+const INIT_SPEED = 3;
 // powerup items
 const POWER_ITEM = 1;
 const SPEED_ITEM = 2;
