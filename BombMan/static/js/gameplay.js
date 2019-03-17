@@ -156,10 +156,8 @@
 			for(let i = 0; i < affected.bombs.length; i++){
 				this.destroyBomb(affected.bombs[i]);
 			}
-			console.log(affected.expCoords);
 			// remove duplicate coordinates
 			affected.expCoords = removeDupCoords(affected.expCoords);
-			console.log(this.gameboard);
 			return affected;
 		}
 

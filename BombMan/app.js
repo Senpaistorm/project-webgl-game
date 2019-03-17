@@ -18,6 +18,8 @@ app.use(function (req, res, next){
 let roomStatus = [];
 // character status of all game rooms
 let characterStatus = {};
+// character to room dictionary
+let charToRoom = {};
 
 // WebSocket handlers
 io.on('connection', function(socket) {
@@ -56,6 +58,10 @@ io.on('connection', function(socket) {
             if(room.size >= 2){
                 // notify every player in the room to start game                 
                 io.sockets.in(room.name).emit('gamestart', rooms[room.name].sockets, room.name);
+                Object.keys(rooms[room.name].sockets).forEach((char) =>{
+                    charToRoom[char] = room.name;
+                })
+                console.log(charToRoom);
             }else{
                 if(room.name in rooms){
                     socket.leave(room.name);
@@ -75,6 +81,7 @@ io.on('connection', function(socket) {
         }else{
             characterStatus[character.name].absoluteXPos = character.absoluteXPos;
             characterStatus[character.name].absoluteYPos = character.absoluteYPos;   
+            characterStatus[character.name].rotation = character.rotation;
         }
         io.sockets.to(room).emit('updateCharacters', characterStatus[character.name]);
     });
@@ -83,6 +90,7 @@ io.on('connection', function(socket) {
         // leave room on gameover
         socket.leave(room);
     });
+
 });
 
 const PORT = 3000;

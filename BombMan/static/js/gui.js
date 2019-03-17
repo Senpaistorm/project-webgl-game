@@ -15,7 +15,8 @@
 	function Gui(core) {
 		this.core = core;
 		this.scene = new THREE.Scene();
-		this.camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 1, 10000);
+		this.camera = new THREE.PerspectiveCamera(73, (window.innerWidth)/(window.innerHeight), 1, 10000);
+		this.camera.aspect = 800/600;
 		this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 		this.renderer.autoClear = false;
 		this.renderer.autoClearDepth = false;
@@ -24,6 +25,7 @@
 		this.collisionBox = null;
 		this.collidableMeshList = {};
 		this.playerMovement = {x:0, y:0};
+		this.animationFrameID = null;
 	}
 
 	Gui.prototype.onNewGame = function(gameplay) {
@@ -117,6 +119,27 @@
 				}
 			}
 		}
+
+		for(let i = 0; i < gameboard.length+2; i ++) {
+			gameobject.createHardBlock(STARTING_X + (i-1) * BLOCK_SIZE, STARTING_Y - BLOCK_SIZE, (mesh) => {
+				this.scene.add(mesh);
+				this.collidableMeshList[mesh.uuid] = mesh.children[1];
+			});
+			gameobject.createHardBlock(STARTING_X + (i-1) * BLOCK_SIZE, STARTING_Y + gameboard.length * BLOCK_SIZE, (mesh) => {
+				this.scene.add(mesh);
+				this.collidableMeshList[mesh.uuid] = mesh.children[1];
+			});
+		}
+		for(let i = 0; i < gameboard.length; i ++) {
+			gameobject.createHardBlock(STARTING_X - BLOCK_SIZE, STARTING_Y + i * BLOCK_SIZE, (mesh) => {
+				this.scene.add(mesh);
+				this.collidableMeshList[mesh.uuid] = mesh.children[1];
+			});
+			gameobject.createHardBlock(STARTING_X + gameboard.length * BLOCK_SIZE, STARTING_Y + i * BLOCK_SIZE, (mesh) => {
+				this.scene.add(mesh);
+				this.collidableMeshList[mesh.uuid] = mesh.children[1];
+			});
+		}
 	}
 
 	Gui.prototype._createScene = function() {
@@ -160,7 +183,7 @@
     }
 
 	Gui.prototype._animate = function() {
-
+		this.animationFrameID = window.requestAnimationFrame(this._animate.bind(this));
 		//Player movement
 		if(this._hasMovement() && this.core.getMainPlayer()) {
 			this.collisionBox.position.z = this.core.getMainPlayer().model.position.z + this.playerMovement.y;
@@ -174,12 +197,15 @@
 		}
 
 		this.renderer.render(this.scene, this.camera);
-
+		
 		//var that = this;
 		//Fix FPS to 30
 	   // setTimeout( function() {
-		window.requestAnimationFrame(that._animate.bind(that));
 	    //}, 1000 / 30 );
+	}
+
+	Gui.prototype._stopAnimate = function() {
+		if(this.animationFrameID) window.cancelAnimationFrame(this.animationFrameID);
 	}
 
 	Gui.prototype._hasMovement = function() {
