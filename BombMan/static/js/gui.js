@@ -14,7 +14,6 @@
 
 	function Gui(core) {
 		this.core = core;
-		this.scene1 = new THREE.Scene();
 		this.scene = new THREE.Scene();
 		this.camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 1, 10000);
 		this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -176,11 +175,11 @@
 
 		this.renderer.render(this.scene, this.camera);
 
-		var that = this;
+		//var that = this;
 		//Fix FPS to 30
-	    setTimeout( function() {
-			window.requestAnimationFrame(that._animate.bind(that));
-	    }, 1000 / 30 );
+	   // setTimeout( function() {
+		window.requestAnimationFrame(that._animate.bind(that));
+	    //}, 1000 / 30 );
 	}
 
 	Gui.prototype._hasMovement = function() {
