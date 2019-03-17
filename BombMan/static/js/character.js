@@ -15,6 +15,7 @@
 
 		this.updateModelRotation = (rotationRate=this.rotation) => {
 			if(this.model != null) this.model.rotation.y = this.rotation;
+			console.log(this.model);
 		}
 	}
 

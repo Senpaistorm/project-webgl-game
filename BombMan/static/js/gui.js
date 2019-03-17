@@ -170,6 +170,7 @@
 			
 			if(!this._collisionDetection()){
 				this.core.getMainPlayer().updatePosition(this.playerMovement);
+				
 			}
 		}
 
