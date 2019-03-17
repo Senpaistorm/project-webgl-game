@@ -182,7 +182,7 @@
     }
 
 	Gui.prototype._animate = function() {
-		this.animationFrameID = window.requestAnimationFrame(this._animate.bind(this));
+		//this.animationFrameID = window.requestAnimationFrame(this._animate.bind(this));
 		//Player movement
 		this._frame();
 	}
