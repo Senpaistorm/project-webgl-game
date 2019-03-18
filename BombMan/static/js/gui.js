@@ -182,9 +182,10 @@
     }
 
 	Gui.prototype._animate = function() {
-		this.animationFrameID = window.requestAnimationFrame(this._animate.bind(this));
+	  //this.animationFrameID = window.requestAnimationFrame(this._animate.bind(this));
 		//Player movement
-		this._frame();
+		setInterval(this._frame.bind(this), 1000/30);
+		//this._frame();
 	}
 
 	Gui.prototype._frame = function() {
@@ -193,15 +194,17 @@
 			this.collisionBox.position.x = this.core.getMainPlayer().model.position.x + this.playerMovement.x;
 			
 			if(!this._collisionDetection()){
-				this.core.getMainPlayer().updatePosition(this.playerMovement);	
+				this.core.getMainPlayer().updatePosition(this.playerMovement);
+				this.renderer.render(this.scene, this.camera);
+				
 			}
 		} else {
-			if(this.core.getMainPlayer()) this.core.getMainPlayer().resetAnimation();
+			this.core.getMainPlayer().resetAnimation();
 		}
 		this.renderer.render(this.scene, this.camera);
 	}
 
-	Gui.prototype.stopAnimate = function() {
+	Gui.prototype._stopAnimate = function() {
 		if(this.animationFrameID) window.cancelAnimationFrame(this.animationFrameID);
 	}
 
