@@ -204,7 +204,7 @@
 		this.renderer.render(this.scene, this.camera);
 	}
 
-	Gui.prototype._stopAnimate = function() {
+	Gui.prototype.stopAnimate = function() {
 		if(this.animationFrameID) window.cancelAnimationFrame(this.animationFrameID);
 	}
 

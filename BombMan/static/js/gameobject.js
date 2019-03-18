@@ -7,9 +7,9 @@ let gameobject = (function() {
 	var cubeGeometry = new THREE.BoxBufferGeometry( 21, 21, 21 );
 	var wireMaterial = new THREE.MeshBasicMaterial();
 	module.createCharactorModel = function(x, y, callback) {
-		var textureLoader = new THREE.TextureLoader();
-		var map = textureLoader.load('./media/textures/skin_man.png');
-		var material = new THREE.MeshPhongMaterial({map: map});
+		//var textureLoader = new THREE.TextureLoader();
+		// var map = textureLoader.load('./media/textures/skin_man.png');
+		// var material = new THREE.MeshPhongMaterial({map: map});
 
 		var loader = new THREE.OBJLoader();
 		loader.load("./media/models/charactor/basicCharacter.obj", function ( object ) {
@@ -21,7 +21,13 @@ let gameobject = (function() {
 		    // 		node.castShadow = true;
 		 	// 		node.receiveShadow = true;
 		    // 	}
-		  	// });
+			// });
+			(object.children).forEach((child) =>{
+				let r = Math.random(),g=Math.random(),b=Math.random();
+				child.material.color.set(
+					new THREE.Color(r,g,b)
+					);
+			});
 			object.position.set(x, 3, y);
 			object.scale.set(3,3,3);
 		  	// Add the model to the scene.
