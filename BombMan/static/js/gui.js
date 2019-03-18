@@ -182,30 +182,29 @@
     }
 
 	Gui.prototype._animate = function() {
-		this.animationFrameID = window.requestAnimationFrame(this._animate.bind(this));
+	  //this.animationFrameID = window.requestAnimationFrame(this._animate.bind(this));
 		//Player movement
+		setInterval(this._frame.bind(this), 1000/30);
+		//this._frame();
+	}
+
+	Gui.prototype._frame = function() {
 		if(this._hasMovement() && this.core.getMainPlayer()) {
 			this.collisionBox.position.z = this.core.getMainPlayer().model.position.z + this.playerMovement.y;
 			this.collisionBox.position.x = this.core.getMainPlayer().model.position.x + this.playerMovement.x;
-			this.renderer.render(this.scene, this.camera);
 			
 			if(!this._collisionDetection()){
 				this.core.getMainPlayer().updatePosition(this.playerMovement);
+				this.renderer.render(this.scene, this.camera);
 				
 			}
 		} else {
 			this.core.getMainPlayer().resetAnimation();
 		}
-
 		this.renderer.render(this.scene, this.camera);
-		
-		//var that = this;
-		//Fix FPS to 30
-	   // setTimeout( function() {
-	    //}, 1000 / 30 );
 	}
 
-	Gui.prototype._stopAnimate = function() {
+	Gui.prototype.stopAnimate = function() {
 		if(this.animationFrameID) window.cancelAnimationFrame(this.animationFrameID);
 	}
 

@@ -55,7 +55,7 @@
 			showGame();
 	
 			// send to the server information about main player on this client
-			updateInterval = setInterval(updateCharacters,1000/30);
+			updateInterval = setInterval(updateCharacters,1000/60);
 		});
 
 		// socket handler for bombs being placed
@@ -96,7 +96,8 @@
 			if(didwin) console.log("I won");
 			else console.log("I lost");
 			clearInterval(updateInterval);
-		}
+			game.gui.stopAnimate();
+		};
 	});
 
 

@@ -41,8 +41,6 @@
 
 		// check if any player hit by the boom
 		this.checkPlayerHit = (areaAffected, players) => {
-			console.log(players);
-
 			areaAffected.forEach((explodeArea) => {
 				players.forEach((player) => {
 					if (player.xPos == explodeArea.xPos && player.yPos == explodeArea.yPos) 
@@ -58,7 +56,6 @@
 			this.gameboard[x][y] = BOMB;
 			this.bombs.push(myBomb);
 			let res;
-			console.log('bomb placed!');
 			//asynchronously wait [speed] seconds
 			let promise = new Promise((resolve, reject) => {
 				setTimeout(() => {
@@ -77,7 +74,6 @@
 			let bombQueue = [bombExplode];
 			let foundLeft , foundRight, foundUp, foundDown;
 			let x , y , i;
-			console.log('bomb exploding!');
 			
 			// bfs on queue of exploding bombs
 			while(bombQueue.length > 0){
@@ -152,7 +148,6 @@
 					this.gameboard[block.xPos][block.yPos] = UNBLOCKED;
 				}
 			}
-			console.log("destroying bombs");
 			for(let i = 0; i < affected.bombs.length; i++){
 				this.destroyBomb(affected.bombs[i]);
 			}

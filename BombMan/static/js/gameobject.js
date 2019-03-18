@@ -2,23 +2,32 @@ let gameobject = (function() {
 	'use strict';
 
 	let module = {};
+	var mtlLoader = new THREE.MTLLoader();
 
+	var cubeGeometry = new THREE.BoxBufferGeometry( 21, 21, 21 );
+	var wireMaterial = new THREE.MeshBasicMaterial();
 	module.createCharactorModel = function(x, y, callback) {
-		var textureLoader = new THREE.TextureLoader();
-		var map = textureLoader.load('./media/textures/skin_man.png');
-		var material = new THREE.MeshPhongMaterial({map: map});
+		//var textureLoader = new THREE.TextureLoader();
+		// var map = textureLoader.load('./media/textures/skin_man.png');
+		// var material = new THREE.MeshPhongMaterial({map: map});
 
 		var loader = new THREE.OBJLoader();
 		loader.load("./media/models/charactor/basicCharacter.obj", function ( object ) {
 
 		  // For any meshes in the model, add our material.
-			object.traverse( function ( node ) {
-		    	if ( node.isMesh ) {
-		    		node.material = material;
-		    		node.castShadow = true;
-		 			node.receiveShadow = true;
-		    	}
-		  	});
+			// object.traverse( function ( node ) {
+		    // 	if ( node.isMesh ) {
+		    // 		node.material = material;
+		    // 		node.castShadow = true;
+		 	// 		node.receiveShadow = true;
+		    // 	}
+			// });
+			(object.children).forEach((child) =>{
+				let r = Math.random(),g=Math.random(),b=Math.random();
+				child.material.color.set(
+					new THREE.Color(r,g,b)
+					);
+			});
 			object.position.set(x, 3, y);
 			object.scale.set(3,3,3);
 		  	// Add the model to the scene.
@@ -27,7 +36,7 @@ let gameobject = (function() {
 	}
 
 	module.createStandardBox = function(x, y,  callback) {
-		var mtlLoader = new THREE.MTLLoader();
+		
 		mtlLoader.load("./media/models/grass.mtl", function(materials){
 			
 			materials.preload();
@@ -56,7 +65,7 @@ let gameobject = (function() {
 	}
 
 	module.createNormalBlock = function(x, y, callback) {
-		var mtlLoader = new THREE.MTLLoader();
+		//var mtlLoader = new THREE.MTLLoader();
 		mtlLoader.load("./media/models/block.mtl", function(materials){
 			
 			materials.preload();
@@ -66,8 +75,6 @@ let gameobject = (function() {
 			objLoader.load("./media/models/block.obj", function(mesh){
 
     			mesh.position.set(x - 11, 3, y + 12);
-    			var cubeGeometry = new THREE.CubeGeometry(21,21,21,1,1,1);
-				var wireMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe:true } );
 				var collision = new THREE.Mesh( cubeGeometry, wireMaterial );
 				collision.position.set(x, 10, y);
 
@@ -82,7 +89,7 @@ let gameobject = (function() {
 	};
 
 	module.createHardBlock = function(x, y, callback) {
-		var mtlLoader = new THREE.MTLLoader();
+		//var mtlLoader = new THREE.MTLLoader();
 		mtlLoader.load("./media/models/towerSquare.mtl", function(materials){
 			
 			materials.preload();
@@ -98,9 +105,6 @@ let gameobject = (function() {
 					}
 				});
     			mesh.position.set(x+12, 0, y-11);
-
-    			var cubeGeometry = new THREE.CubeGeometry(21,21,21,1,1,1);
-				var wireMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe:true } );
 				var collision = new THREE.Mesh( cubeGeometry, wireMaterial );
 				collision.position.set(x, 10, y);
 
@@ -115,7 +119,7 @@ let gameobject = (function() {
 	};
 
 	module.createBomb = function(x,y,callback) {
-		var mtlLoader = new THREE.MTLLoader();
+		//var mtlLoader = new THREE.MTLLoader();
 		mtlLoader.load("./media/models/bomb.mtl", function(materials){
 			
 			materials.preload();
