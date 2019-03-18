@@ -192,11 +192,11 @@
 		if(this._hasMovement() && this.core.getMainPlayer()) {
 			this.collisionBox.position.z = this.core.getMainPlayer().model.position.z + this.playerMovement.y;
 			this.collisionBox.position.x = this.core.getMainPlayer().model.position.x + this.playerMovement.x;
-			
+			//render the updated collision box for collision detection
+			this.renderer.render(this.scene, this.camera);
+
 			if(!this._collisionDetection()){
-				this.core.getMainPlayer().updatePosition(this.playerMovement);
-				this.renderer.render(this.scene, this.camera);
-				
+				this.core.getMainPlayer().updatePosition(this.playerMovement);				
 			}
 		} else {
 			this.core.getMainPlayer().resetAnimation();
