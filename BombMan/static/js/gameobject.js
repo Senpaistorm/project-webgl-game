@@ -15,13 +15,13 @@ let gameobject = (function() {
 		loader.load("./media/models/charactor/basicCharacter.obj", function ( object ) {
 
 		  // For any meshes in the model, add our material.
-			object.traverse( function ( node ) {
-		    	if ( node.isMesh ) {
-		    		node.material = material;
-		    		node.castShadow = true;
-		 			node.receiveShadow = true;
-		    	}
-		  	});
+			// object.traverse( function ( node ) {
+		    // 	if ( node.isMesh ) {
+		    // 		node.material = material;
+		    // 		node.castShadow = true;
+		 	// 		node.receiveShadow = true;
+		    // 	}
+		  	// });
 			object.position.set(x, 3, y);
 			object.scale.set(3,3,3);
 		  	// Add the model to the scene.
