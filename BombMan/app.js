@@ -1,3 +1,6 @@
+// main node server for Bomb Man
+
+// import dependencies
 const path = require('path');
 const express = require('express');
 const app = express();
@@ -7,6 +10,12 @@ const httpServer = http.Server(app);
 
 const socketIO = require('socket.io');
 const io = socketIO(httpServer);
+
+const Character = require('./lib/Character');
+const Gameplay = require('./lib/Gameplay');
+const Constants = require('./lib/Constants');
+const Hashmap = require('hashmap');
+
 app.use(express.static('static'));
 
 app.use(function (req, res, next){
@@ -20,6 +29,7 @@ let roomStatus = [];
 let characterStatus = {};
 // character to room dictionary
 let charToRoom = {};
+let roomToGame = new Hashmap();
 
 // WebSocket handlers
 io.on('connection', function(socket) {
@@ -58,11 +68,16 @@ io.on('connection', function(socket) {
         roomStatus.forEach((room) =>{
             if(room.size >= 2){
                 // notify every player in the room to start game                 
-                io.sockets.in(room.name).emit('gamestart', rooms[room.name].sockets, room.name);
+                
                 Object.keys(rooms[room.name].sockets).forEach((char) =>{
                     charToRoom[char] = room.name;
                 })
-                console.log(charToRoom);
+                let game = new Gameplay();
+                Object.keys(rooms[room.name].sockets).forEach((char) =>{
+                    game.addPlayer(char, char);
+                });
+                roomToGame.set(room.name, game);
+                io.sockets.in(room.name).emit('gamestart', roomToGame[room.name], room.name);
             }else{
                 if(room.name in rooms){
                     socket.leave(room.name);
@@ -84,7 +99,7 @@ io.on('connection', function(socket) {
             characterStatus[character.name].absoluteYPos = character.absoluteYPos;   
             characterStatus[character.name].rotation = character.rotation;
         }
-        io.sockets.to(room).emit('updateCharacters', characterStatus[character.name]);
+        //io.sockets.to(room).emit('updateCharacters', characterStatus[character.name]);
     });
 
     socket.on('gameover', (room) =>{
@@ -93,6 +108,15 @@ io.on('connection', function(socket) {
     });
 
 });
+
+// Server side game loop, runs at 60Hz and sends out update packets to all
+// clients every tick.
+setInterval(function() {
+    roomToGame.forEach((room, game) => {
+        game.update();
+        game.sendState(room);
+    });
+}, 1000/30);
 
 const PORT = 3000;
 

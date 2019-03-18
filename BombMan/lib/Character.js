@@ -10,6 +10,7 @@ function Character(name, xPos, yPos, speed, power, load) {
     this.absoluteYPos = -120 + yPos * 24.2;
     this.model = null;
     this.rotation = 0;
+    this.bombs = [];
     this.armAndLegSwitchMovement = -1;
 
     this.movementAnimation = function(bodyPart, movementDirection) {
