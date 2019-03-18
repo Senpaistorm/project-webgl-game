@@ -55,7 +55,7 @@
 			showGame();
 	
 			// send to the server information about main player on this client
-			updateInterval = setInterval(updateCharacters,1000/60);
+			updateInterval = setInterval(updateCharacters,1000/30);
 		});
 
 		// socket handler for bombs being placed

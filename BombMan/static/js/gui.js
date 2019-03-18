@@ -198,7 +198,7 @@
 			if(!this._collisionDetection()){
 				this.core.getMainPlayer().updatePosition(this.playerMovement);				
 			}
-		} else {
+		} else if (this.core.getMainPlayer()){
 			this.core.getMainPlayer().resetAnimation();
 		}
 		this.renderer.render(this.scene, this.camera);
