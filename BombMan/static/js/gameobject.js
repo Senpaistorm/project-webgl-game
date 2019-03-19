@@ -7,7 +7,6 @@ let gameobject = (function() {
 	var cubeGeometry = new THREE.BoxBufferGeometry( 21, 21, 21 );
 	var wireMaterial = new THREE.MeshBasicMaterial({color:0xffffff, wireframe:true, opacity:0});
 
-	console.log(wireMaterial);
 	module.createCharactorModel = function(x, y, callback) {
 		//var textureLoader = new THREE.TextureLoader();
 		// var map = textureLoader.load('./media/textures/skin_man.png');

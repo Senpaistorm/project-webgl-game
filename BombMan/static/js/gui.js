@@ -56,7 +56,6 @@
 				this.gameboardMesh[x][y] = mesh;
 				this.scene.add(mesh);
 				this.collidableMeshList[mesh.uuid] = mesh.children[3];
-				console.log(mesh);
 			});
 		}
 	}
