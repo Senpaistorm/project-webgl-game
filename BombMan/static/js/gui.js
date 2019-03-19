@@ -21,8 +21,6 @@
 		this.renderer.autoClearDepth = false;
 		this.container = document.getElementById('world');
 		this.keyboardEvent = {};
-		this.collisionBox = null;
-		this.collidableMeshList = {};
 		this.playerMovement = {x:0, y:0};
 		this.animationFrameID = null;
 	}
@@ -55,7 +53,6 @@
 			gameobject.createBomb(x, y, (mesh) => {
 				this.gameboardMesh[x][y] = mesh;
 				this.scene.add(mesh);
-				this.collidableMeshList[mesh.uuid] = mesh.children[3];
 			});
 		}
 	}
@@ -76,7 +73,6 @@
 		if(mesh) {
 			this.gameboardMesh[x][y] = null;
 			this.scene.remove(mesh);
-			delete this.collidableMeshList[mesh.uuid];
 		}
 	}
 
@@ -108,13 +104,11 @@
 					gameobject.createNormalBlock(STARTING_X + i * BLOCK_SIZE, STARTING_Y + j * BLOCK_SIZE, (mesh) => {
 						this.gameboardMesh[i][j] = mesh;
 						this.scene.add(mesh);
-						this.collidableMeshList[mesh.uuid] = mesh.children[2];
 					});
 				}else if(gameboard[i][j] == HARDBLOCK){
 					gameobject.createHardBlock(STARTING_X + i * BLOCK_SIZE, STARTING_Y + j * BLOCK_SIZE, (mesh) => {
 						this.gameboardMesh[i][j] = mesh;
 						this.scene.add(mesh);
-						this.collidableMeshList[mesh.uuid] = mesh.children[1];
 					});
 				}
 			}
@@ -123,21 +117,17 @@
 		for(let i = 0; i < gameboard.length+2; i ++) {
 			gameobject.createHardBlock(STARTING_X + (i-1) * BLOCK_SIZE, STARTING_Y - BLOCK_SIZE, (mesh) => {
 				this.scene.add(mesh);
-				this.collidableMeshList[mesh.uuid] = mesh.children[1];
 			});
 			gameobject.createHardBlock(STARTING_X + (i-1) * BLOCK_SIZE, STARTING_Y + gameboard.length * BLOCK_SIZE, (mesh) => {
 				this.scene.add(mesh);
-				this.collidableMeshList[mesh.uuid] = mesh.children[1];
 			});
 		}
 		for(let i = 0; i < gameboard.length; i ++) {
 			gameobject.createHardBlock(STARTING_X - BLOCK_SIZE, STARTING_Y + i * BLOCK_SIZE, (mesh) => {
 				this.scene.add(mesh);
-				this.collidableMeshList[mesh.uuid] = mesh.children[1];
 			});
 			gameobject.createHardBlock(STARTING_X + gameboard.length * BLOCK_SIZE, STARTING_Y + i * BLOCK_SIZE, (mesh) => {
 				this.scene.add(mesh);
-				this.collidableMeshList[mesh.uuid] = mesh.children[1];
 			});
 		}
 	}
@@ -148,13 +138,6 @@
 		this.camera.position.y = 320;
 		this.camera.position.z = 200;
 		this.camera.lookAt(new THREE.Vector3(0,-200,0));
-
-		var cubeGeometry = new THREE.CubeGeometry(15,15,15,1,1,1);
-		var wireMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe:true } );
-		this.collisionBox = new THREE.Mesh( cubeGeometry, wireMaterial );
-		this.collisionBox.position.y = 15;
-		this.collisionBox.visible = false;
-		this.scene.add(this.collisionBox);
 
 		this.renderer.setSize(window.innerWidth, window.innerHeight);
 		this.renderer.shadowMap.enabled = true;
@@ -183,24 +166,22 @@
     }
 
 	Gui.prototype._animate = function() {
-	  //this.animationFrameID = window.requestAnimationFrame(this._animate.bind(this));
+	  //this.animationFrameID = window.requestAnimationFrame(this._frame.bind(this));
 		//Player movement
 		setInterval(this._frame.bind(this), 1000/30);
 		//this._frame();
 	}
 
 	Gui.prototype._frame = function() {
-		if(this._hasMovement() && this.core.getMainPlayer()) {
-			this.collisionBox.position.z = this.core.getMainPlayer().model.position.z + this.playerMovement.y;
-			this.collisionBox.position.x = this.core.getMainPlayer().model.position.x + this.playerMovement.x;
-			//render the updated collision box for collision detection
-			this.renderer.render(this.scene, this.camera);
-
-			if(!this._collisionDetection() || this._onBombDoesNextStepisValid()){
-				this.core.getMainPlayer().updatePosition(this.playerMovement);				
+		if(this.core.getMainPlayer()){
+			if(this._hasMovement()) {
+				if(!this._collisionDetection(this.core.getMainPlayer().absoluteXPos, 
+					this.core.getMainPlayer().absoluteYPos)){
+					this.core.getMainPlayer().updatePosition(this.playerMovement);				
+				}
+			} else {
+				this.core.getMainPlayer().resetAnimation();
 			}
-		} else if (this.core.getMainPlayer()){
-			this.core.getMainPlayer().resetAnimation();
 		}
 		this.renderer.render(this.scene, this.camera);
 	}
@@ -229,22 +210,47 @@
 		return this.playerMovement.x != 0 || this.playerMovement.y != 0;
 	}
 
+	/**
+	 * Calculate where player might be in the future based on its movement
+	 * , return true if this location is blocked
+	 */
 	Gui.prototype._collisionDetection = function(x, y) {
-		var model = this.collisionBox;
-		var originPoint = model.position.clone();
-		
-		for (var vertexIndex = 0; vertexIndex < model.geometry.vertices.length; vertexIndex++) {
-			var localVertex = model.geometry.vertices[vertexIndex].clone();
-			var globalVertex = localVertex.applyMatrix4( model.matrix );
-			var directionVector = globalVertex.sub( model.position );
-			var ray = new THREE.Raycaster( originPoint, directionVector.clone().normalize() );
-			var collisionResults = ray.intersectObjects( Object.values(this.collidableMeshList));
+		let xOrig = Math.floor((x + 196)/24.2);
+		let yOrig = Math.floor((y + 130.5)/24.2);
+		let dx = this._normalize(this.playerMovement.x);
+		let dy = this._normalize(this.playerMovement.y);
+		let xPos = Math.floor((x + 196 + (dx * 8))/24.2);
+		let yPos = Math.floor((y + 130.5 + (dy * 8))/24.2);
+		if(xPos == xOrig && yPos == yOrig) return false;
 
-			if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() ) 
-				return true;
+		if(xPos < 0 || yPos < 0 || xPos >= GAMEBOARD_SIZE || yPos >= GAMEBOARD_SIZE){
+			return true;
 		}
+		let location = this.gameplay.gameboard[xPos][yPos];
+		let ret = isCollision(location);
+		// in case of diagonal, calculate adjacent collisions
+		if(this.isValidPosition(xPos, yPos - dy) && 
+				this.isValidPosition(xPos - dx, yPos)){
+					
+			let collidableX = this.gameplay.gameboard[xPos - dx][yPos];
+			let collidableY = this.gameplay.gameboard[xPos][yPos - dy];
+			ret = ret || (isCollision(collidableX) && isCollision(collidableY));
+		}
+		return ret;
+	}
 
-		return false;
+	Gui.prototype._normalize = function(num){
+		if(num == 0){
+			return 0;
+		}else if(num < 0){
+			return -1;
+		}else{
+			return 1;
+		}
+	};
+
+	Gui.prototype.isValidPosition = function(x, y){
+		return x >= 0 && x < GAMEBOARD_SIZE && y >= 0 && y < GAMEBOARD_SIZE;
 	}
 
 	// Export to window
