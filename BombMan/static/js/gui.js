@@ -190,12 +190,13 @@
 
 	Gui.prototype._frame = function() {
 		if(this._hasMovement() && this.core.getMainPlayer()) {
-			this.collisionBox.position.z = this.core.getMainPlayer().model.position.z + this.playerMovement.y;
-			this.collisionBox.position.x = this.core.getMainPlayer().model.position.x + this.playerMovement.x;
-			//render the updated collision box for collision detection
-			this.renderer.render(this.scene, this.camera);
+			// this.collisionBox.position.z = this.core.getMainPlayer().model.position.z + this.playerMovement.y;
+			// this.collisionBox.position.x = this.core.getMainPlayer().model.position.x + this.playerMovement.x;
+			// //render the updated collision box for collision detection
+			// this.renderer.render(this.scene, this.camera);
 
-			if(!this._collisionDetection()){
+			if(!this._collisionDetection(this.core.getMainPlayer().absoluteXPos, 
+				this.core.getMainPlayer().absoluteYPos)){
 				this.core.getMainPlayer().updatePosition(this.playerMovement);				
 			}
 		} else if (this.core.getMainPlayer()){
@@ -213,21 +214,30 @@
 	}
 
 	Gui.prototype._collisionDetection = function(x, y) {
-		var model = this.collisionBox;
-		var originPoint = model.position.clone();
+		// var model = this.collisionBox;
+		// var originPoint = model.position.clone();
 		
-		for (var vertexIndex = 0; vertexIndex < model.geometry.vertices.length; vertexIndex++) {
-			var localVertex = model.geometry.vertices[vertexIndex].clone();
-			var globalVertex = localVertex.applyMatrix4( model.matrix );
-			var directionVector = globalVertex.sub( model.position );
-			var ray = new THREE.Raycaster( originPoint, directionVector.clone().normalize() );
-			var collisionResults = ray.intersectObjects( Object.values(this.collidableMeshList));
+		// for (var vertexIndex = 0; vertexIndex < model.geometry.vertices.length; vertexIndex++) {
+		// 	var localVertex = model.geometry.vertices[vertexIndex].clone();
+		// 	var globalVertex = localVertex.applyMatrix4( model.matrix );
+		// 	var directionVector = globalVertex.sub( model.position );
+		// 	var ray = new THREE.Raycaster( originPoint, directionVector.clone().normalize() );
+		// 	var collisionResults = ray.intersectObjects( Object.values(this.collidableMeshList));
 
-			if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() ) 
-				return true;
+		// 	if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() ) 
+		// 		return true;
+		// }
+
+		// return false;
+
+		let xPos = Math.floor((x + 196 + this.playerMovement.x)/24.2);
+		let yPos = Math.floor((y + 130.5 + this.playerMovement.y)/24.2);
+		if(xPos < 0 || yPos < 0 || xPos >= GAMEBOARD_SIZE || yPos >= GAMEBOARD_SIZE){
+			return true;
 		}
-
-		return false;
+		console.log(xPos, yPos);
+		let location = this.gameplay.gameboard[xPos][yPos];
+		return (location == HARDBLOCK || location == SOFTBLOCK);
 	}
 
 	// Export to window
