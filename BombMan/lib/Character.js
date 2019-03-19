@@ -12,6 +12,7 @@ function Character(name, xPos, yPos, speed, power, load) {
     this.rotation = 0;
     this.bombs = [];
     this.armAndLegSwitchMovement = -1;
+    this.movement = {x:0, y:0};
 
     this.movementAnimation = function(bodyPart, movementDirection) {
 
@@ -52,8 +53,8 @@ Character.prototype.updatePosition = function(vector) {
     this.absoluteXPos += vector.x;
     this.absoluteYPos += vector.y;
 
-    this.model.position.x += vector.x;
-    this.model.position.z += vector.y;
+    // this.model.position.x += vector.x;
+    // this.model.position.z += vector.y;
 
     this.xPos = Math.floor((this.absoluteXPos + 196)/24.2);
     this.yPos = Math.floor((this.absoluteYPos + 130.5)/24.2);
@@ -75,12 +76,18 @@ Character.prototype.updatePositionAbs = function(x, y, rotation) {
     this.absoluteXPos = x;
     this.absoluteYPos = y;
 
-    this.model.position.x = x;
-    this.model.position.z = y;
+    // this.model.position.x = x;
+    // this.model.position.z = y;
 
     this.xPos = Math.floor((this.absoluteXPos + 196)/24.2);
     this.yPos = Math.floor((this.absoluteYPos + 130.5)/24.2);
     this.updateModelRotation(rotation);
 }
+
+Character.prototype.update = function(checkCollision){
+    if(checkCollision(this.absoluteXPos + this.movement.x, this.absoluteYPos + this.movement.y)){
+        this.updatePosition(this.movement);
+    }
+};
 
 module.exports = Character;

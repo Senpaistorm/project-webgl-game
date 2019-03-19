@@ -10,6 +10,21 @@ let bomb = function(x, y, power){
     };
 };
 
+const GAMEBOARD_SIZE = 15;
+// types of materials on the gameboard
+const UNBLOCKED = 0;
+const SOFTBLOCK = 1;
+const BOMB = 2;
+const HARDBLOCK = 4;
+// initial speed of the characters
+const INIT_SPEED = 3;
+// powerup items
+const POWER_ITEM = 1;
+const SPEED_ITEM = 2;
+const BOMB_ITEM = 3;
+const ITEM_PROC_RATE = 0.5;
+
+
 let coord = function(x, y, type){
     return{
         xPos: x,
@@ -18,32 +33,39 @@ let coord = function(x, y, type){
     };
 };
 
-let Character = require('./Character');
-let HashMap = require('hashmap');
-let Constants = require('./Constants');
+const Character = require('./Character');
+const HashMap = require('hashmap');
+const Constants = require('./Constants');
+const Util = require('./Util');
 
 function Gameplay() {
     // map from socket to character
-    this.characters = new HashMap();
+    this.players = new HashMap();
+    this.gameboard = Util.defaultGameboard();
 
-    this.gameboard = emptyGameboard();
-    this.gameboard = defaultGameboard(this.gameboard);
-
-    // all the bombs this character currently is placing
+    // all the bombs currently in this game
     this.bombs = [];
     // power up items
     this.items = setRandomItems(this.gameboard);
-
+    this.room = null;
     // this.canPlaceBomb = () => {
     // 	return this.bombs.length < this.character.load;
     // };
 }
 
-Gameplay.prototype.addPlayer = (name, socket, x, y, speed, power, load) => {
-    this.players.set(socket.id, new Character(name, x, y, speed, power, load));
+Gameplay.prototype.addPlayerList = function(sList){
+    let i = 0;
+    sList.forEach((sid) => {
+        this.addPlayer(sid, sid, i++);
+    });
 };
 
-Gameplay.prototype.removePlayer = (id) => {
+Gameplay.prototype.addPlayer = function (name, sid, i){
+    this.players.set(sid, new Character(name, Constants.initPositions[i].xPos,
+        Constants.initPositions[i].yPos, Constants.INIT_POWER, Constants.INIT_SPEED, Constants.INIT_LOAD));
+};
+
+Gameplay.prototype.removePlayer = function(id){
     if (this.players.has(id)) {
         return this.players.remove(id);
     }
@@ -61,10 +83,46 @@ Gameplay.prototype.getPlayerBySocketId = function(id) {
     return null;
 };
 
-Gameplay.prototype.checkCollision = (absoluteXPos, absoluteYPos) =>{
+Gameplay.prototype.setRoom = function(roomName) {
+    this.room = roomName;
+};
+
+Gameplay.prototype.getRoom = function() {
+    return this.room;
+};
+
+Gameplay.prototype.checkCollision = function(absoluteXPos, absoluteYPos){
     let x = Math.floor((absoluteXPos + 196)/24.2);
     let y = Math.floor((absoluteYPos + 130.5)/24.2);
     return unOccupied(this.gameboard[x][y]);
+}
+
+Gameplay.prototype.update = function(){
+    var characters = this.getPlayers();
+    for(var i = 0; i < characters.length; i++){
+        characters[i].update(this.checkCollision);
+    }
+};
+
+Gameplay.prototype.sendState = function(){
+    //console.log(`broadcasting gamestate to ${this.room}`);
+};
+
+Gameplay.prototype.handleKey = function(id, intent){
+    var character = this.players.get(id);
+    if(intent.up){
+        character.move({y: -1});
+    }else if(intent.down){
+        character.movement.y = 1;
+    }
+    if(intent.left){
+        character.movement.x = -1;
+    }else if(intent.right){
+        character.movement.x = 1;
+    }
+    if(intent.bomb){
+        this.placeBomb(character);
+    }
 }
 
 Gameplay.prototype.placeBomb = async (character) => {
@@ -112,10 +170,6 @@ Gameplay.prototype.bombExists = (myBomb) => {
     }
     return false;
 };
-
-Gameplay.prototype.register = (core) => {
-    this.core = core;
-}
 
 // check if any player hit by the boom
 Gameplay.prototype.checkPlayerHit = (areaAffected, players) => {
@@ -221,37 +275,6 @@ Gameplay.prototype.explodeBomb = (bombExplode) => {
 let unOccupied = (block) => {
     return !(block == SOFTBLOCK || block == HARDBLOCK || block == BOMB);
 };
-
-function emptyGameboard(){
-    let gameboard = [];
-    for(let i = 0; i < GAMEBOARD_SIZE; i++){
-        let arr = [];
-        for (var j = 0; j < GAMEBOARD_SIZE; j++){
-            arr.push(UNBLOCKED);
-        }
-        gameboard.push(arr);
-    }
-    return gameboard;
-}
-
-function defaultGameboard(gameboard){
-    gameboard = [[0,0,1,1,1,1,1,1,1,1,1,1,1,0,0],
-                    [0,0,1,1,1,0,0,0,0,0,1,1,1,0,0],
-                    [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
-                    [1,1,1,1,1,0,0,4,0,0,1,1,1,1,1],
-                    [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
-                    [1,1,1,0,0,4,0,4,0,4,0,0,1,1,1],
-                    [1,1,1,0,0,0,1,1,1,0,0,0,1,1,1],
-                    [1,1,1,4,0,4,1,1,1,4,0,4,1,1,1],
-                    [1,1,1,0,0,0,1,1,1,0,0,0,1,1,1],
-                    [1,1,1,0,0,4,0,4,0,4,0,0,1,1,1],
-                    [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
-                    [1,1,1,1,1,0,0,4,0,0,1,1,1,1,1],
-                    [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
-                    [0,0,1,1,1,0,0,0,0,0,1,1,1,0,0],
-                    [0,0,1,1,1,1,1,1,1,1,1,1,1,0,0]];
-    return gameboard;
-}
 
 function setRandomItems(gameboard){
     let res = [];

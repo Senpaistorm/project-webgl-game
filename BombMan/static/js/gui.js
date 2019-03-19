@@ -28,9 +28,12 @@
 	}
 
 	Gui.prototype.onNewGame = function(gameplay) {
+		console.log('gui started');
 		this._init();
 		this.gameplay = gameplay;
 		this._createGameBoard(gameplay.gameboard);
+		this.createCharacters(gameplay.players);
+		this._animate();
 	};
 
 	// Called this method when player is moving along with the given vector 
@@ -40,9 +43,16 @@
 			this.playerMovement = vector;
 	}
 
+	Gui.prototype.createCharacters = function(characters) {
+		console.log(characters._data);
+		Object.entries(characters._data).forEach((character, i) =>{
+			this.createCharacter(character[1]);
+		})
+	}
+
 	Gui.prototype.createCharacter = function(character) {
 		gameobject.createCharactorModel(character.absoluteXPos, character.absoluteYPos, (mesh) => {
-			character.setModel(mesh);
+			//character.setModel(mesh);
 			this.scene.add(mesh);
 		});
 	}
@@ -89,7 +99,6 @@
 	Gui.prototype._init = function() {
 		this._createScene();
 		this._createLights();
-		this._animate();
 	};
 
 	Gui.prototype._createGameBoard = function(gameboard) {
@@ -182,9 +191,10 @@
     }
 
 	Gui.prototype._animate = function() {
-	  //this.animationFrameID = window.requestAnimationFrame(this._animate.bind(this));
+		this.animationFrameID = window.requestAnimationFrame(this._animate.bind(this));
+		this.renderer.render(this.scene, this.camera);
 		//Player movement
-		setInterval(this._frame.bind(this), 1000/30);
+		//setInterval(this._frame.bind(this), 1000/30);
 		//this._frame();
 	}
 

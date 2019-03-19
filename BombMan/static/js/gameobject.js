@@ -65,7 +65,6 @@ let gameobject = (function() {
 	}
 
 	module.createNormalBlock = function(x, y, callback) {
-		//var mtlLoader = new THREE.MTLLoader();
 		mtlLoader.load("./media/models/block.mtl", function(materials){
 			
 			materials.preload();
@@ -89,7 +88,6 @@ let gameobject = (function() {
 	};
 
 	module.createHardBlock = function(x, y, callback) {
-		//var mtlLoader = new THREE.MTLLoader();
 		mtlLoader.load("./media/models/towerSquare.mtl", function(materials){
 			
 			materials.preload();
@@ -119,7 +117,6 @@ let gameobject = (function() {
 	};
 
 	module.createBomb = function(x,y,callback) {
-		//var mtlLoader = new THREE.MTLLoader();
 		mtlLoader.load("./media/models/bomb.mtl", function(materials){
 			
 			materials.preload();

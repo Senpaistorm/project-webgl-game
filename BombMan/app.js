@@ -14,7 +14,7 @@ const io = socketIO(httpServer);
 const Character = require('./lib/Character');
 const Gameplay = require('./lib/Gameplay');
 const Constants = require('./lib/Constants');
-const Hashmap = require('hashmap');
+const HashMap = require('hashmap');
 
 app.use(express.static('static'));
 
@@ -29,7 +29,7 @@ let roomStatus = [];
 let characterStatus = {};
 // character to room dictionary
 let charToRoom = {};
-let roomToGame = new Hashmap();
+let startedGames = new HashMap();
 
 // WebSocket handlers
 io.on('connection', function(socket) {
@@ -67,17 +67,24 @@ io.on('connection', function(socket) {
         let rooms = io.sockets.adapter.rooms;
         roomStatus.forEach((room) =>{
             if(room.size >= 2){
-                // notify every player in the room to start game                 
+                // notify every player in the room to start game                  
+                // Object.keys(rooms[room.name].sockets).forEach((char) =>{
+                //     charToRoom[char] = room.name;
+                // })
                 
-                Object.keys(rooms[room.name].sockets).forEach((char) =>{
-                    charToRoom[char] = room.name;
-                })
                 let game = new Gameplay();
-                Object.keys(rooms[room.name].sockets).forEach((char) =>{
-                    game.addPlayer(char, char);
+                let i = 0;
+                game.setRoom(room.name);
+                console.log(rooms[room.name]);
+                // for(i; i < room.size; i++){
+                //     game.addPlayer(sid, sid, i++);
+                // }
+                Object.keys(rooms[room.name].sockets).forEach(function(sid){
+                    game.addPlayer(sid, sid, i);
+                    i++;
                 });
-                roomToGame.set(room.name, game);
-                io.sockets.in(room.name).emit('gamestart', roomToGame[room.name], room.name);
+                startedGames.set(room.name, game);
+                io.sockets.in(room.name).emit('gamestart', game, room.name);
             }else{
                 if(room.name in rooms){
                     socket.leave(room.name);
@@ -86,6 +93,11 @@ io.on('connection', function(socket) {
         });
         roomStatus = [];
     });    
+
+    socket.on('player_action', function(data) {
+        var game = startedGames.get(data.room);
+        game.handleKey(socket.id, data.intent);
+    });
 
     socket.on('placeBomb', (roomId, player) =>{
         io.sockets.to(roomId).emit('placeBomb', player);
@@ -112,9 +124,10 @@ io.on('connection', function(socket) {
 // Server side game loop, runs at 60Hz and sends out update packets to all
 // clients every tick.
 setInterval(function() {
-    roomToGame.forEach((room, game) => {
+    var games = startedGames.values();
+    games.forEach((game) => {
         game.update();
-        game.sendState(room);
+        game.sendState();
     });
 }, 1000/30);
 

@@ -19,7 +19,6 @@
 
 	Core.prototype.startNewGame = function(gameplay) {
 		this.gameplay = gameplay;
-		this.gameplay.register(this);
 		this._notifyNewGameStarted(gameplay);
 	};
 
