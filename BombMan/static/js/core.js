@@ -60,7 +60,7 @@
 	Core.prototype.updatePositions = function(player) {
 		for(let i = 0; i < this.getPlayers().length; i++){
 			if(player.name == this.getPlayers()[i].name){
-				this.getPlayers()[i].updatePositionAbs(player.absoluteXPos, player.absoluteYPos);
+				this.getPlayers()[i].updatePositionAbs(player.absoluteXPos, player.absoluteYPos, player.rotation);
 				return;
 			}
 		}
@@ -117,7 +117,6 @@
 			vector.x += movementToVector[e.keyCode].x * character.speed;
 			vector.y += movementToVector[e.keyCode].y * character.speed;
 
-			console.log(vector.x, vector.y);
 			//A vector represents the player's movement
 			this.gui.changePlayerMovement(vector);
 		}

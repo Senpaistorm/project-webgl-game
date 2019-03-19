@@ -55,6 +55,7 @@
 			gameobject.createBomb(x, y, (mesh) => {
 				this.gameboardMesh[x][y] = mesh;
 				this.scene.add(mesh);
+				this.collidableMeshList[mesh.uuid] = mesh.children[3];
 			});
 		}
 	}
@@ -81,7 +82,7 @@
 
 	Gui.prototype.createExplosion = function(x, y) {
 		gameobject.createExplosion(STARTING_X + x * BLOCK_SIZE, STARTING_Y + y * BLOCK_SIZE, (mesh) => {
-			this.gameboardMesh[x][y] = mesh
+			this.gameboardMesh[x][y] = mesh;
 			this.scene.add(mesh);
 		});
 	}
@@ -195,7 +196,7 @@
 			//render the updated collision box for collision detection
 			this.renderer.render(this.scene, this.camera);
 
-			if(!this._collisionDetection()){
+			if(!this._collisionDetection() || this._onBombDoesNextStepisValid()){
 				this.core.getMainPlayer().updatePosition(this.playerMovement);				
 			}
 		} else if (this.core.getMainPlayer()){
@@ -206,6 +207,22 @@
 
 	Gui.prototype.stopAnimate = function() {
 		if(this.animationFrameID) window.cancelAnimationFrame(this.animationFrameID);
+	}
+
+	/**
+	 * If the player currently standing on a bomb, the function checks if the next step of the player after the movement
+	 * contains any object or not. it will return false if the player is not standing on a bomb or the player's next step is invalid
+	 */
+	Gui.prototype._onBombDoesNextStepisValid = function() {
+		let character = this.core.getMainPlayer();
+
+		if (this.gameboardMesh[character.xPos][character.yPos] == null || this.gameboardMesh[character.xPos][character.yPos].name != "bomb")
+			return false;
+
+		let x = (this.playerMovement.x == 0)? character.xPos: character.xPos + this.playerMovement.x / Math.abs(this.playerMovement.x);
+		let y = (this.playerMovement.y == 0)? character.yPos: character.yPos + this.playerMovement.y / Math.abs(this.playerMovement.y);
+
+		return x >= 0 && x <= 14 && y >= 0 && y <= 14 && this.gameboardMesh[x][y] == null;
 	}
 
 	Gui.prototype._hasMovement = function() {

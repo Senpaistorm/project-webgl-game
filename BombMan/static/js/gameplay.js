@@ -30,7 +30,7 @@
 		this.bombs = [];
 		// power up items
 		this.items = setRandomItems(this.gameboard);
-
+		
 		this.isValidPosition = (x, y) => {
 			return x >= 0 && x < GAMEBOARD_SIZE && y >= 0 && y < GAMEBOARD_SIZE && unOccupied(this.gameboard[x][y]);
 		};
