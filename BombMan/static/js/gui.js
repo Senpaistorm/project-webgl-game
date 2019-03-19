@@ -21,8 +21,6 @@
 		this.renderer.autoClearDepth = false;
 		this.container = document.getElementById('world');
 		this.keyboardEvent = {};
-		//this.collisionBox = null;
-		//this.collidableMeshList = {};
 		this.playerMovement = {x:0, y:0};
 		this.animationFrameID = null;
 	}
@@ -75,13 +73,12 @@
 		if(mesh) {
 			this.gameboardMesh[x][y] = null;
 			this.scene.remove(mesh);
-			//delete this.collidableMeshList[mesh.uuid];
 		}
 	}
 
 	Gui.prototype.createExplosion = function(x, y) {
 		gameobject.createExplosion(STARTING_X + x * BLOCK_SIZE, STARTING_Y + y * BLOCK_SIZE, (mesh) => {
-			this.gameboardMesh[x][y] = mesh
+			this.gameboardMesh[x][y] = mesh;
 			this.scene.add(mesh);
 		});
 	}
@@ -107,13 +104,11 @@
 					gameobject.createNormalBlock(STARTING_X + i * BLOCK_SIZE, STARTING_Y + j * BLOCK_SIZE, (mesh) => {
 						this.gameboardMesh[i][j] = mesh;
 						this.scene.add(mesh);
-					//	this.collidableMeshList[mesh.uuid] = mesh.children[2];
 					});
 				}else if(gameboard[i][j] == HARDBLOCK){
 					gameobject.createHardBlock(STARTING_X + i * BLOCK_SIZE, STARTING_Y + j * BLOCK_SIZE, (mesh) => {
 						this.gameboardMesh[i][j] = mesh;
 						this.scene.add(mesh);
-					//	this.collidableMeshList[mesh.uuid] = mesh.children[1];
 					});
 				}
 			}
@@ -122,21 +117,17 @@
 		for(let i = 0; i < gameboard.length+2; i ++) {
 			gameobject.createHardBlock(STARTING_X + (i-1) * BLOCK_SIZE, STARTING_Y - BLOCK_SIZE, (mesh) => {
 				this.scene.add(mesh);
-			//	this.collidableMeshList[mesh.uuid] = mesh.children[1];
 			});
 			gameobject.createHardBlock(STARTING_X + (i-1) * BLOCK_SIZE, STARTING_Y + gameboard.length * BLOCK_SIZE, (mesh) => {
 				this.scene.add(mesh);
-			//	this.collidableMeshList[mesh.uuid] = mesh.children[1];
 			});
 		}
 		for(let i = 0; i < gameboard.length; i ++) {
 			gameobject.createHardBlock(STARTING_X - BLOCK_SIZE, STARTING_Y + i * BLOCK_SIZE, (mesh) => {
 				this.scene.add(mesh);
-				//this.collidableMeshList[mesh.uuid] = mesh.children[1];
 			});
 			gameobject.createHardBlock(STARTING_X + gameboard.length * BLOCK_SIZE, STARTING_Y + i * BLOCK_SIZE, (mesh) => {
 				this.scene.add(mesh);
-				//this.collidableMeshList[mesh.uuid] = mesh.children[1];
 			});
 		}
 	}
@@ -147,13 +138,6 @@
 		this.camera.position.y = 320;
 		this.camera.position.z = 200;
 		this.camera.lookAt(new THREE.Vector3(0,-200,0));
-
-		// var cubeGeometry = new THREE.CubeGeometry(15,15,15,1,1,1);
-		// var wireMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe:true } );
-		// this.collisionBox = new THREE.Mesh( cubeGeometry, wireMaterial );
-		// this.collisionBox.position.y = 15;
-		// this.collisionBox.visible = false;
-		// this.scene.add(this.collisionBox);
 
 		this.renderer.setSize(window.innerWidth, window.innerHeight);
 		this.renderer.shadowMap.enabled = true;
@@ -191,11 +175,6 @@
 	Gui.prototype._frame = function() {
 		if(this.core.getMainPlayer()){
 			if(this._hasMovement()) {
-				// this.collisionBox.position.z = this.core.getMainPlayer().model.position.z + this.playerMovement.y;
-				// this.collisionBox.position.x = this.core.getMainPlayer().model.position.x + this.playerMovement.x;
-				// //render the updated collision box for collision detection
-				// this.renderer.render(this.scene, this.camera);
-	
 				if(!this._collisionDetection(this.core.getMainPlayer().absoluteXPos, 
 					this.core.getMainPlayer().absoluteYPos)){
 					this.core.getMainPlayer().updatePosition(this.playerMovement);				
@@ -217,22 +196,6 @@
 	}
 
 	Gui.prototype._collisionDetection = function(x, y) {
-		// var model = this.collisionBox;
-		// var originPoint = model.position.clone();
-		
-		// for (var vertexIndex = 0; vertexIndex < model.geometry.vertices.length; vertexIndex++) {
-		// 	var localVertex = model.geometry.vertices[vertexIndex].clone();
-		// 	var globalVertex = localVertex.applyMatrix4( model.matrix );
-		// 	var directionVector = globalVertex.sub( model.position );
-		// 	var ray = new THREE.Raycaster( originPoint, directionVector.clone().normalize() );
-		// 	var collisionResults = ray.intersectObjects( Object.values(this.collidableMeshList));
-
-		// 	if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() ) 
-		// 		return true;
-		// }
-
-		// return false;
-
 		let xPos = Math.floor((x + 196 + (this.playerMovement.x * 1.5))/24.2);
 		let yPos = Math.floor((y + 130.5 + (this.playerMovement.y * 1.5))/24.2);
 		if(xPos < 0 || yPos < 0 || xPos >= GAMEBOARD_SIZE || yPos >= GAMEBOARD_SIZE){
