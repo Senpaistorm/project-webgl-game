@@ -60,7 +60,7 @@
 	Core.prototype.updatePositions = function(player) {
 		for(let i = 0; i < this.getPlayers().length; i++){
 			if(player.name == this.getPlayers()[i].name){
-				this.getPlayers()[i].updatePositionAbs(player.absoluteXPos, player.absoluteYPos);
+				this.getPlayers()[i].updatePositionAbs(player.absoluteXPos, player.absoluteYPos, player.rotation);
 				return;
 			}
 		}
