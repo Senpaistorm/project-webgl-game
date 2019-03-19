@@ -4,6 +4,9 @@ let gameobject = (function() {
 	let module = {};
 	var mtlLoader = new THREE.MTLLoader();
 
+	var cubeGeometry = new THREE.BoxBufferGeometry( 21, 21, 21 );
+	var wireMaterial = new THREE.MeshBasicMaterial({color:0xffffff, wireframe:true, opacity:0});
+
 	module.createCharactorModel = function(x, y, callback) {
 		//var textureLoader = new THREE.TextureLoader();
 		// var map = textureLoader.load('./media/textures/skin_man.png');
@@ -101,9 +104,17 @@ let gameobject = (function() {
 				mesh.children[0].material.color.set(0xffe4b5);
 				mesh.position.set(-185.5 + (x+1.65) * 24.2, 10, -120 + y * 24.2);
 				mesh.scale.set(18,18,18);
-				mesh.matrixAutoUpdate = false;
+
+				var smallCubeGeometry = new THREE.BoxBufferGeometry( 10, 10, 10 );
+
+				var collision = new THREE.Mesh( smallCubeGeometry, wireMaterial );
+				collision.position.set(-185.5 + x * 24.2, 10, -120 + y * 24.2);
+				collision.transparent = true;
+				mesh.children.push(collision);
+    			mesh.matrixAutoUpdate = false;
+    			mesh.name = "bomb";
 				mesh.updateMatrix();
-				callback(mesh);
+    			callback(mesh);
 			});
 		});
 	}

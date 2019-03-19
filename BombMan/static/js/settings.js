@@ -49,6 +49,6 @@ let initPositions = [{xPos: 0, yPos:0}, {xPos:14, yPos:0},
     {xPos:0, yPos:14}, {xPos:14, yPos:14}];
 
 let isCollision = function(material){
-	return material == HARDBLOCK || material == SOFTBLOCK;
-	// || material == BOMB;
+	return material == HARDBLOCK || material == SOFTBLOCK
+	  || material == BOMB;
 }

@@ -183,7 +183,6 @@
 				this.core.getMainPlayer().resetAnimation();
 			}
 		}
-
 		this.renderer.render(this.scene, this.camera);
 	}
 
@@ -191,13 +190,31 @@
 		if(this.animationFrameID) window.cancelAnimationFrame(this.animationFrameID);
 	}
 
+	/**
+	 * If the player currently standing on a bomb, the function checks if the next step of the player after the movement
+	 * contains any object or not. it will return false if the player is not standing on a bomb or the player's next step is invalid
+	 */
+	Gui.prototype._onBombDoesNextStepisValid = function() {
+		let character = this.core.getMainPlayer();
+
+		if (this.gameboardMesh[character.xPos][character.yPos] == null || this.gameboardMesh[character.xPos][character.yPos].name != "bomb")
+			return false;
+
+		let x = (this.playerMovement.x == 0)? character.xPos: character.xPos + this.playerMovement.x / Math.abs(this.playerMovement.x);
+		let y = (this.playerMovement.y == 0)? character.yPos: character.yPos + this.playerMovement.y / Math.abs(this.playerMovement.y);
+
+		return x >= 0 && x <= 14 && y >= 0 && y <= 14 && this.gameboardMesh[x][y] == null;
+	}
+
 	Gui.prototype._hasMovement = function() {
 		return this.playerMovement.x != 0 || this.playerMovement.y != 0;
 	}
 
+	/**
+	 * Calculate where player might be in the future based on its movement
+	 * , return true if this location is blocked
+	 */
 	Gui.prototype._collisionDetection = function(x, y) {
-		// calculate where player might be in the future
-		// return true if a collision can occur
 		let xOrig = Math.floor((x + 196)/24.2);
 		let yOrig = Math.floor((y + 130.5)/24.2);
 		let dx = this._normalize(this.playerMovement.x);
