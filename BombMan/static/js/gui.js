@@ -204,12 +204,14 @@
 		let dy = this._normalize(this.playerMovement.y);
 		let xPos = Math.floor((x + 196 + (dx * 8))/24.2);
 		let yPos = Math.floor((y + 130.5 + (dy * 8))/24.2);
+		if(xPos == xOrig && yPos == yOrig) return false;
 
 		if(xPos < 0 || yPos < 0 || xPos >= GAMEBOARD_SIZE || yPos >= GAMEBOARD_SIZE){
 			return true;
 		}
 		let location = this.gameplay.gameboard[xPos][yPos];
 		let ret = isCollision(location);
+		// in case of diagonal, calculate adjacent collisions
 		if(this.isValidPosition(xPos, yPos - dy) && 
 				this.isValidPosition(xPos - dx, yPos)){
 					
