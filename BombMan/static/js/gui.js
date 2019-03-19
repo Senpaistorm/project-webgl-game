@@ -196,14 +196,42 @@
 	}
 
 	Gui.prototype._collisionDetection = function(x, y) {
-		let xPos = Math.floor((x + 196 + (this.playerMovement.x * 1.5))/24.2);
-		let yPos = Math.floor((y + 130.5 + (this.playerMovement.y * 1.5))/24.2);
+		// calculate where player might be in the future
+		// return true if a collision can occur
+		let xOrig = Math.floor((x + 196)/24.2);
+		let yOrig = Math.floor((y + 130.5)/24.2);
+		let dx = this._normalize(this.playerMovement.x);
+		let dy = this._normalize(this.playerMovement.y);
+		let xPos = Math.floor((x + 196 + (dx * 8))/24.2);
+		let yPos = Math.floor((y + 130.5 + (dy * 8))/24.2);
+
 		if(xPos < 0 || yPos < 0 || xPos >= GAMEBOARD_SIZE || yPos >= GAMEBOARD_SIZE){
 			return true;
 		}
-		console.log(xPos, yPos);
 		let location = this.gameplay.gameboard[xPos][yPos];
-		return (location == HARDBLOCK || location == SOFTBLOCK);
+		let ret = isCollision(location);
+		if(this.isValidPosition(xPos, yPos - dy) && 
+				this.isValidPosition(xPos - dx, yPos)){
+					
+			let collidableX = this.gameplay.gameboard[xPos - dx][yPos];
+			let collidableY = this.gameplay.gameboard[xPos][yPos - dy];
+			ret = ret || (isCollision(collidableX) && isCollision(collidableY));
+		}
+		return ret;
+	}
+
+	Gui.prototype._normalize = function(num){
+		if(num == 0){
+			return 0;
+		}else if(num < 0){
+			return -1;
+		}else{
+			return 1;
+		}
+	};
+
+	Gui.prototype.isValidPosition = function(x, y){
+		return x >= 0 && x < GAMEBOARD_SIZE && y >= 0 && y < GAMEBOARD_SIZE;
 	}
 
 	// Export to window
