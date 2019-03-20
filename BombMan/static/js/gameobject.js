@@ -7,22 +7,24 @@ let gameobject = (function() {
 	var cubeGeometry = new THREE.BoxBufferGeometry( 21, 21, 21 );
 	var wireMaterial = new THREE.MeshBasicMaterial({color:0xffffff, wireframe:true, opacity:0});
 
-	module.createCharactorModel = function(x, y, callback) {
-		//var textureLoader = new THREE.TextureLoader();
-		// var map = textureLoader.load('./media/textures/skin_man.png');
-		// var material = new THREE.MeshPhongMaterial({map: map});
+	function loadCharacterTexture() {
+		var textureLoader = new THREE.TextureLoader();
+		var map = textureLoader.load('./media/textures/skin_man.png');
+		return new THREE.MeshPhongMaterial({map: map});
+	}
 
+	let textureCache = loadCharacterTexture();
+
+	module.createCharactorModel = function(x, y, callback) {
 		var loader = new THREE.OBJLoader();
 		loader.load("./media/models/charactor/basicCharacter.obj", function ( object ) {
-
-		  // For any meshes in the model, add our material.
+		    //For any meshes in the model, add our material.
 			// object.traverse( function ( node ) {
-		    // 	if ( node.isMesh ) {
-		    // 		node.material = material;
-		    // 		node.castShadow = true;
-		 	// 		node.receiveShadow = true;
-		    // 	}
+		 //    	if ( node.isMesh ) {
+		 //    		node.material = textureCache;
+		 //    	}
 			// });
+
 			(object.children).forEach((child) =>{
 				let r = Math.random(),g=Math.random(),b=Math.random();
 				child.material.color.set(
@@ -56,8 +58,8 @@ let gameobject = (function() {
 	}
 
 	module.createExplosion = function(x, y, callback) {
-		var cubeGeometry = new THREE.CubeGeometry(23,23,23,1,1,1);
-		var wireMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe:true } );
+		var cubeGeometry = new THREE.CubeGeometry(24,24,24,1,1,1);
+		var wireMaterial = new THREE.MeshBasicMaterial( { color: 0xFFFF00 } );
 		var box = new THREE.Mesh( cubeGeometry, wireMaterial );
 		box.position.set(x, 10, y);
 		box.matrixAutoUpdate = false;
