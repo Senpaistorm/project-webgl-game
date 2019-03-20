@@ -116,7 +116,6 @@
 			movementToVector[e.keyCode].keyDown = true;
 			vector.x += movementToVector[e.keyCode].x * character.speed;
 			vector.y += movementToVector[e.keyCode].y * character.speed;
-
 			//A vector represents the player's movement
 			this.gui.changePlayerMovement(vector);
 		}
