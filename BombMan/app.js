@@ -21,12 +21,14 @@ let characterStatus = {};
 // character to room dictionary
 let charToRoom = {};
 
+const GAMEBOARD_SIZE = 15;
+const ITEM_PROC_RATE = 0.5;
+
 // WebSocket handlers
 io.on('connection', function(socket) {
-    console.log(`user ${socket.id} connected.`);
 
     socket.on('disconnect', function(){
-        console.log(`user ${socket.id} disconnected`);
+        delete charToRoom[socket.id];
         delete characterStatus[socket.id];
     });
 
@@ -72,6 +74,11 @@ io.on('connection', function(socket) {
         roomStatus = [];
     });    
 
+    socket.on('serverInit', (roomId, gameplay) => {
+        let itemboard = setRandomItems(gameplay.gameboard);
+        io.sockets.to(roomId).emit('itemsInit', itemboard);
+    })
+
     socket.on('placeBomb', (roomId, player) =>{
         io.sockets.to(roomId).emit('placeBomb', player);
     });
@@ -93,6 +100,22 @@ io.on('connection', function(socket) {
     });
 
 });
+
+function setRandomItems(gameboard){
+    let res = [];
+    for(let i = 0; i < GAMEBOARD_SIZE; i++){
+        let arr = [];
+        for (var j = 0; j < GAMEBOARD_SIZE; j++){
+            if(Math.random() > ITEM_PROC_RATE && gameboard[i][j]){
+                arr.push(Math.floor(Math.random() * 3 + 1));
+            }else{
+                arr.push(0);
+            }
+        }
+        res.push(arr);
+    }
+    return res;
+}
 
 const PORT = 3000;
 
