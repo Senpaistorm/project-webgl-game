@@ -71,12 +71,12 @@
 	 	//Check if there is any item on the current location
 	 	if(this.gameplay.items[player.xPos][player.yPos] != 0) {
 
-			if(this.gameplay.items[player.xPos][player.yPos] == POWER_ITEM) {
+			if(this.gameplay.items[player.xPos][player.yPos] == POWER_ITEM && player.power < POWER_LIMIT) {
 				player.power ++;
-			} else if(this.gameplay.items[player.xPos][player.yPos] == SPEED_ITEM){
+			} else if(this.gameplay.items[player.xPos][player.yPos] == SPEED_ITEM && player.power < SPEED_LIMIT){
 				player.speed ++;
 				if (player == this.getMainPlayer()) this.increaseMainPlayerSpeed();
-			} else if(this.gameplay.items[player.xPos][player.yPos] == BOMB_ITEM) {
+			} else if(this.gameplay.items[player.xPos][player.yPos] == BOMB_ITEM && player.power < LOAD_LIMIT) {
 				player.load ++;
 			}
 

@@ -16,6 +16,10 @@ const INIT_SPEED = 1;
 const INIT_LOAD = 1;
 const INIT_POWER = 1;
 
+const SPEED_LIMIT = 4;
+const LOAD_LIMIT = 8;
+const POWER_LIMIT = 10;
+
 // powerup items
 const POWER_ITEM = 1;
 const SPEED_ITEM = 2;
