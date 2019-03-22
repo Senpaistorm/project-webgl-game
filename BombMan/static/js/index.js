@@ -66,8 +66,7 @@
 		// socket handler for bombs being placed
 		socket.on('placeBomb', (character) => {
 			if(!game.core.getMainPlayer() || game.core.getMainPlayer().name != character.name){
-				game.core.gui.createBomb(character);
-				game.core.gameplay.placeBomb(character);
+				game.core.placeBomb(character);
 			}
 		});
 

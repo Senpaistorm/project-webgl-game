@@ -147,6 +147,18 @@
 	}
 
 	/**
+	 * Send to gui and gameplay the intent of placing a bomb,
+	 * if a bomb can be placed by this character
+	 */
+	Core.prototype.placeBomb = function(character){
+		if(this.gameplay.isValidPosition(character.xPos, character.yPos)
+			&& this.gameplay.canPlaceBomb(character)) {
+			this.gui.createBomb(character);
+			this.gameplay.placeBomb(character);
+		}
+	}
+
+	/**
 	 * Set the item board of gameplay if it hasn't been set
 	 */
 	Core.prototype.setItems = function(itemboard){
@@ -168,9 +180,8 @@
 	// keyboard handler and notify gui about the change
 	Core.prototype.keyDown = function(e) {
 		let character = this.getMainPlayer();
-		if(e.keyCode == PLACEBOMB && this.gameplay.isValidPosition(character.xPos, character.yPos)) {
-			this.gui.createBomb(character);
-			this.gameplay.placeBomb(character);
+		if(e.keyCode == PLACEBOMB){
+			this.placeBomb(character);
 		}
 
 		if(e.keyCode != PLACEBOMB 
