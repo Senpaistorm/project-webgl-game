@@ -83,6 +83,14 @@
 		});
 	}
 
+	Gui.prototype.createItem = function(x, y, itemType) {
+		let mesh = gameobject.createItem(x, y, itemType);
+		if(mesh) {
+			this.gameboardMesh[x][y] = mesh;
+			this.scene.add(mesh);
+		}
+	}
+
 	Gui.prototype._init = function() {
 		this._createScene();
 		this._createLights();
@@ -175,9 +183,11 @@
 	Gui.prototype._frame = function() {
 		if(this.core.getMainPlayer()){
 			if(this._hasMovement()) {
+
 				if(!this._collisionDetection(this.core.getMainPlayer().absoluteXPos, 
 					this.core.getMainPlayer().absoluteYPos)){
-					this.core.getMainPlayer().updatePosition(this.playerMovement);				
+					this.core.getMainPlayer().updatePosition(this.playerMovement);
+					this.core.onPlayerMoveChanged();			
 				}
 			} else {
 				this.core.getMainPlayer().resetAnimation();
@@ -207,6 +217,7 @@
 	}
 
 	Gui.prototype._hasMovement = function() {
+		console.log(this.playerMovement.x, this.playerMovement.y);
 		return this.playerMovement.x != 0 || this.playerMovement.y != 0;
 	}
 

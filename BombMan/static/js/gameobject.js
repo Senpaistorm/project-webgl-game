@@ -13,7 +13,62 @@ let gameobject = (function() {
 		return new THREE.MeshPhongMaterial({map: map});
 	}
 
+	function loadItemBomb() {
+		var spriteMap = new THREE.TextureLoader().load( "./media/models/items/bomb.png" );
+		var spriteMaterial = new THREE.SpriteMaterial( { map: spriteMap, color: 0xffffff } );
+		var sprite = new THREE.Sprite( spriteMaterial );
+		sprite.scale.set(26,26,26);
+		sprite.position.y = 10;
+		return sprite;
+	}
+
+	function loadItemPower() {
+		var spriteMap = new THREE.TextureLoader().load( "./media/models/items/power.png" );
+		var spriteMaterial = new THREE.SpriteMaterial( { map: spriteMap, color: 0xffffff } );
+		var sprite = new THREE.Sprite( spriteMaterial );
+		sprite.scale.set(26,26,26);
+		sprite.position.y = 10;
+		return sprite;
+	}
+
+	function loadItemShoes() {
+		var spriteMap = new THREE.TextureLoader().load( "./media/models/items/shoes.png" );
+		var spriteMaterial = new THREE.SpriteMaterial( { map: spriteMap, color: 0xffffff } );
+		var sprite = new THREE.Sprite( spriteMaterial );
+		sprite.scale.set(26,26,26);
+		sprite.position.y = 10;
+		return sprite;
+	}
+
+	//2D item cache
+	let itemBomb = loadItemBomb();
+	let itemPower = loadItemPower();
+	let itemShoes = loadItemShoes();
+
 	let textureCache = loadCharacterTexture();
+
+	module.createItem = function(x, y, type) {
+		let mesh;
+		//Clone the item so we don't have to reload the image
+		if (type == POWER_ITEM)	mesh = itemPower.clone();
+		else if (type == SPEED_ITEM) mesh = itemShoes.clone();
+		else if (type == BOMB_ITEM) mesh = itemBomb.clone();
+		
+		if(mesh) mesh.position.set(-185.5 + x * 24.2, 10, -120 + y * 24.2);
+		return mesh;
+	}
+
+	module.createItemPower = function(x, y) {
+		let mesh = itemPower.clone();
+		mesh.position.set(-185.5 + x * 24.2, 10, -120 + y * 24.2);
+		return mesh;
+	}
+
+	module.createItemShoes = function(x, y) {
+		let mesh = itemShoes.clone();
+		mesh.position.set(-185.5 + x * 24.2, 10, -120 + y * 24.2);
+		return mesh;
+	}
 
 	module.createCharactorModel = function(x, y, callback) {
 		var loader = new THREE.OBJLoader();

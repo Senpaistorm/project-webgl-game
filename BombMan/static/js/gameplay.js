@@ -30,14 +30,11 @@
 		this.bombs = [];
 		// power up items
 		this.items = setRandomItems(this.gameboard);
-		
+
 		this.isValidPosition = (x, y) => {
 			return x >= 0 && x < GAMEBOARD_SIZE && y >= 0 && y < GAMEBOARD_SIZE && unOccupied(this.gameboard[x][y]);
 		};
 
-		// this.canPlaceBomb = () => {
-		// 	return this.bombs.length < this.character.load;
-		// };
 
 		// check if any player hit by the boom
 		this.checkPlayerHit = (areaAffected, players) => {
@@ -66,7 +63,9 @@
 			await promise;
 			// explode bomb if it still exists
 			res = this.bombExists(myBomb) ? this.explodeBomb(myBomb) : null;
-			if(res)	this.core.explode(res.expCoords);
+			if(res)	{
+				this.core.explode(res);
+			}
 		}
 
 		this.explodeBomb = (bombExplode) => {

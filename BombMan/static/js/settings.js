@@ -12,7 +12,10 @@ const UP = 87;
 const RIGHT = 68;
 const PLACEBOMB = 74;
 // initial speed of the characters
-const INIT_SPEED = 3;
+const INIT_SPEED = 1;
+const INIT_LOAD = 1;
+const INIT_POWER = 1;
+
 // powerup items
 const POWER_ITEM = 1;
 const SPEED_ITEM = 2;
@@ -22,6 +25,7 @@ const ITEM_PROC_RATE = 0.5;
 const FORWARD = 1;
 const BACKWARD = -1;
 const STATIC = 0;
+
 
 let movementToVector = { 
 	65: {x:-1 ,y: 0, keyDown: false}, 

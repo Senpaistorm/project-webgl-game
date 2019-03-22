@@ -41,7 +41,7 @@
 			roomId = roomname;
 			Object.keys(players).forEach((player) =>{
 				let newChar = new app.Character(player, initPositions[i].xPos,
-					 initPositions[i].yPos, INIT_SPEED, 2, 1);
+					 initPositions[i].yPos, INIT_SPEED, INIT_POWER, INIT_LOAD);
 				if(socket.id == player){
 					game.core.addPlayer(newChar, true);
 				}else{
