@@ -6,11 +6,12 @@
 	 * with Core. This class is where all the game logic from
 	 */
 	// representation of a bomb
-	let bomb = function(x, y, power){
+	let bomb = function(x, y, power, name){
 		return{
 			xPos: x,
 			yPos: y,
 			power: power,
+			name: name
 		};
 	};
 
@@ -46,10 +47,19 @@
 			});
 		}
 
+		/**
+		 * Using the bomb array, return true if character can place another bomb
+		 */
+		this.canPlaceBomb = function(character){
+			let num_bombs = this.bombs.filter(x => x.name == character.name).length;
+			return num_bombs < character.load;
+		}
+
 		this.placeBomb = async (character) => {
 			let x = character.xPos, y = character.yPos;
 			if(!this.isValidPosition(x,y)) return null;
-			let myBomb = bomb(x, y, character.power);
+			if(!this.canPlaceBomb(character)) return null;
+			let myBomb = bomb(x, y, character.power, character.name);
 			this.gameboard[x][y] = BOMB;
 			this.bombs.push(myBomb);
 			let res;
