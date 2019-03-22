@@ -35,6 +35,10 @@
 			}
 		});
 
+		socket.on('itemsInit', (itemboard) => {
+			game.core.setItems(itemboard);
+		});
+
 		// socket handler for starting a game
 		socket.on('gamestart', (players, roomname) =>{
 			let i = 0;
@@ -51,6 +55,7 @@
 			});
 
 			gameplay = new app.Gameplay();
+			socket.emit('serverInit', roomId, gameplay);
 			game.core.startNewGame(gameplay);
 			showGame();
 	

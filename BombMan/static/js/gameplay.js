@@ -29,7 +29,7 @@
 		// all the bombs this character currently is placing
 		this.bombs = [];
 		// power up items
-		this.items = setRandomItems(this.gameboard);
+		this.items = null;
 
 		this.isValidPosition = (x, y) => {
 			return x >= 0 && x < GAMEBOARD_SIZE && y >= 0 && y < GAMEBOARD_SIZE && unOccupied(this.gameboard[x][y]);
@@ -220,23 +220,6 @@
                      [0,0,1,1,1,1,1,1,1,1,1,1,1,0,0]];
 		return gameboard;
 	}
-
-	function setRandomItems(gameboard){
-		let res = [];
-		for(let i = 0; i < GAMEBOARD_SIZE; i++){
-			let arr = [];
-			for (var j = 0; j < GAMEBOARD_SIZE; j++){
-				if(Math.random() > ITEM_PROC_RATE && gameboard[i][j]){
-					arr.push(Math.floor(Math.random() * 3 + 1));
-				}else{
-					arr.push(0);
-				}
-			}
-			res.push(arr);
-		}
-		return res;
-	}
-
 
 	function removeDupCoords(coords) {
 		let unique = {};

@@ -147,6 +147,14 @@
 	}
 
 	/**
+	 * Set the item board of gameplay if it hasn't been set
+	 */
+	Core.prototype.setItems = function(itemboard){
+		if(!this.gameplay.items)
+			this.gameplay.items = itemboard;
+	}
+
+	/**
 	 * Notify gui display the item
 	 */
 	Core.prototype.showItem = function(x, y) {
