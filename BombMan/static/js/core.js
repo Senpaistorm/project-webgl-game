@@ -69,7 +69,7 @@
 	 */
 	 Core.prototype.onPlayerMoveChanged = function(player=this.mainPlayer) {
 	 	//Check if there is any item on the current location
-	 	if(this.gameplay.items[player.xPos][player.yPos] != 0) {
+	 	if(this.gameplay.items[player.xPos][player.yPos] != 0 && this.gameplay.isValidPosition(player.xPos, player.yPos)) {
 
 			if(this.gameplay.items[player.xPos][player.yPos] == POWER_ITEM && player.power < POWER_LIMIT) {
 				player.power ++;
@@ -186,8 +186,6 @@
 
 		if(e.keyCode != PLACEBOMB 
 			&& movementToVector[e.keyCode].keyDown == false) {
-
-			console.log(character.speed);
 
 			movementToVector[e.keyCode].keyDown = true;
 			vector.x += movementToVector[e.keyCode].x * character.speed;

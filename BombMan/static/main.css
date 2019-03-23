@@ -1,24 +1,48 @@
 #world {
-	position: absolute;
+	margin: auto;
 	width: 100%;
 	height: 100%;
 	overflow: hidden;
 	background: linear-gradient(#e4e0ba, #f7d9aa);
 }
 
-#play_game_btn{
+#homepage {
+	display: flex;
+	margin: auto;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	background: linear-gradient(#e4e0ba, #f7d9aa);
+}
+
+.btn {
+	position: absolute;
 	cursor: pointer;
 	background: transparent;
-	width: 200px;
+	font-size: 45px;
+	top: 10%;
+	right: 10%;
+	width: 250px;
 	height: 100px;
 	border-radius: 10px;
-	background-color: blue;
 	color: white;
 	border: none;
 }
 
-#play_game_btn:hover {
+.btn:hover {
 	box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+}
+
+#play_game_btn{
+	top: 10%;
+}
+
+#invite_player_btn{
+	top: 25%;
+}
+
+#join_room_btn{
+	top: 40%;
 }
 
 #queue_msg{

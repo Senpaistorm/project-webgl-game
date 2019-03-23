@@ -9,11 +9,25 @@
 			this.core.addGameGui(this.gui);
 		}
 
+		window.addEventListener( 'resize', onWindowResize, false );
+
+
+
 		let game = new BombMan();
-		let gameplay;
+		let gameplay = new app.Prepareroom();
+		game.core.startNewGame(gameplay);
+
+		let newChar = new app.Character("you", initPositions[0].xPos,
+					 initPositions[0].yPos, 3, INIT_POWER, 4);
+		game.core.addPlayer(newChar, true);
+
 		let updateInterval;
 		hideGame();
 		let roomId = null;
+
+		function onWindowResize(){	
+    		game.gui.resize();
+		}
 
 		window.addEventListener('keydown', function(e){
 			if(isValidKey(e.keyCode) && game.core.getMainPlayer()){
@@ -43,6 +57,8 @@
 		socket.on('gamestart', (players, roomname) =>{
 			let i = 0;
 			roomId = roomname;
+			game = new BombMan();
+
 			Object.keys(players).forEach((player) =>{
 				let newChar = new app.Character(player, initPositions[i].xPos,
 					 initPositions[i].yPos, INIT_SPEED, INIT_POWER, INIT_LOAD);

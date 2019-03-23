@@ -15,7 +15,7 @@
 	function Gui(core) {
 		this.core = core;
 		this.scene = new THREE.Scene();
-		this.camera = new THREE.PerspectiveCamera(72, (window.innerWidth)/(window.innerHeight), 1, 10000);
+		this.camera = new THREE.PerspectiveCamera(72, window.innerWidth/window.innerHeight, 1, 10000);
 		this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 		this.renderer.autoClear = false;
 		this.renderer.autoClearDepth = false;
@@ -26,9 +26,10 @@
 	}
 
 	Gui.prototype.onNewGame = function(gameplay) {
-		this._init();
 		this.gameplay = gameplay;
-		this._createGameBoard(gameplay.gameboard);
+		this.container = document.getElementById(gameplay.container);
+		this._init();
+		this._createGameBoard(gameplay.gameboard, gameplay.gametype);
 	};
 
 	// Called this method when player is moving along with the given vector 
@@ -64,6 +65,15 @@
 		this.scene.remove(character.model);
 	}
 
+	/*
+	 * Resize the render
+	 */
+	Gui.prototype.resize = function(){
+	 	this.camera.aspect = window.innerWidth / window.innerHeight;
+    	this.camera.updateProjectionMatrix();
+	    this.renderer.setSize( window.innerWidth, window.innerHeight );
+	}
+
 	/**
 	 * Destory everything (except ground) on the given position
 	 */
@@ -97,7 +107,7 @@
 		this._animate();
 	};
 
-	Gui.prototype._createGameBoard = function(gameboard) {
+	Gui.prototype._createGameBoard = function(gameboard, gametype) {
 		this.gameboardMesh = new Array(gameboard.length);
 
 		for(let i = 0; i < gameboard.length; i ++) {
@@ -122,34 +132,47 @@
 			}
 		}
 
-		for(let i = 0; i < gameboard.length+2; i ++) {
-			gameobject.createHardBlock(STARTING_X + (i-1) * BLOCK_SIZE, STARTING_Y - BLOCK_SIZE, (mesh) => {
-				this.scene.add(mesh);
-			});
-			gameobject.createHardBlock(STARTING_X + (i-1) * BLOCK_SIZE, STARTING_Y + gameboard.length * BLOCK_SIZE, (mesh) => {
-				this.scene.add(mesh);
-			});
+		if (gametype == GAME) {
+			for(let i = 0; i < gameboard.length+2; i ++) {
+				gameobject.createHardBlock(STARTING_X + (i-1) * BLOCK_SIZE, STARTING_Y - BLOCK_SIZE, (mesh) => {
+					this.scene.add(mesh);
+				});
+				gameobject.createHardBlock(STARTING_X + (i-1) * BLOCK_SIZE, STARTING_Y + gameboard.length * BLOCK_SIZE, (mesh) => {
+					this.scene.add(mesh);
+				});
+			}
+			for(let i = 0; i < gameboard.length; i ++) {
+				gameobject.createHardBlock(STARTING_X - BLOCK_SIZE, STARTING_Y + i * BLOCK_SIZE, (mesh) => {
+					this.scene.add(mesh);
+				});
+				gameobject.createHardBlock(STARTING_X + gameboard.length * BLOCK_SIZE, STARTING_Y + i * BLOCK_SIZE, (mesh) => {
+					this.scene.add(mesh);
+				});
+			}
 		}
-		for(let i = 0; i < gameboard.length; i ++) {
-			gameobject.createHardBlock(STARTING_X - BLOCK_SIZE, STARTING_Y + i * BLOCK_SIZE, (mesh) => {
-				this.scene.add(mesh);
-			});
-			gameobject.createHardBlock(STARTING_X + gameboard.length * BLOCK_SIZE, STARTING_Y + i * BLOCK_SIZE, (mesh) => {
-				this.scene.add(mesh);
-			});
-		}
-	}
+	}	
 
 	Gui.prototype._createScene = function() {
 		this.scene.fog = new THREE.Fog(0xf7d9aa, 100, 950);
-		this.camera.position.x = 0;
-		this.camera.position.y = 320;
-		this.camera.position.z = 200;
-		this.camera.lookAt(new THREE.Vector3(0,-200,0));
-
 		this.renderer.setSize(window.innerWidth, window.innerHeight);
 		this.renderer.shadowMap.enabled = true;
 		this.container.appendChild(this.renderer.domElement);
+
+		if (this.gameplay.gametype == GAME) {
+			this.camera.position.x = 0;
+			this.camera.position.y = 320;
+			this.camera.position.z = 200;
+			this.camera.lookAt(new THREE.Vector3(0,-200,0));
+		}  else {
+			this.camera.position.x = -10;
+			this.camera.position.y = 225;
+			this.camera.position.z = 90;
+			this.camera.lookAt(new THREE.Vector3(0,0,0));
+			this.camera.rotation.x = -1;
+			this.camera.rotation.y = 0;
+			this.camera.rotation.z = 0;
+		}
+
 	}
 
 	Gui.prototype._createLights = function() {
@@ -193,6 +216,7 @@
 				this.core.getMainPlayer().resetAnimation();
 			}
 		}
+
 		this.renderer.render(this.scene, this.camera);
 	}
 
@@ -217,7 +241,6 @@
 	}
 
 	Gui.prototype._hasMovement = function() {
-		console.log(this.playerMovement.x, this.playerMovement.y);
 		return this.playerMovement.x != 0 || this.playerMovement.y != 0;
 	}
 
@@ -234,18 +257,15 @@
 		let yPos = Math.floor((y + 130.5 + (dy * 8))/24.2);
 		if(xPos == xOrig && yPos == yOrig) return false;
 
-		if(xPos < 0 || yPos < 0 || xPos >= GAMEBOARD_SIZE || yPos >= GAMEBOARD_SIZE){
+		if(xPos < 0 || yPos < 0 || xPos >= this.gameplay.gameboardsize || yPos >= this.gameplay.gameboardsize){
 			return true;
 		}
-		let location = this.gameplay.gameboard[xPos][yPos];
-		let ret = isCollision(location);
+
+		let ret = this.gameplay.isCollision(xPos, yPos);
 		// in case of diagonal, calculate adjacent collisions
 		if(this.isValidPosition(xPos, yPos - dy) && 
 				this.isValidPosition(xPos - dx, yPos)){
-					
-			let collidableX = this.gameplay.gameboard[xPos - dx][yPos];
-			let collidableY = this.gameplay.gameboard[xPos][yPos - dy];
-			ret = ret || (isCollision(collidableX) && isCollision(collidableY));
+			ret = ret || (this.gameplay.isCollision(xPos - dx, yPos) && this.gameplay.isCollision(xPos, yPos - dy));
 		}
 		return ret;
 	}
@@ -261,7 +281,7 @@
 	};
 
 	Gui.prototype.isValidPosition = function(x, y){
-		return x >= 0 && x < GAMEBOARD_SIZE && y >= 0 && y < GAMEBOARD_SIZE;
+		return x >= 0 && x < this.gameplay.gameboardsize && y >= 0 && y < this.gameplay.gameboardsize;
 	}
 
 	// Export to window

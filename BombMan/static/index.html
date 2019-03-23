@@ -13,17 +13,22 @@
 	<script src="js/gameplay.js"></script>
 	<script src="js/gui.js"></script>
 	<script src="js/index.js"></script>
+	<script src="js/prepareroom.js"></script>
+
 	<script src="/socket.io/socket.io.js"></script>
 	<script>let socket = io();</script>
 </head>
 <body>
 	<div id ="homepage">
-		<h1 id="game_header">BombMan</h1>
-		<div id = "username_form">
-			<!-- <span id = "username_hint">Username</span>
-			<input id = "username_input" type="text"/> -->
-		</div>
+<!-- 		<h1 id="game_header">BombMan</h1>
+ --><!-- 		<div id = "username_form">
+			<span id = "username_hint">Username</span>
+			<input id = "username_input" type="text"/>
+		</div> -->
 		<button class = "btn" id = "play_game_btn">Play Game</button>
+		<button class = "btn" id = "invite_player_btn">Invite Player</button>
+		<button class = "btn" id = "join_room_btn">Join Room</button>
+
 		<div id = "queue_msg"></div>
 	</div>
 	<div id ="world"></div>
