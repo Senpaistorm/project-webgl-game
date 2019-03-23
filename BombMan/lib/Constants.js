@@ -15,6 +15,9 @@ Constants.HARDBLOCK = 4;
 
 Constants.ITEM_PROC_RATE = 0.4;
 
+Constants.GAME = 1;
+Constants.PREPARE_ROOM = 2;
+
 Constants.initPositions = [{xPos: 0, yPos:0}, {xPos:14, yPos:0},
     {xPos:0, yPos:14}, {xPos:14, yPos:14}];
 

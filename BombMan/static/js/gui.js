@@ -8,14 +8,11 @@
 	 * In addition, Core calls these methods to notify the Gui
  	 * when it should update its display
 	 */
-	const STARTING_X = -185.5;
-	const STARTING_Y = -120;
-	const BLOCK_SIZE = 24.2;
 
 	function Gui(core) {
 		this.core = core;
 		this.scene = new THREE.Scene();
-		this.camera = new THREE.PerspectiveCamera(72, window.innerWidth/window.innerHeight, 1, 10000);
+		this.camera = new THREE.PerspectiveCamera(82, window.innerWidth/window.innerHeight, 1, 10000);
 		this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 		this.renderer.autoClear = false;
 		this.renderer.autoClearDepth = false;
@@ -25,6 +22,8 @@
 	}
 
 	Gui.prototype.onNewGame = function(gameplay) {
+
+		
 		this.gameplay = gameplay;
 		this.createCharacters(gameplay.players);
 		this._animate();
@@ -64,29 +63,33 @@
         model.children[bodyPart].rotation.x = -Math.PI/8 * movementDirection;
 
         if(bodyPart == CHARACTER_BODY_PART.leftLeg || bodyPart == CHARACTER_BODY_PART.rightLeg) {
-            this.model.children[bodyPart].position.z = 2 * movementDirection;
-        } else this.model.children[bodyPart].position.z = 4 * movementDirection;
+            model.children[bodyPart].position.z = 2 * movementDirection;
+        } else model.children[bodyPart].position.z = 4 * movementDirection;
     };
 
-    Gui.prototype.updateModelRotation = function (id, rotation) {
+    Gui.prototype.updateModelRotation = function (player) {
+		let id = player.name;
 		let model = this.playersmesh[id];
         if(model != null) {
-            model.rotation.y = rotation;
+            model.rotation.y = player.rotation;
             
             //arm and leg will switch movement every frame while moving
-            // this.armAndLegSwitchMovement = this.armAndLegSwitchMovement * -1;
-            // this.movementAnimation(CHARACTER_BODY_PART.leftLeg, FORWARD * this.armAndLegSwitchMovement);
-            // this.movementAnimation(CHARACTER_BODY_PART.rightLeg, BACKWARD * this.armAndLegSwitchMovement);
-            // this.movementAnimation(CHARACTER_BODY_PART.rightArm, FORWARD * this.armAndLegSwitchMovement);
-            // this.movementAnimation(CHARACTER_BODY_PART.leftArm, BACKWARD * this.armAndLegSwitchMovement);
+            if(player.movement.x == 0 && player.movement.y == 0){
+				this.resetAnimation(model);
+			}else{
+				this.movementAnimation(model, CHARACTER_BODY_PART.leftLeg, FORWARD * player.armAndLegSwitchMovement);
+				this.movementAnimation(model, CHARACTER_BODY_PART.rightLeg, BACKWARD * player.armAndLegSwitchMovement);
+				this.movementAnimation(model, CHARACTER_BODY_PART.rightArm, FORWARD * player.armAndLegSwitchMovement);
+				this.movementAnimation(model, CHARACTER_BODY_PART.leftArm, BACKWARD * player.armAndLegSwitchMovement);
+			}
         }
 	};
 	
-	Gui.prototype.resetAnimation = function() {
-		this.movementAnimation(CHARACTER_BODY_PART.leftLeg, STATIC);
-		this.movementAnimation(CHARACTER_BODY_PART.rightLeg, STATIC);
-		this.movementAnimation(CHARACTER_BODY_PART.rightArm, STATIC);
-		this.movementAnimation(CHARACTER_BODY_PART.leftArm, STATIC);
+	Gui.prototype.resetAnimation = function(model) {
+		this.movementAnimation(model, CHARACTER_BODY_PART.leftLeg, STATIC);
+		this.movementAnimation(model, CHARACTER_BODY_PART.rightLeg, STATIC);
+		this.movementAnimation(model, CHARACTER_BODY_PART.rightArm, STATIC);
+		this.movementAnimation(model, CHARACTER_BODY_PART.leftArm, STATIC);
 	};
 
 	Gui.prototype.createBomb = function(bomb) {
@@ -247,23 +250,18 @@
         shadowLight.shadow.mapSize.height = 2048;
         this.scene.add(hemisphereLight);  
         this.scene.add(shadowLight);	
-    }
+    };
 
 	Gui.prototype._animate = function() {
-		//this.animationFrameID = window.requestAnimationFrame(this._frame.bind(this));
-		//this.renderer.render(this.scene, this.camera);
-		//Player movement
-		setInterval(this._frame.bind(this), 1000/30);
-		//this._frame();
-	}
-
-	Gui.prototype._frame = function() {
+		this.animationFrameID = window.requestAnimationFrame(this._animate.bind(this));
 		this.renderer.render(this.scene, this.camera);
-	}
+		//setInterval(this._frame.bind(this), 1000/30);
+	};
+
 
 	Gui.prototype.stopAnimate = function() {
 		if(this.animationFrameID) window.cancelAnimationFrame(this.animationFrameID);
-	}
+	};
 
 	// Export to window
 	window.app = window.app || {};

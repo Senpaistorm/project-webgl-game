@@ -63,6 +63,7 @@
 
 		// socket handler for starting a game
 		socket.on('gamestart', (gameplay, room) =>{
+			console.log(gameplay);
 			roomId = room;
 			game.core.startNewGame(gameplay);
 			showGame();

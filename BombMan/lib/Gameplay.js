@@ -44,6 +44,7 @@ function Gameplay() {
     // map from socket to character
     this.players = new HashMap();
     this.gameboard = Util.defaultGameboard();
+    this.gametype = Constants.GAME;
 
     // all the bombs currently in this game
     this.bombs = [];

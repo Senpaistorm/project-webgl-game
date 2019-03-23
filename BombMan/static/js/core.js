@@ -30,7 +30,7 @@
 			let absX = cur.absoluteXPos;
 			let absY = cur.absoluteYPos;
 			this.gui.updatePlayerPosition(cur, absX, absY);
-			this.gui.updateModelRotation(cur.name, cur.rotation);
+			this.gui.updateModelRotation(cur);
 			this.onPlayerMoveChanged(cur);
 		});
 		this.gui.checkPlayerDeath(players);
