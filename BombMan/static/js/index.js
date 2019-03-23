@@ -28,7 +28,7 @@
 				case DOWN: intent.down = 1; break;
 				case LEFT: intent.left = 1; break;
 				case RIGHT: intent.right = 1; break;
-				case PLACEBOMB: intent.bomb = 1; break;
+				case PLACEBOMB: socket.emit('placeBomb', {room: roomId}); break;
 			}
 		});
 
@@ -38,7 +38,7 @@
 				case DOWN: intent.down = 0; break;
 				case LEFT: intent.left = 0; break;
 				case RIGHT: intent.right = 0; break;
-				case PLACEBOMB: intent.bomb = 0; break;
+				//case PLACEBOMB: socket.emit('placeBomb', {room: roomId}); break;
 			}
 		});
 
@@ -63,6 +63,14 @@
 			showGame();
 			// send to the server information about main player on this client
 			updateInterval = setInterval(updateGameState,1000/30);
+		});
+
+		socket.on('bombPlaced', (bomb) => {
+			game.core.placeBomb(bomb);
+		});
+
+		socket.on('explode', (res) => {
+			game.core.explode(res);
 		});
 
 		// socket handler for starting a game

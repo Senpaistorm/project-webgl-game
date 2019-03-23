@@ -46,7 +46,6 @@
 	 * Update the position of gui representation of a player
 	 */
 	Gui.prototype.updatePlayerPosition = function(id, x, y) {
-		console.log(this.playersmesh[id]);
 		this.playersmesh[id].position.x = x;
 		this.playersmesh[id].position.z = y;
 	}
@@ -65,16 +64,14 @@
 		});
 	}
 
-	Gui.prototype.createBomb = function(character) {
-		let x = character.xPos;
-		let y = character.yPos;
-
-		if(this.gameplay.isValidPosition(x, y)) {
-			gameobject.createBomb(x, y, (mesh) => {
-				this.gameboardMesh[x][y] = mesh;
-				this.scene.add(mesh);
-			});
-		}
+	Gui.prototype.createBomb = function(bomb) {
+		let x = bomb.xPos;
+		let y = bomb.yPos;
+		gameobject.createBomb(x, y, (mesh) => {
+			this.gameboardMesh[x][y] = mesh;
+			this.scene.add(mesh);
+		});
+	
 	}
 	
 	/**

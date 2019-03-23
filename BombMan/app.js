@@ -98,8 +98,19 @@ io.on('connection', function(socket) {
         if(game) game.handleKey(socket.id, data.intent);
     });
 
-    socket.on('placeBomb', (roomId, player) =>{
-        io.sockets.to(roomId).emit('placeBomb', player);
+    socket.on('placeBomb', (data) =>{
+        let game = startedGames.get(data.room);
+        console.log('place bomb');
+        if(game){
+            let player = game.getPlayerBySocketId(socket.id);
+            if(player){
+                game.placeBomb(player, (bomb) => {
+                    io.sockets.to(data.room).emit('bombPlaced', bomb);
+                }, (res) => {
+                    io.sockets.to(data.room).emit('explode', res);
+                });
+            }
+        }
     });
 
     socket.on('gameover', (room) =>{
@@ -118,22 +129,6 @@ setInterval(function() {
         io.sockets.in(room).emit('gamestate', state);
     })
 }, 1000/30);
-
-function setRandomItems(gameboard){
-    let res = [];
-    for(let i = 0; i < GAMEBOARD_SIZE; i++){
-        let arr = [];
-        for (var j = 0; j < GAMEBOARD_SIZE; j++){
-            if(Math.random() > ITEM_PROC_RATE && gameboard[i][j]){
-                arr.push(Math.floor(Math.random() * 3 + 1));
-            }else{
-                arr.push(0);
-            }
-        }
-        res.push(arr);
-    }
-    return res;
-}
 
 const PORT = 3000;
 

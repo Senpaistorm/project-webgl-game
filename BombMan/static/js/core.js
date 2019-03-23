@@ -10,6 +10,7 @@
 
 	function Core() {
 		this.players = [];
+		this.state = null;
 	}
 
 	Core.prototype.addGameGui = function(gui) {
@@ -23,6 +24,7 @@
 	};
 
 	Core.prototype.updateGameState = function(state){
+		this.state = state;
 		let players = state.players;
 		players.forEach((cur) =>{
 			let id = cur.name;
@@ -126,7 +128,6 @@
      */
     Core.prototype.explode = function(res) {
     	let areaAffected = res.expCoords;
-    	this.gameplay.checkPlayerHit(areaAffected, this.players);
 		areaAffected.forEach((position) => {
 			this.gui.distoryObject(position.xPos, position.yPos);
 			this.gui.createExplosion(position.xPos, position.yPos);
@@ -141,30 +142,25 @@
 					isBlock = true;
 			});
 				//Distory item
-			if(!isBlock) this.gameplay.items[expCoord.xPos][expCoord.yPos] = 0;
+			if(!isBlock) this.state.items[expCoord.xPos][expCoord.yPos] = 0;
 		});
 
 		// Distory the explosive effect
 		setTimeout(() => {
 			areaAffected.forEach((position) => {
 				this.gui.distoryObject(position.xPos, position.yPos);
-				if(this.gameplay.items[position.xPos][position.yPos] != 0)
+				if(this.state.items[position.xPos][position.yPos] != 0)
 					this.showItem(position.xPos, position.yPos);
 			});
 	   	}, 200);
 	}
 
 	/**
-	 * Send to gui and gameplay the intent of placing a bomb,
-	 * if a bomb can be placed by this character
+	 * Send to gui the intent of placing a bomb
 	 */
 	Core.prototype.placeBomb = function(character){
-		if(this.gameplay.isValidPosition(character.xPos, character.yPos)
-			&& this.gameplay.canPlaceBomb(character)) {
-			this.gui.createBomb(character);
-			this.gameplay.placeBomb(character);
-		}
-	}
+		this.gui.createBomb(character);
+	};
 
 	/**
 	 * Set the item board of gameplay if it hasn't been set

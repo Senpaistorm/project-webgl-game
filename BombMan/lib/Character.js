@@ -8,9 +8,7 @@ function Character(name, xPos, yPos, speed, power, load) {
     this.load = load;
     this.absoluteXPos = -185.5 + xPos * 24.2;	//the aboslute position on the game board in pixel
     this.absoluteYPos = -120 + yPos * 24.2;
-    this.model = null;
     this.rotation = 0;
-    this.bombs = [];
     this.armAndLegSwitchMovement = -1;
     this.movement = {x:0, y:0};
     this.color = {r: Math.random(), g: Math.random(), b:Math.random()};

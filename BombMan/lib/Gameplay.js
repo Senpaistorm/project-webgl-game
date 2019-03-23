@@ -3,11 +3,12 @@
  */
 
 // representation of a bomb
-let bomb = function(x, y, power){
+let bomb = function(x, y, power, name){
     return{
         xPos: x,
         yPos: y,
         power: power,
+        name: name,
     };
 };
 
@@ -47,24 +48,13 @@ function Gameplay() {
     // all the bombs currently in this game
     this.bombs = [];
     // power up items
-    this.items = setRandomItems(this.gameboard);
+    this.items = Util.setRandomItems(this.gameboard);
     this.room = null;
-    // this.canPlaceBomb = () => {
-    // 	return this.bombs.length < this.character.load;
-    // };
 }
-
-// Gameplay.prototype.addPlayerList = function(sList){
-//     let i = 0;
-//     sList.forEach((sid) => {
-//         this.addPlayer(sid, sid, i++);
-//     });
-// };
 
 Gameplay.prototype.addPlayer = function (name, id, i){
     this.players.set(id, new Character(name, Constants.initPositions[i].xPos,
         Constants.initPositions[i].yPos, Constants.INIT_POWER, Constants.INIT_SPEED, Constants.INIT_LOAD));
-    console.log(this.players.get(id));
 };
 
 Gameplay.prototype.removePlayer = function(id){
@@ -79,10 +69,7 @@ Gameplay.prototype.getPlayers = function() {
 
 Gameplay.prototype.getPlayerBySocketId = function(id) {
     var player = this.players.get(id);
-    if (player) {
-      return player.name;
-    }
-    return null;
+    return player;
 };
 
 Gameplay.prototype.setRoom = function(roomName) {
@@ -130,6 +117,7 @@ Gameplay.prototype.getState = function(){
         players : this.getPlayers(),
         bombs : this.bombs,
         gameboard : this.gameboard,
+        items: this.items,
     };
 
     return state;
@@ -139,26 +127,38 @@ Gameplay.prototype.getState = function(){
 Gameplay.prototype.handleKey = function(id, intent){
     var character = this.players.get(id);
     if(intent.up){
-        character.move({y: -1});
+        character.move({y: -1 * character.speed});
     }else if(intent.down){
-        character.move({y: 1});
+        character.move({y: 1 * character.speed});
     }else{
         character.move({y: 0});
     }
 
     if(intent.left){
-        character.move({x: -1});
+        character.move({x: -1 * character.speed});
     }else if(intent.right){
-        character.move({x: 1});
+        character.move({x: 1 * character.speed});
     }else{
         character.move({x: 0});
     }
 };
 
-Gameplay.prototype.placeBomb = async (character) => {
+Gameplay.prototype.canPlaceBomb = function(character){
+    let num_bombs = this.bombs.filter(x => x.name == character.name).length;
+    return num_bombs < character.load;
+}
+
+Gameplay.prototype.isValidBombPosition = function (x, y) {
+    return Util.isValidPosition(x,y) && Util.unOccupied(this.gameboard[x][y]);
+};
+
+Gameplay.prototype.placeBomb = async function(character, createCallback, explodeCallback){
     let x = character.xPos, y = character.yPos;
-    if(!this.isValidPosition(x,y)) return null;
-    let myBomb = bomb(x, y, character.power);
+    if(!this.isValidBombPosition(x,y)) return null;
+    if(!this.canPlaceBomb(character)) return null;
+    let myBomb = bomb(x, y, character.power, character.name);
+    console.log(`bomb down at ${x} ${y}`);
+    createCallback(myBomb);
     this.gameboard[x][y] = BOMB;
     this.bombs.push(myBomb);
     let res;
@@ -172,10 +172,14 @@ Gameplay.prototype.placeBomb = async (character) => {
     await promise;
     // explode bomb if it still exists
     res = this.bombExists(myBomb) ? this.explodeBomb(myBomb) : null;
-    if(res)	this.core.explode(res.expCoords);
+    if(res)	explodeCallback(res);
 }
 
-Gameplay.prototype.getBomb = (x, y) => {
+Gameplay.prototype.explode = function(res){
+
+}
+
+Gameplay.prototype.getBomb = function(x, y) {
     for(let i = 0; i < this.bombs.length; i++){
         if (this.bombs[i].xPos == x && this.bombs[i].yPos == y){
             return this.bombs[i];
@@ -184,7 +188,7 @@ Gameplay.prototype.getBomb = (x, y) => {
     return null;
 };
 
-Gameplay.prototype.destroyBomb = (bomb) =>{
+Gameplay.prototype.destroyBomb = function(bomb){
     for(let i = 0; i < this.bombs.length; i++){
         if (this.bombs[i] === bomb){
             return this.bombs.splice(i,1);
@@ -192,7 +196,7 @@ Gameplay.prototype.destroyBomb = (bomb) =>{
     }
 };
 
-Gameplay.prototype.bombExists = (myBomb) => {
+Gameplay.prototype.bombExists = function(myBomb) {
     for (let i = 0; i < this.bombs.length; i++) {
         if (this.bombs[i] === myBomb) {
             return true;
@@ -202,20 +206,16 @@ Gameplay.prototype.bombExists = (myBomb) => {
 };
 
 // check if any player hit by the boom
-Gameplay.prototype.checkPlayerHit = (areaAffected, players) => {
+Gameplay.prototype.checkPlayerHit = function(areaAffected, players) {
     areaAffected.forEach((explodeArea) => {
         players.forEach((player) => {
             if (player.xPos == explodeArea.xPos && player.yPos == explodeArea.yPos) 
-                this.core.removePlayer(player.name);
+                this.removePlayer(player.name);
         });
     });
 }
 
-Gameplay.prototype.isValidPosition = (x, y) => {
-    return x >= 0 && x < GAMEBOARD_SIZE && y >= 0 && y < GAMEBOARD_SIZE && unOccupied(this.gameboard[x][y]);
-};
-
-Gameplay.prototype.explodeBomb = (bombExplode) => {
+Gameplay.prototype.explodeBomb = function(bombExplode) {
     let affected = {blocks: [], bombs: [], expCoords: []};
     let bombQueue = [bombExplode];
     let foundLeft , foundRight, foundUp, foundDown;
@@ -299,12 +299,9 @@ Gameplay.prototype.explodeBomb = (bombExplode) => {
     }
     // remove duplicate coordinates
     affected.expCoords = removeDupCoords(affected.expCoords);
+    this.checkPlayerHit(affected.expCoords, this.players);
     return affected;
 }
-
-let unOccupied = (block) => {
-    return !(block == SOFTBLOCK || block == HARDBLOCK || block == BOMB);
-};
 
 function setRandomItems(gameboard){
     let res = [];
