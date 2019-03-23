@@ -6,11 +6,12 @@
 	 * with Core. This class is where all the game logic from
 	 */
 	// representation of a bomb
-	let bomb = function(x, y, power){
+	let bomb = function(x, y, power, name){
 		return{
 			xPos: x,
 			yPos: y,
 			power: power,
+			name: name
 		};
 	};
 
@@ -29,15 +30,12 @@
 		// all the bombs this character currently is placing
 		this.bombs = [];
 		// power up items
-		this.items = setRandomItems(this.gameboard);
+		this.items = null;
 
 		this.isValidPosition = (x, y) => {
 			return x >= 0 && x < GAMEBOARD_SIZE && y >= 0 && y < GAMEBOARD_SIZE && unOccupied(this.gameboard[x][y]);
 		};
 
-		// this.canPlaceBomb = () => {
-		// 	return this.bombs.length < this.character.load;
-		// };
 
 		// check if any player hit by the boom
 		this.checkPlayerHit = (areaAffected, players) => {
@@ -49,10 +47,19 @@
 			});
 		}
 
+		/**
+		 * Using the bomb array, return true if character can place another bomb
+		 */
+		this.canPlaceBomb = function(character){
+			let num_bombs = this.bombs.filter(x => x.name == character.name).length;
+			return num_bombs < character.load;
+		}
+
 		this.placeBomb = async (character) => {
 			let x = character.xPos, y = character.yPos;
 			if(!this.isValidPosition(x,y)) return null;
-			let myBomb = bomb(x, y, character.power);
+			if(!this.canPlaceBomb(character)) return null;
+			let myBomb = bomb(x, y, character.power, character.name);
 			this.gameboard[x][y] = BOMB;
 			this.bombs.push(myBomb);
 			let res;
@@ -66,7 +73,9 @@
 			await promise;
 			// explode bomb if it still exists
 			res = this.bombExists(myBomb) ? this.explodeBomb(myBomb) : null;
-			if(res)	this.core.explode(res.expCoords);
+			if(res)	{
+				this.core.explode(res);
+			}
 		}
 
 		this.explodeBomb = (bombExplode) => {
@@ -221,23 +230,6 @@
                      [0,0,1,1,1,1,1,1,1,1,1,1,1,0,0]];
 		return gameboard;
 	}
-
-	function setRandomItems(gameboard){
-		let res = [];
-		for(let i = 0; i < GAMEBOARD_SIZE; i++){
-			let arr = [];
-			for (var j = 0; j < GAMEBOARD_SIZE; j++){
-				if(Math.random() > ITEM_PROC_RATE && gameboard[i][j]){
-					arr.push(Math.floor(Math.random() * 3 + 1));
-				}else{
-					arr.push(0);
-				}
-			}
-			res.push(arr);
-		}
-		return res;
-	}
-
 
 	function removeDupCoords(coords) {
 		let unique = {};

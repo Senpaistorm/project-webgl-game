@@ -53,16 +53,17 @@ function Gameplay() {
     // };
 }
 
-Gameplay.prototype.addPlayerList = function(sList){
-    let i = 0;
-    sList.forEach((sid) => {
-        this.addPlayer(sid, sid, i++);
-    });
-};
+// Gameplay.prototype.addPlayerList = function(sList){
+//     let i = 0;
+//     sList.forEach((sid) => {
+//         this.addPlayer(sid, sid, i++);
+//     });
+// };
 
-Gameplay.prototype.addPlayer = function (name, sid, i){
-    this.players.set(sid, new Character(name, Constants.initPositions[i].xPos,
+Gameplay.prototype.addPlayer = function (name, id, i){
+    this.players.set(id, new Character(name, Constants.initPositions[i].xPos,
         Constants.initPositions[i].yPos, Constants.INIT_POWER, Constants.INIT_SPEED, Constants.INIT_LOAD));
+    console.log(this.players.get(id));
 };
 
 Gameplay.prototype.removePlayer = function(id){
@@ -106,9 +107,15 @@ Gameplay.prototype.update = function(){
 
 Gameplay.prototype.sendState = function(){
     //console.log(`broadcasting gamestate to ${this.room}`);
-    let state = {};
-    state.players = this.getPlayers();
-    state.bombs = this.bombs();
+    let state = {
+        players : this.getPlayers(),
+        bombs : this.bombs(),
+        gameboard : this.gameboard,
+    };
+
+    this.clients.forEach(function(client){
+        client.emit('gamestate', state);
+    });
     
 };
 
@@ -273,6 +280,31 @@ Gameplay.prototype.explodeBomb = (bombExplode) => {
     return affected;
 }
 
+Gameplay.prototype._collisionDetection = function(x, y) {
+    let xOrig = Math.floor((x + 196)/24.2);
+    let yOrig = Math.floor((y + 130.5)/24.2);
+    let dx = this._normalize(this.playerMovement.x);
+    let dy = this._normalize(this.playerMovement.y);
+    let xPos = Math.floor((x + 196 + (dx * 8))/24.2);
+    let yPos = Math.floor((y + 130.5 + (dy * 8))/24.2);
+    if(xPos == xOrig && yPos == yOrig) return false;
+
+    if(xPos < 0 || yPos < 0 || xPos >= GAMEBOARD_SIZE || yPos >= GAMEBOARD_SIZE){
+        return true;
+    }
+    let location = this.gameplay.gameboard[xPos][yPos];
+    let ret = isCollision(location);
+    // in case of diagonal, calculate adjacent collisions
+    if(this.isValidPosition(xPos, yPos - dy) && 
+            this.isValidPosition(xPos - dx, yPos)){
+                
+        let collidableX = this.gameplay.gameboard[xPos - dx][yPos];
+        let collidableY = this.gameplay.gameboard[xPos][yPos - dy];
+        ret = ret || (isCollision(collidableX) && isCollision(collidableY));
+    }
+    return ret;
+}
+    
 let unOccupied = (block) => {
     return !(block == SOFTBLOCK || block == HARDBLOCK || block == BOMB);
 };

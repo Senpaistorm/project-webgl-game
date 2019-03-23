@@ -5,27 +5,84 @@ let gameobject = (function() {
 	var mtlLoader = new THREE.MTLLoader();
 
 	var cubeGeometry = new THREE.BoxBufferGeometry( 21, 21, 21 );
-	var wireMaterial = new THREE.MeshBasicMaterial();
-	module.createCharactorModel = function(x, y, callback) {
-		//var textureLoader = new THREE.TextureLoader();
-		// var map = textureLoader.load('./media/textures/skin_man.png');
-		// var material = new THREE.MeshPhongMaterial({map: map});
+	var wireMaterial = new THREE.MeshBasicMaterial({color:0xffffff, wireframe:true, opacity:0});
 
+	function loadCharacterTexture() {
+		var textureLoader = new THREE.TextureLoader();
+		var map = textureLoader.load('./media/textures/skin_man.png');
+		return new THREE.MeshPhongMaterial({map: map});
+	}
+
+	function loadItemBomb() {
+		var spriteMap = new THREE.TextureLoader().load( "./media/models/items/bomb.png" );
+		var spriteMaterial = new THREE.SpriteMaterial( { map: spriteMap, color: 0xffffff } );
+		var sprite = new THREE.Sprite( spriteMaterial );
+		sprite.scale.set(26,26,26);
+		sprite.position.y = 10;
+		return sprite;
+	}
+
+	function loadItemPower() {
+		var spriteMap = new THREE.TextureLoader().load( "./media/models/items/power.png" );
+		var spriteMaterial = new THREE.SpriteMaterial( { map: spriteMap, color: 0xffffff } );
+		var sprite = new THREE.Sprite( spriteMaterial );
+		sprite.scale.set(26,26,26);
+		sprite.position.y = 10;
+		return sprite;
+	}
+
+	function loadItemShoes() {
+		var spriteMap = new THREE.TextureLoader().load( "./media/models/items/shoes.png" );
+		var spriteMaterial = new THREE.SpriteMaterial( { map: spriteMap, color: 0xffffff } );
+		var sprite = new THREE.Sprite( spriteMaterial );
+		sprite.scale.set(26,26,26);
+		sprite.position.y = 10;
+		return sprite;
+	}
+
+	//2D item cache
+	let itemBomb = loadItemBomb();
+	let itemPower = loadItemPower();
+	let itemShoes = loadItemShoes();
+
+	let textureCache = loadCharacterTexture();
+
+	module.createItem = function(x, y, type) {
+		let mesh;
+		//Clone the item so we don't have to reload the image
+		if (type == POWER_ITEM)	mesh = itemPower.clone();
+		else if (type == SPEED_ITEM) mesh = itemShoes.clone();
+		else if (type == BOMB_ITEM) mesh = itemBomb.clone();
+		
+		if(mesh) mesh.position.set(-185.5 + x * 24.2, 10, -120 + y * 24.2);
+		return mesh;
+	}
+
+	module.createItemPower = function(x, y) {
+		let mesh = itemPower.clone();
+		mesh.position.set(-185.5 + x * 24.2, 10, -120 + y * 24.2);
+		return mesh;
+	}
+
+	module.createItemShoes = function(x, y) {
+		let mesh = itemShoes.clone();
+		mesh.position.set(-185.5 + x * 24.2, 10, -120 + y * 24.2);
+		return mesh;
+	}
+
+	module.createCharactorModel = function(x, y, color, callback) {
 		var loader = new THREE.OBJLoader();
 		loader.load("./media/models/charactor/basicCharacter.obj", function ( object ) {
-
-		  // For any meshes in the model, add our material.
+		    //For any meshes in the model, add our material.
 			// object.traverse( function ( node ) {
-		    // 	if ( node.isMesh ) {
-		    // 		node.material = material;
-		    // 		node.castShadow = true;
-		 	// 		node.receiveShadow = true;
-		    // 	}
+		 //    	if ( node.isMesh ) {
+		 //    		node.material = textureCache;
+		 //    	}
 			// });
 			(object.children).forEach((child) =>{
-				let r = Math.random(),g=Math.random(),b=Math.random();
+				//let r = Math.random(),g=Math.random(),b=Math.random();
 				child.material.color.set(
-					new THREE.Color(r,g,b)
+					new THREE.Color(color.r,color.g,color.b)
 					);
 			});
 			object.position.set(x, 3, y);
@@ -55,8 +112,8 @@ let gameobject = (function() {
 	}
 
 	module.createExplosion = function(x, y, callback) {
-		var cubeGeometry = new THREE.CubeGeometry(23,23,23,1,1,1);
-		var wireMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe:true } );
+		var cubeGeometry = new THREE.CubeGeometry(24,24,24,1,1,1);
+		var wireMaterial = new THREE.MeshBasicMaterial( { color: 0xFFFF00 } );
 		var box = new THREE.Mesh( cubeGeometry, wireMaterial );
 		box.position.set(x, 10, y);
 		box.matrixAutoUpdate = false;
@@ -74,10 +131,6 @@ let gameobject = (function() {
 			objLoader.load("./media/models/block.obj", function(mesh){
 
     			mesh.position.set(x - 11, 3, y + 12);
-				var collision = new THREE.Mesh( cubeGeometry, wireMaterial );
-				collision.position.set(x, 10, y);
-
-				mesh.children.push(collision);
     			mesh.scale.set(23,23,23);
     			mesh.matrixAutoUpdate = false;
 				mesh.updateMatrix();
@@ -95,18 +148,8 @@ let gameobject = (function() {
 			objLoader.setMaterials(materials);
 			
 			objLoader.load("./media/models/towerSquare.obj", function(mesh){
-			
-				mesh.traverse(function(node){
-					if( node instanceof THREE.Mesh ){
-						node.castShadow = true;
-						node.receiveShadow = true;
-					}
-				});
-    			mesh.position.set(x+12, 0, y-11);
-				var collision = new THREE.Mesh( cubeGeometry, wireMaterial );
-				collision.position.set(x, 10, y);
 
-				mesh.children.push(collision);
+    			mesh.position.set(x+12, 0, y-11);
     			mesh.scale.set(2.4,2,2.4);
     			mesh.matrixAutoUpdate = false;
 				mesh.updateMatrix();
@@ -122,13 +165,21 @@ let gameobject = (function() {
 			materials.preload();
 			var objLoader = new THREE.OBJLoader();
 			objLoader.setMaterials(materials);
-			
 			objLoader.load("./media/models/bomb.obj", function(mesh){
+				mesh.children[0].material.color.set(0xffe4b5);
 				mesh.position.set(-185.5 + (x+1.65) * 24.2, 10, -120 + y * 24.2);
 				mesh.scale.set(18,18,18);
-				mesh.matrixAutoUpdate = false;
+
+				var smallCubeGeometry = new THREE.BoxBufferGeometry( 10, 10, 10 );
+
+				var collision = new THREE.Mesh( smallCubeGeometry, wireMaterial );
+				collision.position.set(-185.5 + x * 24.2, 10, -120 + y * 24.2);
+				collision.transparent = true;
+				mesh.children.push(collision);
+    			mesh.matrixAutoUpdate = false;
+    			mesh.name = "bomb";
 				mesh.updateMatrix();
-				callback(mesh);
+    			callback(mesh);
 			});
 		});
 	}

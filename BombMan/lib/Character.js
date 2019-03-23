@@ -13,6 +13,7 @@ function Character(name, xPos, yPos, speed, power, load) {
     this.bombs = [];
     this.armAndLegSwitchMovement = -1;
     this.movement = {x:0, y:0};
+    this.color = {r: Math.random(), g: Math.random(), b:Math.random()};
 
     this.movementAnimation = function(bodyPart, movementDirection) {
 

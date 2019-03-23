@@ -12,7 +12,14 @@ const UP = 87;
 const RIGHT = 68;
 const PLACEBOMB = 74;
 // initial speed of the characters
-const INIT_SPEED = 3;
+const INIT_SPEED = 1;
+const INIT_LOAD = 1;
+const INIT_POWER = 1;
+
+const SPEED_LIMIT = 4;
+const LOAD_LIMIT = 8;
+const POWER_LIMIT = 10;
+
 // powerup items
 const POWER_ITEM = 1;
 const SPEED_ITEM = 2;
@@ -22,6 +29,7 @@ const ITEM_PROC_RATE = 0.5;
 const FORWARD = 1;
 const BACKWARD = -1;
 const STATIC = 0;
+
 
 let movementToVector = { 
 	65: {x:-1 ,y: 0, keyDown: false}, 
@@ -47,3 +55,8 @@ let isValidKey = function(keyCode) {
 
 let initPositions = [{xPos: 0, yPos:0}, {xPos:14, yPos:0},
     {xPos:0, yPos:14}, {xPos:14, yPos:14}];
+
+let isCollision = function(material){
+	return material == HARDBLOCK || material == SOFTBLOCK
+	  || material == BOMB;
+}

@@ -34,7 +34,6 @@
      * change.
      */
 	Core.prototype.addPlayer = function(character, isMainPlayer = false) {
-		this.gui.createCharacter(character);
 		if (isMainPlayer) this.setMainPlayer(character);
 		this.players.push(character);
 	}
@@ -53,13 +52,45 @@
 		return this.mainPlayer;
 	}
 
+	Core.prototype.increaseMainPlayerSpeed = function() {
+		if (vector.x < 0) vector.x --;
+		else if (vector.x > 0) vector.x ++;
+
+		if (vector.y < 0) vector.y --;
+		else if (vector.y > 0) vector.y ++;
+
+		this.gui.changePlayerMovement(vector);
+	}
+
+	/**
+	 * Notify gameplay the new player position
+	 */
+	 Core.prototype.onPlayerMoveChanged = function(player=this.mainPlayer) {
+	 	//Check if there is any item on the current location
+	 	if(this.gameplay.items[player.xPos][player.yPos] != 0) {
+
+			if(this.gameplay.items[player.xPos][player.yPos] == POWER_ITEM && player.power < POWER_LIMIT) {
+				player.power ++;
+			} else if(this.gameplay.items[player.xPos][player.yPos] == SPEED_ITEM && player.power < SPEED_LIMIT){
+				player.speed ++;
+				if (player == this.getMainPlayer()) this.increaseMainPlayerSpeed();
+			} else if(this.gameplay.items[player.xPos][player.yPos] == BOMB_ITEM && player.power < LOAD_LIMIT) {
+				player.load ++;
+			}
+
+			this.gameplay.items[player.xPos][player.yPos] = 0;
+			this.gui.distoryObject(player.xPos, player.yPos);
+		}
+	 }
+
 	/**
 	 * Update character position 
 	 */
 	Core.prototype.updatePositions = function(player) {
 		for(let i = 0; i < this.getPlayers().length; i++){
 			if(player.name == this.getPlayers()[i].name){
-				this.getPlayers()[i].updatePositionAbs(player.absoluteXPos, player.absoluteYPos);
+				this.getPlayers()[i].updatePositionAbs(player.absoluteXPos, player.absoluteYPos, player.rotation);
+				this.onPlayerMoveChanged(this.getPlayers()[i]);
 				return;
 			}
 		}
@@ -83,19 +114,61 @@
     /**
      * Notify gui after bomb explode
      */
-    Core.prototype.explode = function(areaAffected) {
+    Core.prototype.explode = function(res) {
+    	let areaAffected = res.expCoords;
     	this.gameplay.checkPlayerHit(areaAffected, this.players);
 		areaAffected.forEach((position) => {
 			this.gui.distoryObject(position.xPos, position.yPos);
 			this.gui.createExplosion(position.xPos, position.yPos);
 		});
 
+		//clear the items that effected by the bomb
+		res.expCoords.forEach((expCoord) => {
+			let isBlock = false;
+
+			res.blocks.forEach((block) => {
+				if(block.xPos == expCoord.xPos && block.yPos == expCoord.yPos) 
+					isBlock = true;
+			});
+				//Distory item
+			if(!isBlock) this.gameplay.items[expCoord.xPos][expCoord.yPos] = 0;
+		});
+
 		// Distory the explosive effect
 		setTimeout(() => {
 			areaAffected.forEach((position) => {
 				this.gui.distoryObject(position.xPos, position.yPos);
+				if(this.gameplay.items[position.xPos][position.yPos] != 0)
+					this.showItem(position.xPos, position.yPos);
 			});
 	   	}, 200);
+	}
+
+	/**
+	 * Send to gui and gameplay the intent of placing a bomb,
+	 * if a bomb can be placed by this character
+	 */
+	Core.prototype.placeBomb = function(character){
+		if(this.gameplay.isValidPosition(character.xPos, character.yPos)
+			&& this.gameplay.canPlaceBomb(character)) {
+			this.gui.createBomb(character);
+			this.gameplay.placeBomb(character);
+		}
+	}
+
+	/**
+	 * Set the item board of gameplay if it hasn't been set
+	 */
+	Core.prototype.setItems = function(itemboard){
+		if(!this.gameplay.items)
+			this.gameplay.items = itemboard;
+	}
+
+	/**
+	 * Notify gui display the item
+	 */
+	Core.prototype.showItem = function(x, y) {
+		this.gui.createItem(x, y, this.gameplay.items[x][y]);
 	}
 
 	Core.prototype._notifyNewGameStarted = function(gameplay) {
@@ -105,18 +178,18 @@
 	// keyboard handler and notify gui about the change
 	Core.prototype.keyDown = function(e) {
 		let character = this.getMainPlayer();
-		if(e.keyCode == PLACEBOMB && this.gameplay.isValidPosition(character.xPos, character.yPos)) {
-			this.gui.createBomb(character);
-			this.gameplay.placeBomb(character);
+		if(e.keyCode == PLACEBOMB){
+			this.placeBomb(character);
 		}
 
 		if(e.keyCode != PLACEBOMB 
 			&& movementToVector[e.keyCode].keyDown == false) {
+
+			console.log(character.speed);
+
 			movementToVector[e.keyCode].keyDown = true;
 			vector.x += movementToVector[e.keyCode].x * character.speed;
 			vector.y += movementToVector[e.keyCode].y * character.speed;
-
-			console.log(vector.x, vector.y);
 			//A vector represents the player's movement
 			this.gui.changePlayerMovement(vector);
 		}

@@ -29,14 +29,16 @@ let roomStatus = [];
 let characterStatus = {};
 // character to room dictionary
 let charToRoom = {};
-let startedGames = [];
+let startedGames = new HashMap();
+
+const GAMEBOARD_SIZE = 15;
+const ITEM_PROC_RATE = 0.5;
 
 // WebSocket handlers
 io.on('connection', function(socket) {
-    console.log(`user ${socket.id} connected.`);
 
     socket.on('disconnect', function(){
-        console.log(`user ${socket.id} disconnected`);
+        delete charToRoom[socket.id];
         delete characterStatus[socket.id];
     });
 
@@ -67,24 +69,16 @@ io.on('connection', function(socket) {
         let rooms = io.sockets.adapter.rooms;
         roomStatus.forEach((room) =>{
             if(room.size >= 2){
-                // notify every player in the room to start game                  
-                // Object.keys(rooms[room.name].sockets).forEach((char) =>{
-                //     charToRoom[char] = room.name;
-                // })
-                
                 let game = new Gameplay();
                 let i = 0;
+
                 game.setRoom(room.name);
-                console.log(rooms[room.name]);
-                // for(i; i < room.size; i++){
-                //     game.addPlayer(sid, sid, i++);
-                // }
-                Object.keys(rooms[room.name].sockets).forEach(function(sid){
+                for(const sid in rooms[room.name].sockets){
                     game.addPlayer(sid, sid, i);
                     i++;
-                });
-                startedGames.push(game);
-                io.sockets.in(room.name).emit('gamestart', game, room.name);
+                }
+                startedGames.set(room.name, game);
+                io.sockets.to(room.name).emit('gamestart', game, room.name);
             }else{
                 if(room.name in rooms){
                     socket.leave(room.name);
@@ -94,10 +88,11 @@ io.on('connection', function(socket) {
         roomStatus = [];
     });    
 
-    socket.on('player_action', function(data) {
-        var game = startedGames.get(data.room);
-        game.handleKey(socket.id, data.intent);
-    });
+    // socket.on('serverInit', (roomId, gameplay) => {
+    //     let itemboard = setRandomItems(gameplay.gameboard);
+    //     io.sockets.to(roomId).emit('itemsInit', itemboard);
+    // })
+
 
     socket.on('placeBomb', (roomId, player) =>{
         io.sockets.to(roomId).emit('placeBomb', player);
@@ -112,12 +107,28 @@ io.on('connection', function(socket) {
 
 // Server side game loop, runs at 60Hz and sends out update packets to all
 // clients every tick.
-setInterval(function() {
-    startedGames.forEach((game) => {
-        game.update();
-        game.sendState();
-    });
-}, 1000/30);
+// setInterval(function() {
+//     startedGames.forEach((game) => {
+//         game.update();
+//         game.sendState();
+//     });
+// }, 1000/30);
+
+function setRandomItems(gameboard){
+    let res = [];
+    for(let i = 0; i < GAMEBOARD_SIZE; i++){
+        let arr = [];
+        for (var j = 0; j < GAMEBOARD_SIZE; j++){
+            if(Math.random() > ITEM_PROC_RATE && gameboard[i][j]){
+                arr.push(Math.floor(Math.random() * 3 + 1));
+            }else{
+                arr.push(0);
+            }
+        }
+        res.push(arr);
+    }
+    return res;
+}
 
 const PORT = 3000;
 
