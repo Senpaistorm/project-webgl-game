@@ -52,9 +52,6 @@ Character.prototype.updatePosition = function(vector) {
     this.absoluteXPos += vector.x;
     this.absoluteYPos += vector.y;
 
-    // this.model.position.x += vector.x;
-    // this.model.position.z += vector.y;
-
     this.xPos = Math.floor((this.absoluteXPos + 196)/24.2);
     this.yPos = Math.floor((this.absoluteYPos + 130.5)/24.2);
 
@@ -87,9 +84,14 @@ Character.prototype.move = function(vector){
     Object.assign(this.movement, vector);
 }
 
-Character.prototype.update = function(checkCollision){
+Character.prototype.update = function(checkCollision, onPlayerMoveChanged){
+    let xOrig = this.xPos;
+    let yOrig = this.yPos;
     if(!checkCollision(this.absoluteXPos, this.absoluteYPos, this)){
         this.updatePosition(this.movement);
+    }
+    if(Math.abs(this.xPos - xOrig) > 0 || Math.abs(this.yPos - yOrig) > 0){
+        onPlayerMoveChanged(this);
     }
 };
 

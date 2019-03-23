@@ -27,10 +27,10 @@
 		this.state = state;
 		let players = state.players;
 		players.forEach((cur) =>{
-			let id = cur.name;
 			let absX = cur.absoluteXPos;
 			let absY = cur.absoluteYPos;
-			this.gui.updatePlayerPosition(id, absX, absY);
+			this.gui.updatePlayerPosition(cur, absX, absY);
+			this.onPlayerMoveChanged(cur);
 		});
 	};
 
@@ -142,17 +142,24 @@
 					isBlock = true;
 			});
 				//Distory item
-			if(!isBlock) this.state.items[expCoord.xPos][expCoord.yPos] = 0;
+			if(!isBlock) this.gameplay.items[expCoord.xPos][expCoord.yPos] = 0;
 		});
 
 		// Distory the explosive effect
 		setTimeout(() => {
 			areaAffected.forEach((position) => {
 				this.gui.distoryObject(position.xPos, position.yPos);
-				if(this.state.items[position.xPos][position.yPos] != 0)
+				if(this.gameplay.items[position.xPos][position.yPos] != 0)
 					this.showItem(position.xPos, position.yPos);
 			});
 	   	}, 200);
+	}
+
+	/**
+	 * Check if there is an item in location (x,y)
+	 */
+	Core.prototype.checkItem = function(x, y){
+		return this.state.items[x][y] > 0 && this.state.gameboard[x][y] == 0;
 	}
 
 	/**
@@ -174,7 +181,7 @@
 	 * Notify gui display the item
 	 */
 	Core.prototype.showItem = function(x, y) {
-		this.gui.createItem(x, y, this.gameplay.items[x][y]);
+		this.gui.createItem(x, y, this.state.items[x][y]);
 	}
 
 	Core.prototype._notifyNewGameStarted = function(gameplay) {

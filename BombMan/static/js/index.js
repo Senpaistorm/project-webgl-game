@@ -29,6 +29,10 @@
 				case LEFT: intent.left = 1; break;
 				case RIGHT: intent.right = 1; break;
 				case PLACEBOMB: socket.emit('placeBomb', {room: roomId}); break;
+				case 80: 
+					console.log('DEBUG');
+					console.log(game.core.state);
+				break;
 			}
 		});
 
@@ -51,10 +55,6 @@
 		socket.on('gamestate', function(state){
 			game.core.updateGameState(state);
 		});
-
-		// socket.on('itemsInit', (itemboard) => {
-		// 	game.core.setItems(itemboard);
-		// });
 
 		// socket handler for starting a game
 		socket.on('gamestart', (gameplay, room) =>{

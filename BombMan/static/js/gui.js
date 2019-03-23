@@ -32,7 +32,6 @@
 		this._createGameBoard(gameplay.gameboard);
 		this.createCharacters(gameplay.players);
 		this._animate();
-		console.log(this.playersmesh);
 	};
 
 	// Called this method when player is moving along with the given vector 
@@ -45,9 +44,20 @@
 	/**
 	 * Update the position of gui representation of a player
 	 */
-	Gui.prototype.updatePlayerPosition = function(id, x, y) {
-		this.playersmesh[id].position.x = x;
-		this.playersmesh[id].position.z = y;
+	Gui.prototype.updatePlayerPosition = function(player, x, y) {
+		let id = player.name;
+		if(this.playersmesh[id]){
+			this.playersmesh[id].position.x = x;
+			this.playersmesh[id].position.z = y;
+			// if(this.core.checkItem(player.xPos,player.yPos)){
+			// 	let mesh = this.gameboardMesh[x][y];
+
+			// 	if(mesh) {
+			// 		this.gameboardMesh[x][y] = null;
+			// 		this.scene.remove(mesh);
+			// 	}
+			// }
+		}
 	}
 
 	Gui.prototype.createCharacters = function(characters) {
@@ -203,70 +213,6 @@
 
 	Gui.prototype.stopAnimate = function() {
 		if(this.animationFrameID) window.cancelAnimationFrame(this.animationFrameID);
-	}
-
-	/**
-	 * If the player currently standing on a bomb, the function checks if the next step of the player after the movement
-	 * contains any object or not. it will return false if the player is not standing on a bomb or the player's next step is invalid
-	 */
-	Gui.prototype._onBombDoesNextStepisValid = function() {
-		let character = this.core.getMainPlayer();
-
-		if (this.gameboardMesh[character.xPos][character.yPos] == null || this.gameboardMesh[character.xPos][character.yPos].name != "bomb")
-			return false;
-
-		let x = (this.playerMovement.x == 0)? character.xPos: character.xPos + this.playerMovement.x / Math.abs(this.playerMovement.x);
-		let y = (this.playerMovement.y == 0)? character.yPos: character.yPos + this.playerMovement.y / Math.abs(this.playerMovement.y);
-
-		return x >= 0 && x <= 14 && y >= 0 && y <= 14 && this.gameboardMesh[x][y] == null;
-	}
-
-	Gui.prototype._hasMovement = function() {
-		console.log(this.playerMovement.x, this.playerMovement.y);
-		return this.playerMovement.x != 0 || this.playerMovement.y != 0;
-	}
-
-	/**
-	 * Calculate where player might be in the future based on its movement
-	 * , return true if this location is blocked
-	 */
-	Gui.prototype._collisionDetection = function(x, y) {
-		let xOrig = Math.floor((x + 196)/24.2);
-		let yOrig = Math.floor((y + 130.5)/24.2);
-		let dx = this._normalize(this.playerMovement.x);
-		let dy = this._normalize(this.playerMovement.y);
-		let xPos = Math.floor((x + 196 + (dx * 8))/24.2);
-		let yPos = Math.floor((y + 130.5 + (dy * 8))/24.2);
-		if(xPos == xOrig && yPos == yOrig) return false;
-
-		if(xPos < 0 || yPos < 0 || xPos >= GAMEBOARD_SIZE || yPos >= GAMEBOARD_SIZE){
-			return true;
-		}
-		let location = this.gameplay.gameboard[xPos][yPos];
-		let ret = isCollision(location);
-		// in case of diagonal, calculate adjacent collisions
-		if(this.isValidPosition(xPos, yPos - dy) && 
-				this.isValidPosition(xPos - dx, yPos)){
-					
-			let collidableX = this.gameplay.gameboard[xPos - dx][yPos];
-			let collidableY = this.gameplay.gameboard[xPos][yPos - dy];
-			ret = ret || (isCollision(collidableX) && isCollision(collidableY));
-		}
-		return ret;
-	}
-
-	Gui.prototype._normalize = function(num){
-		if(num == 0){
-			return 0;
-		}else if(num < 0){
-			return -1;
-		}else{
-			return 1;
-		}
-	};
-
-	Gui.prototype.isValidPosition = function(x, y){
-		return x >= 0 && x < GAMEBOARD_SIZE && y >= 0 && y < GAMEBOARD_SIZE;
 	}
 
 	// Export to window

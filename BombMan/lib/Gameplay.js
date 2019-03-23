@@ -18,14 +18,14 @@ const UNBLOCKED = 0;
 const SOFTBLOCK = 1;
 const BOMB = 2;
 const HARDBLOCK = 4;
-// initial speed of the characters
-const INIT_SPEED = 3;
 // powerup items
 const POWER_ITEM = 1;
 const SPEED_ITEM = 2;
 const BOMB_ITEM = 3;
 const ITEM_PROC_RATE = 0.5;
-
+const SPEED_LIMIT = 4;
+const LOAD_LIMIT = 8;
+const POWER_LIMIT = 10;
 
 let coord = function(x, y, type){
     return{
@@ -52,6 +52,9 @@ function Gameplay() {
     this.room = null;
 }
 
+/**
+ * Add a player with name and socket id
+ */
 Gameplay.prototype.addPlayer = function (name, id, i){
     this.players.set(id, new Character(name, Constants.initPositions[i].xPos,
         Constants.initPositions[i].yPos, Constants.INIT_POWER, Constants.INIT_SPEED, Constants.INIT_LOAD));
@@ -80,6 +83,10 @@ Gameplay.prototype.getRoom = function() {
     return this.room;
 };
 
+/**
+ * Predict player's location in the future, return true if a collision is
+ * detected.
+ */
 Gameplay.prototype._collisionDetection = function(x, y, player) {
     let xOrig = Math.floor((x + 196)/24.2);
     let yOrig = Math.floor((y + 130.5)/24.2);
@@ -108,10 +115,14 @@ Gameplay.prototype._collisionDetection = function(x, y, player) {
 Gameplay.prototype.update = function(){
     var characters = this.getPlayers();
     for(var i = 0; i < characters.length; i++){
-        characters[i].update(this._collisionDetection);
+        characters[i].update(this._collisionDetection, this.onPlayerMoveChanged.bind(this));
     }
 };
 
+/**
+ * Serialize gameplay to a state for communication usage
+ * with the clients
+ */
 Gameplay.prototype.getState = function(){
     let state = {
         players : this.getPlayers(),
@@ -119,13 +130,15 @@ Gameplay.prototype.getState = function(){
         gameboard : this.gameboard,
         items: this.items,
     };
-
     return state;
-    
 };
 
+/**
+ * Change the movement vector of character based on intent of client
+ */
 Gameplay.prototype.handleKey = function(id, intent){
     var character = this.players.get(id);
+    if(!character) return;
     if(intent.up){
         character.move({y: -1 * character.speed});
     }else if(intent.down){
@@ -144,6 +157,7 @@ Gameplay.prototype.handleKey = function(id, intent){
 };
 
 Gameplay.prototype.canPlaceBomb = function(character){
+    console.log(this.bombs);
     let num_bombs = this.bombs.filter(x => x.name == character.name).length;
     return num_bombs < character.load;
 }
@@ -152,6 +166,11 @@ Gameplay.prototype.isValidBombPosition = function (x, y) {
     return Util.isValidPosition(x,y) && Util.unOccupied(this.gameboard[x][y]);
 };
 
+/**
+ * First, createCallback notifies the clients to create a bomb, 
+ * then explodeCallback notifies the clients to explode the bomb after the bomb 
+ * has been resolved.
+ */
 Gameplay.prototype.placeBomb = async function(character, createCallback, explodeCallback){
     let x = character.xPos, y = character.yPos;
     if(!this.isValidBombPosition(x,y)) return null;
@@ -173,10 +192,6 @@ Gameplay.prototype.placeBomb = async function(character, createCallback, explode
     // explode bomb if it still exists
     res = this.bombExists(myBomb) ? this.explodeBomb(myBomb) : null;
     if(res)	explodeCallback(res);
-}
-
-Gameplay.prototype.explode = function(res){
-
 }
 
 Gameplay.prototype.getBomb = function(x, y) {
@@ -288,6 +303,10 @@ Gameplay.prototype.explodeBomb = function(bombExplode) {
         affected.bombs.push(curBomb);
         this.gameboard[curBomb.xPos][curBomb.yPos] = UNBLOCKED;
     }
+    // remove duplicate coordinates
+    affected.expCoords = removeDupCoords(affected.expCoords);
+    this.checkPlayerHit(affected.expCoords, this.players);
+    this.clearItemsHit(affected.expCoords);
     for(let i = 0; i < affected.blocks.length; i++){
         let block = affected.blocks[i];
         if(block.type == SOFTBLOCK){
@@ -297,28 +316,35 @@ Gameplay.prototype.explodeBomb = function(bombExplode) {
     for(let i = 0; i < affected.bombs.length; i++){
         this.destroyBomb(affected.bombs[i]);
     }
-    // remove duplicate coordinates
-    affected.expCoords = removeDupCoords(affected.expCoords);
-    this.checkPlayerHit(affected.expCoords, this.players);
     return affected;
+};
+
+Gameplay.prototype.clearItemsHit = function(expCoords){
+    expCoords.forEach((expCoord) => {
+        let isFree = this.gameboard[expCoord.xPos][expCoord.yPos] == 0;
+            //Distory item
+        if(isFree) this.items[expCoord.xPos][expCoord.yPos] = 0;
+    });
 }
 
-function setRandomItems(gameboard){
-    let res = [];
-    for(let i = 0; i < GAMEBOARD_SIZE; i++){
-        let arr = [];
-        for (var j = 0; j < GAMEBOARD_SIZE; j++){
-            if(Math.random() > ITEM_PROC_RATE && gameboard[i][j]){
-                arr.push(Math.floor(Math.random() * 3 + 1));
-            }else{
-                arr.push(0);
-            }
+/**
+ * Notify gameplay the new player position
+ */
+Gameplay.prototype.onPlayerMoveChanged = function(player) {
+    //Check if there is any item on the current location
+    if(this.items[player.xPos][player.yPos] != 0) {
+        console.log(`character ${player.name} taking item ${this.items[player.xPos][player.yPos]}`)
+        if(this.items[player.xPos][player.yPos] == POWER_ITEM && player.power < POWER_LIMIT) {
+            player.power ++;
+        } else if(this.items[player.xPos][player.yPos] == SPEED_ITEM && player.power < SPEED_LIMIT){
+            player.speed += 0.5;
+        } else if(this.items[player.xPos][player.yPos] == BOMB_ITEM && player.power < LOAD_LIMIT) {
+            player.load ++;
         }
-        res.push(arr);
-    }
-    return res;
-}
 
+        this.items[player.xPos][player.yPos] = 0;
+    }
+};
 
 function removeDupCoords(coords) {
     let unique = {};

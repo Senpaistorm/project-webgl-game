@@ -20,7 +20,7 @@ Util.emptyGameboard = function(){
     return gameboard;
 }
 
-Util.defaultGameboard = () => {
+Util.defaultGameboard = function() {
     gameboard = [[0,0,1,1,1,1,1,1,1,1,1,1,1,0,0],
                     [0,0,1,1,1,0,0,0,0,0,1,1,1,0,0],
                     [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
@@ -53,6 +53,7 @@ Util.setRandomItems = function(gameboard){
         res.push(arr);
     }
     return res;
+    
 }
 
 Util._normalize = function(num){
