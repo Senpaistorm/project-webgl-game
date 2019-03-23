@@ -1,4 +1,3 @@
-
 function Character(name, xPos, yPos, speed, power, load) {
     this.name = name;
     this.xPos = xPos;
@@ -42,11 +41,7 @@ Character.prototype.resetAnimation = function() {
     this.movementAnimation(CHARACTER_BODY_PART.rightLeg, STATIC);
     this.movementAnimation(CHARACTER_BODY_PART.rightArm, STATIC);
     this.movementAnimation(CHARACTER_BODY_PART.leftArm, STATIC);
-}
-
-Character.prototype.setModel = function(mesh) {
-    this.model = mesh;
-}
+};
 
 Character.prototype.updatePosition = function(vector) {
     this.absoluteXPos += vector.x;
@@ -59,30 +54,11 @@ Character.prototype.updatePosition = function(vector) {
     if (vector.x >= 1) this.rotation = Math.PI/2;
     if (vector.y <= -1) this.rotation = Math.PI;
     if (vector.y >= 1) this.rotation = 0;
-    this.updateModelRotation();
-}
-
-Character.prototype.updatePositionAbs = function(x, y, rotation) {
-
-    if(this.absoluteXPos == x && this.absoluteYPos == y) {
-        this.resetAnimation();
-        return;
-    }
-
-    this.absoluteXPos = x;
-    this.absoluteYPos = y;
-
-    // this.model.position.x = x;
-    // this.model.position.z = y;
-
-    this.xPos = Math.floor((this.absoluteXPos + 196)/24.2);
-    this.yPos = Math.floor((this.absoluteYPos + 130.5)/24.2);
-    this.updateModelRotation(rotation);
-}
+};
 
 Character.prototype.move = function(vector){
     Object.assign(this.movement, vector);
-}
+};
 
 Character.prototype.update = function(checkCollision, onPlayerMoveChanged){
     let xOrig = this.xPos;

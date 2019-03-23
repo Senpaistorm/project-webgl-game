@@ -39,7 +39,7 @@
 	Gui.prototype.changePlayerMovement = function(vector) {
 		if(vector.x != 0 || vector.y != 0)
 			this.playerMovement = vector;
-	}
+	};
 
 	/**
 	 * Update the position of gui representation of a player
@@ -49,16 +49,8 @@
 		if(this.playersmesh[id]){
 			this.playersmesh[id].position.x = x;
 			this.playersmesh[id].position.z = y;
-			// if(this.core.checkItem(player.xPos,player.yPos)){
-			// 	let mesh = this.gameboardMesh[x][y];
-
-			// 	if(mesh) {
-			// 		this.gameboardMesh[x][y] = null;
-			// 		this.scene.remove(mesh);
-			// 	}
-			// }
 		}
-	}
+	};
 
 	Gui.prototype.createCharacters = function(characters) {
 		for(const data in characters._data){
@@ -72,7 +64,38 @@
 			this.playersmesh[character.name] = mesh;
 			this.scene.add(mesh);
 		});
-	}
+	};
+
+	Gui.prototype.movementAnimation = function(model, bodyPart, movementDirection) {
+
+        if(!model) return;
+        model.children[bodyPart].rotation.x = -Math.PI/8 * movementDirection;
+
+        if(bodyPart == CHARACTER_BODY_PART.leftLeg || bodyPart == CHARACTER_BODY_PART.rightLeg) {
+            this.model.children[bodyPart].position.z = 2 * movementDirection;
+        } else this.model.children[bodyPart].position.z = 4 * movementDirection;
+    };
+
+    Gui.prototype.updateModelRotation = function (id, rotation) {
+		let model = this.playersmesh[id];
+        if(model != null) {
+            model.rotation.y = rotation;
+            
+            //arm and leg will switch movement every frame while moving
+            // this.armAndLegSwitchMovement = this.armAndLegSwitchMovement * -1;
+            // this.movementAnimation(CHARACTER_BODY_PART.leftLeg, FORWARD * this.armAndLegSwitchMovement);
+            // this.movementAnimation(CHARACTER_BODY_PART.rightLeg, BACKWARD * this.armAndLegSwitchMovement);
+            // this.movementAnimation(CHARACTER_BODY_PART.rightArm, FORWARD * this.armAndLegSwitchMovement);
+            // this.movementAnimation(CHARACTER_BODY_PART.leftArm, BACKWARD * this.armAndLegSwitchMovement);
+        }
+	};
+	
+	Gui.prototype.resetAnimation = function() {
+		this.movementAnimation(CHARACTER_BODY_PART.leftLeg, STATIC);
+		this.movementAnimation(CHARACTER_BODY_PART.rightLeg, STATIC);
+		this.movementAnimation(CHARACTER_BODY_PART.rightArm, STATIC);
+		this.movementAnimation(CHARACTER_BODY_PART.leftArm, STATIC);
+	};
 
 	Gui.prototype.createBomb = function(bomb) {
 		let x = bomb.xPos;

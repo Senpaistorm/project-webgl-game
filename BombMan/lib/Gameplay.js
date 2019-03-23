@@ -23,7 +23,7 @@ const POWER_ITEM = 1;
 const SPEED_ITEM = 2;
 const BOMB_ITEM = 3;
 const ITEM_PROC_RATE = 0.5;
-const SPEED_LIMIT = 4;
+const SPEED_LIMIT = 6;
 const LOAD_LIMIT = 8;
 const POWER_LIMIT = 10;
 

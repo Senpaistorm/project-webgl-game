@@ -30,6 +30,7 @@
 			let absX = cur.absoluteXPos;
 			let absY = cur.absoluteYPos;
 			this.gui.updatePlayerPosition(cur, absX, absY);
+			this.gui.updateModelRotation(cur.name, cur.rotation);
 			this.onPlayerMoveChanged(cur);
 		});
 	};
@@ -187,37 +188,6 @@
 	Core.prototype._notifyNewGameStarted = function(gameplay) {
 		this.gui.onNewGame(gameplay);
 	};
-
-	// keyboard handler and notify gui about the change
-	Core.prototype.keyDown = function(e) {
-		let character = this.getMainPlayer();
-		if(e.keyCode == PLACEBOMB){
-			this.placeBomb(character);
-		}
-
-		if(e.keyCode != PLACEBOMB 
-			&& movementToVector[e.keyCode].keyDown == false) {
-
-			console.log(character.speed);
-
-			movementToVector[e.keyCode].keyDown = true;
-			vector.x += movementToVector[e.keyCode].x * character.speed;
-			vector.y += movementToVector[e.keyCode].y * character.speed;
-			//A vector represents the player's movement
-			this.gui.changePlayerMovement(vector);
-		}
-	}
-
-	Core.prototype.keyUp = function(e) {
-	    let character = this.getMainPlayer();
-
-		if (e.keyCode != PLACEBOMB && this.getMainPlayer()) {
-			movementToVector[e.keyCode].keyDown = false;
-			vector.x -= movementToVector[e.keyCode].x * character.speed;
-			vector.y -= movementToVector[e.keyCode].y * character.speed;
-			this.gui.changePlayerMovement(vector);
-		}
-	}
 
     // Export to window
     window.app = window.app || {};
