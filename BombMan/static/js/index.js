@@ -15,20 +15,14 @@
 		let roomId = null;
 
 		let intent = {
-			'up': false,
-			'down': false,
-			'left': false,
-			'right': false,
-			'bomb': false,
+			'up': 0,
+			'down': 0,
+			'left': 0,
+			'right': 0,
+			'bomb': 0,
 		};
 
 		window.addEventListener('keydown', function(e){
-			// if(isValidKey(e.keyCode) && game.core.getMainPlayer()){
-			// 	game.core.keyDown(e);
-			// 	if(e.keyCode == PLACEBOMB){
-			// 		socket.emit('placeBomb', roomId, game.core.getMainPlayer());
-			// 	}
-			// }
 			switch(e.keyCode){
 				case UP: intent.up = 1; break;
 				case DOWN: intent.down = 1; break;
@@ -39,7 +33,6 @@
 		});
 
 		window,addEventListener('keyup', function(e) {
-			//if(isValidKey(e.keyCode) && game.core.getMainPlayer()) game.core.keyUp(e);
 			switch(e.keyCode){
 				case UP: intent.up = 0; break;
 				case DOWN: intent.down = 0; break;
@@ -49,11 +42,14 @@
 			}
 		});
 
-		// socket handler for updating character position
-		socket.on('updateCharacters', (character) =>{
-			if(!game.core.getMainPlayer() || game.core.getMainPlayer().name != character.name){
-				game.core.updatePositions(character);
-			}
+		/**
+		 *  receive game state
+		 * 'players': player information
+		 * 'bombs': bomb information
+		 * 'gameboard': gameboard information
+		 * */ 
+		socket.on('gamestate', function(state){
+			game.core.updateGameState(state);
 		});
 
 		// socket handler for starting a game

@@ -106,6 +106,10 @@ Gameplay.prototype.update = function(){
 
 Gameplay.prototype.sendState = function(){
     //console.log(`broadcasting gamestate to ${this.room}`);
+    let state = {};
+    state.players = this.getPlayers();
+    state.bombs = this.bombs();
+    
 };
 
 Gameplay.prototype.handleKey = function(id, intent){
@@ -119,9 +123,6 @@ Gameplay.prototype.handleKey = function(id, intent){
         character.movement.x = -1;
     }else if(intent.right){
         character.movement.x = 1;
-    }
-    if(intent.bomb){
-        this.placeBomb(character);
     }
 }
 

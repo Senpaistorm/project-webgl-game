@@ -29,7 +29,7 @@ let roomStatus = [];
 let characterStatus = {};
 // character to room dictionary
 let charToRoom = {};
-let startedGames = new HashMap();
+let startedGames = [];
 
 // WebSocket handlers
 io.on('connection', function(socket) {
@@ -83,7 +83,7 @@ io.on('connection', function(socket) {
                     game.addPlayer(sid, sid, i);
                     i++;
                 });
-                startedGames.set(room.name, game);
+                startedGames.push(game);
                 io.sockets.in(room.name).emit('gamestart', game, room.name);
             }else{
                 if(room.name in rooms){
@@ -103,17 +103,6 @@ io.on('connection', function(socket) {
         io.sockets.to(roomId).emit('placeBomb', player);
     });
 
-    socket.on('updateCharacters', (room, character) =>{
-        if(!(character.name in characterStatus)){
-            characterStatus[character.name] = character;
-        }else{
-            characterStatus[character.name].absoluteXPos = character.absoluteXPos;
-            characterStatus[character.name].absoluteYPos = character.absoluteYPos;   
-            characterStatus[character.name].rotation = character.rotation;
-        }
-        //io.sockets.to(room).emit('updateCharacters', characterStatus[character.name]);
-    });
-
     socket.on('gameover', (room) =>{
         // leave room on gameover
         socket.leave(room);
@@ -124,8 +113,7 @@ io.on('connection', function(socket) {
 // Server side game loop, runs at 60Hz and sends out update packets to all
 // clients every tick.
 setInterval(function() {
-    var games = startedGames.values();
-    games.forEach((game) => {
+    startedGames.forEach((game) => {
         game.update();
         game.sendState();
     });
