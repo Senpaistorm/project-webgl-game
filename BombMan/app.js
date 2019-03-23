@@ -93,6 +93,10 @@ io.on('connection', function(socket) {
     //     io.sockets.to(roomId).emit('itemsInit', itemboard);
     // })
 
+    socket.on('player_action', (data) =>{
+        let game = startedGames.get(data.room);
+        if(game) game.handleKey(socket.id, data.intent);
+    });
 
     socket.on('placeBomb', (roomId, player) =>{
         io.sockets.to(roomId).emit('placeBomb', player);
@@ -107,12 +111,13 @@ io.on('connection', function(socket) {
 
 // Server side game loop, runs at 60Hz and sends out update packets to all
 // clients every tick.
-// setInterval(function() {
-//     startedGames.forEach((game) => {
-//         game.update();
-//         game.sendState();
-//     });
-// }, 1000/30);
+setInterval(function() {
+    startedGames.forEach(function(game, room){
+        game.update();
+        let state = game.getState();
+        io.sockets.in(room).emit('gamestate', state);
+    })
+}, 1000/30);
 
 function setRandomItems(gameboard){
     let res = [];

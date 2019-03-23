@@ -22,12 +22,22 @@
 		this._notifyNewGameStarted(gameplay);
 	};
 
+	Core.prototype.updateGameState = function(state){
+		let players = state.players;
+		players.forEach((cur) =>{
+			let id = cur.name;
+			let absX = cur.absoluteXPos;
+			let absY = cur.absoluteYPos;
+			this.gui.updatePlayerPosition(id, absX, absY);
+		});
+	};
+
 	/**
      * Get the list of players that have been added to the framework.
      */
 	Core.prototype.getPlayers = function() {
 		return this.players;
-	}
+	};
 
     /**
      * Adds a player to the game and notifies the GUI about the

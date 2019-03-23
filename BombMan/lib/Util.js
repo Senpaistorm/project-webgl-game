@@ -1,3 +1,9 @@
+const Constants = require('./Constants');
+
+const HARDBLOCK = Constants.HARDBLOCK;
+const SOFTBLOCK = Constants.SOFTBLOCK;
+const BOMB = Constants.BOMB;
+
 function Util() {
     throw new Error('Util should not be instantiated!');
 }
@@ -32,6 +38,25 @@ Util.defaultGameboard = () => {
                     [0,0,1,1,1,1,1,1,1,1,1,1,1,0,0]];
     return gameboard;
 };
+
+Util._normalize = function(num){
+    if(num == 0){
+        return 0;
+    }else if(num < 0){
+        return -1;
+    }else{
+        return 1;
+    }
+};
+
+Util.isValidPosition = function(x, y){
+    return x >= 0 && x < Constants.GAMEBOARD_SIZE && y >= 0 && y < Constants.GAMEBOARD_SIZE;
+}
+
+Util.isCollision = function(material){
+	return material == HARDBLOCK || material == SOFTBLOCK
+	  || material == BOMB;
+}
 
 if (typeof module === 'object') {
     /**

@@ -85,8 +85,12 @@ Character.prototype.updatePositionAbs = function(x, y, rotation) {
     this.updateModelRotation(rotation);
 }
 
+Character.prototype.move = function(vector){
+    Object.assign(this.movement, vector);
+}
+
 Character.prototype.update = function(checkCollision){
-    if(checkCollision(this.absoluteXPos + this.movement.x, this.absoluteYPos + this.movement.y)){
+    if(!checkCollision(this.absoluteXPos, this.absoluteYPos, this)){
         this.updatePosition(this.movement);
     }
 };

@@ -58,13 +58,11 @@
 
 		// socket handler for starting a game
 		socket.on('gamestart', (gameplay, room) =>{
-			
-			console.log(gameplay);
 			roomId = room;
 			game.core.startNewGame(gameplay);
 			showGame();
 			// send to the server information about main player on this client
-			//updateInterval = setInterval(updateGameState,1000/30);
+			updateInterval = setInterval(updateGameState,1000/30);
 		});
 
 		// socket handler for starting a game

@@ -21,17 +21,18 @@
 		this.renderer.autoClearDepth = false;
 		this.container = document.getElementById('world');
 		this.keyboardEvent = {};
-		this.playerMovement = {x:0, y:0};
+		//this.playerMovement = {x:0, y:0};
+		this.playersmesh = {};
 		this.animationFrameID = null;
 	}
 
 	Gui.prototype.onNewGame = function(gameplay) {
-		console.log(gameplay);
 		this._init();
 		this.gameplay = gameplay;
 		this._createGameBoard(gameplay.gameboard);
 		this.createCharacters(gameplay.players);
 		this._animate();
+		console.log(this.playersmesh);
 	};
 
 	// Called this method when player is moving along with the given vector 
@@ -41,17 +42,25 @@
 			this.playerMovement = vector;
 	}
 
+	/**
+	 * Update the position of gui representation of a player
+	 */
+	Gui.prototype.updatePlayerPosition = function(id, x, y) {
+		console.log(this.playersmesh[id]);
+		this.playersmesh[id].position.x = x;
+		this.playersmesh[id].position.z = y;
+	}
+
 	Gui.prototype.createCharacters = function(characters) {
-		console.log(characters._data);
 		for(const data in characters._data){
 			let character = characters._data[data];
-			console.log(character[1]);
 			this.createCharacter(character[1]);
 		}
 	}
 
 	Gui.prototype.createCharacter = function(character) {
 		gameobject.createCharactorModel(character.absoluteXPos, character.absoluteYPos, character.color, (mesh) => {
+			this.playersmesh[character.name] = mesh;
 			this.scene.add(mesh);
 		});
 	}

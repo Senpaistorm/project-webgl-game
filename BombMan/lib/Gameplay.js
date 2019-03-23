@@ -1,6 +1,7 @@
 /**
  * Gameplay on the server to manage the state of the gameboard and players.
  */
+
 // representation of a bomb
 let bomb = function(x, y, power){
     return{
@@ -92,30 +93,46 @@ Gameplay.prototype.getRoom = function() {
     return this.room;
 };
 
-Gameplay.prototype.checkCollision = function(absoluteXPos, absoluteYPos){
-    let x = Math.floor((absoluteXPos + 196)/24.2);
-    let y = Math.floor((absoluteYPos + 130.5)/24.2);
-    return unOccupied(this.gameboard[x][y]);
+Gameplay.prototype._collisionDetection = function(x, y, player) {
+    let xOrig = Math.floor((x + 196)/24.2);
+    let yOrig = Math.floor((y + 130.5)/24.2);
+    let dx = Util._normalize(player.movement.x);
+    let dy = Util._normalize(player.movement.y);
+    let xPos = Math.floor((x + 196 + (dx * 8))/24.2);
+    let yPos = Math.floor((y + 130.5 + (dy * 8))/24.2);
+    if(xPos == xOrig && yPos == yOrig) return false;
+
+    if(xPos < 0 || yPos < 0 || xPos >= GAMEBOARD_SIZE || yPos >= GAMEBOARD_SIZE){
+        return true;
+    }
+    let location = this.gameboard[xPos][yPos];
+    let ret = Util.isCollision(location);
+    // in case of diagonal, calculate adjacent collisions
+    if(Util.isValidPosition(xPos, yPos - dy) && 
+            Util.isValidPosition(xPos - dx, yPos)){
+                
+        let collidableX = this.gameboard[xPos - dx][yPos];
+        let collidableY = this.gameboard[xPos][yPos - dy];
+        ret = ret || (Util.isCollision(collidableX) && Util.isCollision(collidableY));
+    }
+    return ret;
 }
 
 Gameplay.prototype.update = function(){
     var characters = this.getPlayers();
     for(var i = 0; i < characters.length; i++){
-        characters[i].update(this.checkCollision);
+        characters[i].update(this._collisionDetection);
     }
 };
 
-Gameplay.prototype.sendState = function(){
-    //console.log(`broadcasting gamestate to ${this.room}`);
+Gameplay.prototype.getState = function(){
     let state = {
         players : this.getPlayers(),
-        bombs : this.bombs(),
+        bombs : this.bombs,
         gameboard : this.gameboard,
     };
 
-    this.clients.forEach(function(client){
-        client.emit('gamestate', state);
-    });
+    return state;
     
 };
 
@@ -124,14 +141,19 @@ Gameplay.prototype.handleKey = function(id, intent){
     if(intent.up){
         character.move({y: -1});
     }else if(intent.down){
-        character.movement.y = 1;
+        character.move({y: 1});
+    }else{
+        character.move({y: 0});
     }
+
     if(intent.left){
-        character.movement.x = -1;
+        character.move({x: -1});
     }else if(intent.right){
-        character.movement.x = 1;
+        character.move({x: 1});
+    }else{
+        character.move({x: 0});
     }
-}
+};
 
 Gameplay.prototype.placeBomb = async (character) => {
     let x = character.xPos, y = character.yPos;
@@ -280,31 +302,6 @@ Gameplay.prototype.explodeBomb = (bombExplode) => {
     return affected;
 }
 
-Gameplay.prototype._collisionDetection = function(x, y) {
-    let xOrig = Math.floor((x + 196)/24.2);
-    let yOrig = Math.floor((y + 130.5)/24.2);
-    let dx = this._normalize(this.playerMovement.x);
-    let dy = this._normalize(this.playerMovement.y);
-    let xPos = Math.floor((x + 196 + (dx * 8))/24.2);
-    let yPos = Math.floor((y + 130.5 + (dy * 8))/24.2);
-    if(xPos == xOrig && yPos == yOrig) return false;
-
-    if(xPos < 0 || yPos < 0 || xPos >= GAMEBOARD_SIZE || yPos >= GAMEBOARD_SIZE){
-        return true;
-    }
-    let location = this.gameplay.gameboard[xPos][yPos];
-    let ret = isCollision(location);
-    // in case of diagonal, calculate adjacent collisions
-    if(this.isValidPosition(xPos, yPos - dy) && 
-            this.isValidPosition(xPos - dx, yPos)){
-                
-        let collidableX = this.gameplay.gameboard[xPos - dx][yPos];
-        let collidableY = this.gameplay.gameboard[xPos][yPos - dy];
-        ret = ret || (isCollision(collidableX) && isCollision(collidableY));
-    }
-    return ret;
-}
-    
 let unOccupied = (block) => {
     return !(block == SOFTBLOCK || block == HARDBLOCK || block == BOMB);
 };
