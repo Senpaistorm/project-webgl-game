@@ -33,6 +33,7 @@
 			this.gui.updateModelRotation(cur.name, cur.rotation);
 			this.onPlayerMoveChanged(cur);
 		});
+		this.gui.checkPlayerDeath(players);
 	};
 
 	/**

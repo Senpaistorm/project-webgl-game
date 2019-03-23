@@ -9,6 +9,12 @@
 			this.core.addGameGui(this.gui);
 		}
 
+		window.addEventListener( 'resize', onWindowResize, false );
+
+		function onWindowResize(){	
+    		game.gui.resize();
+		}
+
 		let game = new BombMan();
 		let updateInterval;
 		hideGame();
@@ -19,7 +25,6 @@
 			'down': 0,
 			'left': 0,
 			'right': 0,
-			'bomb': 0,
 		};
 
 		window.addEventListener('keydown', function(e){

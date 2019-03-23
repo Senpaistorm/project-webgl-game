@@ -12,6 +12,14 @@ let bomb = function(x, y, power, name){
     };
 };
 
+let coord = function(x, y, type){
+    return{
+        xPos: x,
+        yPos: y,
+        type: type,
+    };
+};
+
 const GAMEBOARD_SIZE = 15;
 // types of materials on the gameboard
 const UNBLOCKED = 0;
@@ -26,14 +34,6 @@ const ITEM_PROC_RATE = 0.5;
 const SPEED_LIMIT = 6;
 const LOAD_LIMIT = 8;
 const POWER_LIMIT = 10;
-
-let coord = function(x, y, type){
-    return{
-        xPos: x,
-        yPos: y,
-        type: type,
-    };
-};
 
 const Character = require('./Character');
 const HashMap = require('hashmap');
@@ -157,7 +157,6 @@ Gameplay.prototype.handleKey = function(id, intent){
 };
 
 Gameplay.prototype.canPlaceBomb = function(character){
-    console.log(this.bombs);
     let num_bombs = this.bombs.filter(x => x.name == character.name).length;
     return num_bombs < character.load;
 }
@@ -176,7 +175,6 @@ Gameplay.prototype.placeBomb = async function(character, createCallback, explode
     if(!this.isValidBombPosition(x,y)) return null;
     if(!this.canPlaceBomb(character)) return null;
     let myBomb = bomb(x, y, character.power, character.name);
-    console.log(`bomb down at ${x} ${y}`);
     createCallback(myBomb);
     this.gameboard[x][y] = BOMB;
     this.bombs.push(myBomb);
@@ -322,7 +320,6 @@ Gameplay.prototype.explodeBomb = function(bombExplode) {
 Gameplay.prototype.clearItemsHit = function(expCoords){
     expCoords.forEach((expCoord) => {
         let isFree = this.gameboard[expCoord.xPos][expCoord.yPos] == 0;
-            //Distory item
         if(isFree) this.items[expCoord.xPos][expCoord.yPos] = 0;
     });
 }
@@ -333,7 +330,7 @@ Gameplay.prototype.clearItemsHit = function(expCoords){
 Gameplay.prototype.onPlayerMoveChanged = function(player) {
     //Check if there is any item on the current location
     if(this.items[player.xPos][player.yPos] != 0) {
-        console.log(`character ${player.name} taking item ${this.items[player.xPos][player.yPos]}`)
+        console.log(`character ${player.name} taking item ${this.items[player.xPos][player.yPos]}`);
         if(this.items[player.xPos][player.yPos] == POWER_ITEM && player.power < POWER_LIMIT) {
             player.power ++;
         } else if(this.items[player.xPos][player.yPos] == SPEED_ITEM && player.power < SPEED_LIMIT){

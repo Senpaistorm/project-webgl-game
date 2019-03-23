@@ -24,6 +24,12 @@
 	};
 
 	function Gameplay() {
+		this.container = 'world';
+
+		this.gametype = GAME;
+
+		this.gameboardsize = 15;
+
 		this.gameboard = emptyGameboard();
 		this.gameboard = defaultGameboard(this.gameboard);
 
@@ -33,9 +39,8 @@
 		this.items = null;
 
 		this.isValidPosition = (x, y) => {
-			return x >= 0 && x < GAMEBOARD_SIZE && y >= 0 && y < GAMEBOARD_SIZE && unOccupied(this.gameboard[x][y]);
+			return x >= 0 && x < this.gameboardsize && y >= 0 && y < this.gameboardsize && !this.isCollision(x, y);
 		};
-
 
 		// check if any player hit by the boom
 		this.checkPlayerHit = (areaAffected, players) => {
@@ -90,15 +95,15 @@
 				x = curBomb.xPos, y = curBomb.yPos, i = 1;
 				affected.expCoords.push(coord(x,y,0));
 				// check for boundaries
-				foundRight = x + i >= GAMEBOARD_SIZE;
+				foundRight = x + i >= this.gameboardsize;
 				foundLeft = x - i < 0;
-				foundDown = y + i >= GAMEBOARD_SIZE;
+				foundDown = y + i >= this.gameboardsize;
 				foundUp = y - i < 0;
 				// find closest impact
 				while(!(foundLeft && foundRight && foundUp && foundDown) && i <= curBomb.power){
 					let affectedCoord;
 					// check every direction
-					if(!foundRight && x + i < GAMEBOARD_SIZE){
+					if(!foundRight && x + i < this.gameboardsize){
 						affectedCoord = coord(x+i, y, this.gameboard[x+i][y]);
 						if(affectedCoord.type != HARDBLOCK)
 							affected.expCoords.push(affectedCoord);
@@ -122,7 +127,7 @@
 						}
 						foundLeft =  this.gameboard[x-i][y] != UNBLOCKED;
 					}
-					if(!foundDown && y + i < GAMEBOARD_SIZE){
+					if(!foundDown && y + i < this.gameboardsize){
 						affectedCoord = coord(x, y+i, this.gameboard[x][y+i]);
 						if(affectedCoord.type != HARDBLOCK)	
 							affected.expCoords.push(affectedCoord);
@@ -194,11 +199,12 @@
 		this.register = (core) => {
 			this.core = core;
 		}
+
+		this.isCollision = function(x, y){
+			let material = this.gameboard[x][y]
+			return material == HARDBLOCK || material == SOFTBLOCK || material == BOMB;
+		}
 	}
-	
-	let unOccupied = (block) => {
-		return !(block == SOFTBLOCK || block == HARDBLOCK || block == BOMB);
-	};
 
 	function emptyGameboard(){
 		let gameboard = [];

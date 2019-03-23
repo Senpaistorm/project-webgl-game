@@ -15,30 +15,22 @@
 	function Gui(core) {
 		this.core = core;
 		this.scene = new THREE.Scene();
-		this.camera = new THREE.PerspectiveCamera(72, (window.innerWidth)/(window.innerHeight), 1, 10000);
+		this.camera = new THREE.PerspectiveCamera(72, window.innerWidth/window.innerHeight, 1, 10000);
 		this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 		this.renderer.autoClear = false;
 		this.renderer.autoClearDepth = false;
 		this.container = document.getElementById('world');
-		this.keyboardEvent = {};
-		//this.playerMovement = {x:0, y:0};
 		this.playersmesh = {};
 		this.animationFrameID = null;
 	}
 
 	Gui.prototype.onNewGame = function(gameplay) {
-		this._init();
 		this.gameplay = gameplay;
-		this._createGameBoard(gameplay.gameboard);
 		this.createCharacters(gameplay.players);
 		this._animate();
-	};
-
-	// Called this method when player is moving along with the given vector 
-	// direction
-	Gui.prototype.changePlayerMovement = function(vector) {
-		if(vector.x != 0 || vector.y != 0)
-			this.playerMovement = vector;
+		this._init();
+		this._createGameBoard(gameplay.gameboard, gameplay.gametype);
+		this.container = document.getElementById(gameplay.container);
 	};
 
 	/**
@@ -107,11 +99,33 @@
 	
 	}
 	
+	Gui.prototype.checkPlayerDeath = function(players){
+		let playerIds = Object.keys(this.playersmesh);
+		if(players.length != playerIds.length){
+			playerIds.forEach((id) =>{
+				let index = players.findIndex((player) => {
+					return player.name == id;
+				});
+				if (index == -1) this.removePlayer(id);
+			});
+		}
+	}
+
 	/**
 	 * Destory charactor model of given character
 	 */
-	Gui.prototype.removePlayer = function(character) {
-		this.scene.remove(character.model);
+	Gui.prototype.removePlayer = function(id) {
+		this.scene.remove(this.playersmesh[id]);
+		delete this.playersmesh[id];
+	}
+
+	/*
+	 * Resize the render
+	 */
+	Gui.prototype.resize = function(){
+	 	this.camera.aspect = window.innerWidth / window.innerHeight;
+    	this.camera.updateProjectionMatrix();
+	    this.renderer.setSize( window.innerWidth, window.innerHeight );
 	}
 
 	/**
@@ -146,7 +160,7 @@
 		this._createLights();
 	};
 
-	Gui.prototype._createGameBoard = function(gameboard) {
+	Gui.prototype._createGameBoard = function(gameboard, gametype) {
 		this.gameboardMesh = new Array(gameboard.length);
 
 		for(let i = 0; i < gameboard.length; i ++) {
@@ -171,34 +185,47 @@
 			}
 		}
 
-		for(let i = 0; i < gameboard.length+2; i ++) {
-			gameobject.createHardBlock(STARTING_X + (i-1) * BLOCK_SIZE, STARTING_Y - BLOCK_SIZE, (mesh) => {
-				this.scene.add(mesh);
-			});
-			gameobject.createHardBlock(STARTING_X + (i-1) * BLOCK_SIZE, STARTING_Y + gameboard.length * BLOCK_SIZE, (mesh) => {
-				this.scene.add(mesh);
-			});
+		if (gametype == GAME) {
+			for(let i = 0; i < gameboard.length+2; i ++) {
+				gameobject.createHardBlock(STARTING_X + (i-1) * BLOCK_SIZE, STARTING_Y - BLOCK_SIZE, (mesh) => {
+					this.scene.add(mesh);
+				});
+				gameobject.createHardBlock(STARTING_X + (i-1) * BLOCK_SIZE, STARTING_Y + gameboard.length * BLOCK_SIZE, (mesh) => {
+					this.scene.add(mesh);
+				});
+			}
+			for(let i = 0; i < gameboard.length; i ++) {
+				gameobject.createHardBlock(STARTING_X - BLOCK_SIZE, STARTING_Y + i * BLOCK_SIZE, (mesh) => {
+					this.scene.add(mesh);
+				});
+				gameobject.createHardBlock(STARTING_X + gameboard.length * BLOCK_SIZE, STARTING_Y + i * BLOCK_SIZE, (mesh) => {
+					this.scene.add(mesh);
+				});
+			}
 		}
-		for(let i = 0; i < gameboard.length; i ++) {
-			gameobject.createHardBlock(STARTING_X - BLOCK_SIZE, STARTING_Y + i * BLOCK_SIZE, (mesh) => {
-				this.scene.add(mesh);
-			});
-			gameobject.createHardBlock(STARTING_X + gameboard.length * BLOCK_SIZE, STARTING_Y + i * BLOCK_SIZE, (mesh) => {
-				this.scene.add(mesh);
-			});
-		}
-	}
+	}	
 
 	Gui.prototype._createScene = function() {
 		this.scene.fog = new THREE.Fog(0xf7d9aa, 100, 950);
-		this.camera.position.x = 0;
-		this.camera.position.y = 320;
-		this.camera.position.z = 200;
-		this.camera.lookAt(new THREE.Vector3(0,-200,0));
-
 		this.renderer.setSize(window.innerWidth, window.innerHeight);
 		this.renderer.shadowMap.enabled = true;
 		this.container.appendChild(this.renderer.domElement);
+
+		if (this.gameplay.gametype == GAME) {
+			this.camera.position.x = 0;
+			this.camera.position.y = 320;
+			this.camera.position.z = 200;
+			this.camera.lookAt(new THREE.Vector3(0,-200,0));
+		}  else {
+			this.camera.position.x = -10;
+			this.camera.position.y = 225;
+			this.camera.position.z = 90;
+			this.camera.lookAt(new THREE.Vector3(0,0,0));
+			this.camera.rotation.x = -1;
+			this.camera.rotation.y = 0;
+			this.camera.rotation.z = 0;
+		}
+
 	}
 
 	Gui.prototype._createLights = function() {

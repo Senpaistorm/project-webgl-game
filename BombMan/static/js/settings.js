@@ -29,7 +29,9 @@ const ITEM_PROC_RATE = 0.5;
 const FORWARD = 1;
 const BACKWARD = -1;
 const STATIC = 0;
-
+//game type
+const GAME = 1;
+const PREPARE_ROOM = 2;
 
 let movementToVector = { 
 	65: {x:-1 ,y: 0, keyDown: false}, 
@@ -55,8 +57,3 @@ let isValidKey = function(keyCode) {
 
 let initPositions = [{xPos: 0, yPos:0}, {xPos:14, yPos:0},
     {xPos:0, yPos:14}, {xPos:14, yPos:14}];
-
-let isCollision = function(material){
-	return material == HARDBLOCK || material == SOFTBLOCK
-	  || material == BOMB;
-}
