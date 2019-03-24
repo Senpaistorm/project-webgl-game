@@ -87,8 +87,10 @@
 		});
 
 		// socket handler for starting a game
-		socket.on('gameover', (results) =>{
-			gameOver(results);
+		socket.on('gameover', (result) =>{
+			console.log('gameover');
+			console.log(result);
+			//gameOver(result);
 		});
 
 		document.getElementById('play_game_btn').addEventListener('click', async ()=>{

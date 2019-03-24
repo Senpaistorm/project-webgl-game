@@ -24,6 +24,8 @@ app.use(function (req, res, next){
     next();
 });
 
+const UPDATE_FRAME_RATE = 30;
+const GAMEOVER_CHECK_RATE = 2000;
 // room status that contains all the queued players and their rooms
 let roomStatus = [];
 // character status of all game rooms
@@ -133,15 +135,24 @@ io.on('connection', function(socket) {
 
 });
 
-// Server side game loop, runs at 60Hz and sends out update packets to all
-// clients every tick.
+// Server side game loop that updates game state and send to game room
 setInterval(function() {
     startedGames.forEach(function(game, room){
         game.update();
         let state = game.getState();
         io.sockets.in(room).emit('gamestate', state);
     });
-}, 1000/30);
+}, 1000/UPDATE_FRAME_RATE);
+
+// Server side game loop that checks game over state
+// that ticks every 2 seconds
+setInterval(function() {
+    startedGames.forEach(function(game, room){
+        if(game.isGameOver()){
+            io.sockets.in(room).emit('gameover', game.getResult());
+        }
+    });
+}, GAMEOVER_CHECK_RATE);
 
 const PORT = 3000;
 
