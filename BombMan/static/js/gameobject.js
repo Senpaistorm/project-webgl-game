@@ -9,7 +9,7 @@ let gameobject = (function() {
 
 	function loadCharacterTexture() {
 		var textureLoader = new THREE.TextureLoader();
-		var map = textureLoader.load('./media/textures/skin_man.png');
+		var map = textureLoader.load('./media/models/Textures/king.png');
 		return new THREE.MeshPhongMaterial({map: map});
 	}
 
