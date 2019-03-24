@@ -9,12 +9,18 @@
 			this.core.addGameGui(this.gui);
 		}
 
+		//let game;
 		let game;
 		var updateInterval = null;
 		hideGame();
 		let roomId = null;
 
 		socket.emit('load');
+		window.addEventListener( 'resize', onWindowResize, false );
+
+		function onWindowResize(){	
+			game.gui.resize();
+		}
 
 		let intent = {
 			'up': 0,
@@ -107,6 +113,31 @@
 			});
 			await promise;
 			if(!roomId) setNoGameFoundMsg();
+		});
+
+		//Invite player btn
+		document.getElementById('invite_player_btn').addEventListener('click', async () => {
+			document.querySelector('.complex_form').innerHTML = `
+				<div class="form_title">Invite player</div>
+      			<input type="text" class="form_element" placeholder="username" name="user_name">
+      			<button type="submit" class="form_btn" id = "positive_btn">Invite</button>
+      			<button class="form_btn" id = "negative_btn">Cancel</button>
+			`;
+		});
+
+		//join room btn
+		document.getElementById('join_room_btn').addEventListener('click', async () => {
+			document.querySelector('.complex_form').innerHTML = `
+				<div class="form_title">Join Room</div>
+      			<input type="text" class="form_element" placeholder="room number" name="user_name">
+      			<button type="submit" class="form_btn" id = "positive_btn">Join</button>
+      			<button class="form_btn" id = "negative_btn">Cancel</button>
+			`;
+		});
+
+		//cancel btn
+		document.getElementById('negative_btn').addEventListener('click', async () => {
+			document.querySelector('.complex_form').innerHTML = ``;
 		});
 
 		let gameOver = (didwin) => {
