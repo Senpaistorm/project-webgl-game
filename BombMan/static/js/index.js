@@ -9,12 +9,6 @@
 			this.core.addGameGui(this.gui);
 		}
 
-		window.addEventListener( 'resize', onWindowResize, false );
-
-		function onWindowResize(){	
-    		game.gui.resize();
-		}
-
 		let game;
 		var updateInterval = null;
 		hideGame();
