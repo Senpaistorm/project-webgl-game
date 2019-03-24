@@ -51,7 +51,7 @@ Character.prototype.powerup = function(power){
     }else if(power == Constants.BOMB_ITEM && this.load < Constants.LOAD_LIMIT){
         this.load ++;
     }else if(this.speed < Constants.SPEED_LIMIT){
-        this.speed += 0.4;
+        this.speed += 0.3;
     }
 };
 

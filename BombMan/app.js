@@ -78,21 +78,7 @@ io.on('connection', function(socket) {
         let rooms = io.sockets.adapter.rooms;
         roomStatus.forEach((room) =>{
             if(room.size >= 2){
-                let game = new Gameplay(Util.defaultGameboard(), Constants.GAME, Constants.GAME_CONT);
-                let i = 0;
-
-                game.setRoom(room.name);
-                for(const sid in rooms[room.name].sockets){
-                    game.addPlayer(sid, sid, i);
-                    i++;
-                }
-                startedGames.set(room.name, game);
-                startedGames.forEach(function(sid_game, sid){
-                    if(!(sid in rooms) || game.players.has(sid)){
-                        startedGames.delete(sid);
-                    }
-                });
-                io.sockets.to(room.name).emit('gamestart', game, room.name);
+                startNewGame(room);
             }else{
                 if(room.name in rooms){
                     socket.leave(room.name);
@@ -101,6 +87,24 @@ io.on('connection', function(socket) {
         });
         roomStatus = [];
     });    
+
+    function startNewGame(room){
+        let game = new Gameplay(Util.defaultGameboard(), Constants.GAME, Constants.GAME_CONT);
+        let i = 0;
+
+        game.setRoom(room.name);
+        for(const sid in rooms[room.name].sockets){
+            game.addPlayer(sid, sid, i);
+            i++;
+        }
+        startedGames.set(room.name, game);
+        startedGames.forEach(function(sid_game, sid){
+            if(!(sid in rooms) || game.players.has(sid)){
+                startedGames.delete(sid);
+            }
+        });
+        io.sockets.to(room.name).emit('gamestart', game, room.name);
+    }
 
     socket.on('player_action', (data) =>{
         let game = startedGames.get(data.room);

@@ -25,8 +25,8 @@ Constants.PROOM_CONT = 'homepage';
 Constants.GAME_CONT = 'world';
 
 Constants.SPEED_LIMIT = 4.5;
-Constants.LOAD_LIMIT = 8;
-Constants.POWER_LIMIT = 10;
+Constants.LOAD_LIMIT = 6;
+Constants.POWER_LIMIT = 8;
 
 Constants.initPositions = [{xPos: 0, yPos:0}, {xPos:14, yPos:0},
     {xPos:0, yPos:14}, {xPos:14, yPos:14}];
