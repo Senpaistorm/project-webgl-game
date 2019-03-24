@@ -71,8 +71,7 @@
 
 		// socket handler for starting a game
 		socket.on('gamestart', (gameplay, room) =>{
-			console.log('gamestart');
-			if(game) game.gui.stopAnimate();
+			if(roomId == socket.id) game.gui.stopAnimate();
 			game = new BombMan();
 			roomId = room;
 			game.core.startNewGame(gameplay);
@@ -94,12 +93,8 @@
 
 		// socket handler for starting a game
 		socket.on('gameover', (result) =>{
-			console.log('gameover');
-			console.log(result);
-			toggleGameOver(result);
-			game.gui.stopAnimate();
-			game = null;
 			socket.emit('leaveRoom', roomId);
+			toggleGameOver(result);
 		});
 
 		document.getElementById('play_game_btn').addEventListener('click', async ()=>{
@@ -115,7 +110,7 @@
 				resolve(socket.emit('resolveQueue', socket.id));
 			});
 			await promise;
-			if(!roomId) setNoGameFoundMsg();
+			if(roomId == socket.id) setNoGameFoundMsg();
 		});
 
 		//Invite player btn
@@ -142,13 +137,6 @@
 		document.getElementById('negative_btn').addEventListener('click', async () => {
 			document.querySelector('.complex_form').innerHTML = ``;
 		});
-
-		let gameOver = (didwin) => {
-			if(didwin) console.log("I won");
-			else console.log("I lost");
-			toggleGameOver();
-			game.gui.stopAnimate();
-		};
 
 		function updateGameState(){ 
 			socket.emit('player_action', {'room': roomId, 'intent':intent});
@@ -196,14 +184,12 @@
 			cont.innerHTML = `<div>
 			${JSON.stringify(result)}
 			</div>`;
-
-			cont.appendChild(button);
 			button.addEventListener("click", function(){
 				hideGame();
 				socket.emit('load');
 			});
+			cont.appendChild(button);
 		}
 	}
-
 
 })();
