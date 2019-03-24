@@ -6,8 +6,6 @@
  	 * framework.
  	 */
 
-	let vector = {x:0, y:0};
-
 	function Core() {
 		this.players = [];
 		this.state = null;
@@ -43,39 +41,6 @@
 		return this.players;
 	};
 
-    /**
-     * Adds a player to the game and notifies the GUI about the
-     * change.
-     */
-	Core.prototype.addPlayer = function(character, isMainPlayer = false) {
-		if (isMainPlayer) this.setMainPlayer(character);
-		this.players.push(character);
-	}
-
-	/**
-	 *	set character who is control by the current user
-	 */
-	Core.prototype.setMainPlayer = function(mainPlayer) {
-		this.mainPlayer = mainPlayer;
-	}
-
-	/**
-	 * get player who is control by the current user
-	 */
-	Core.prototype.getMainPlayer = function() {
-		return this.mainPlayer;
-	}
-
-	Core.prototype.increaseMainPlayerSpeed = function() {
-		if (vector.x < 0) vector.x --;
-		else if (vector.x > 0) vector.x ++;
-
-		if (vector.y < 0) vector.y --;
-		else if (vector.y > 0) vector.y ++;
-
-		this.gui.changePlayerMovement(vector);
-	}
-
 	/**
 	 * Notify gameplay the new player position
 	 */
@@ -109,21 +74,6 @@
 			}
 		}
 	};
-
-	/**
-     * Removes a player from the game and notifies the GUI about the
-     * change. return false if player is not in the list
-     */
-    Core.prototype.removePlayer = function(name) {
-    	let index = this.players.findIndex((player) => {
-    		return player.name == name;
-    	});
-    	if (index == -1) return false;
-    	if (this.mainPlayer != null && this.mainPlayer.name == name) this.mainPlayer = null;
-    	this.gui.removePlayer(this.players[index]);
-    	this.players.splice(index, 1);
-    	console.log(this.players);
-    }
 
     /**
      * Notify gui after bomb explode
@@ -170,14 +120,6 @@
 	Core.prototype.placeBomb = function(character){
 		this.gui.createBomb(character);
 	};
-
-	/**
-	 * Set the item board of gameplay if it hasn't been set
-	 */
-	Core.prototype.setItems = function(itemboard){
-		if(!this.gameplay.items)
-			this.gameplay.items = itemboard;
-	}
 
 	/**
 	 * Notify gui display the item

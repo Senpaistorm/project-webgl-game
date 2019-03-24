@@ -55,7 +55,7 @@ Util.setRandomItems = function(gameboard){
     for(let i = 0; i < gameboard.length; i++){
         let arr = [];
         for (var j = 0; j < gameboard.length; j++){
-            if(Math.random() > Constants.ITEM_PROC_RATE && gameboard[i][j] == Constants.SOFTBLOCK){
+            if(Math.random() < Constants.ITEM_PROC_RATE && gameboard[i][j] == Constants.SOFTBLOCK){
                 arr.push(Math.floor(Math.random() * 3 + 1));
             }else{
                 arr.push(0);

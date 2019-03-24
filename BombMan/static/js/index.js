@@ -23,6 +23,9 @@
 			'right': 0,
 		};
 
+		/**
+		 * Keyboard listener for pressing a valid key
+		 */
 		window.addEventListener('keydown', function(e){
 			switch(e.keyCode){
 				case UP: intent.up = 1; break;
@@ -30,7 +33,7 @@
 				case LEFT: intent.left = 1; break;
 				case RIGHT: intent.right = 1; break;
 				case PLACEBOMB: socket.emit('placeBomb', {room: roomId}); break;
-				case 80: 
+				case 80: // P : Debug key USED FOR DEVELOPMENT
 					console.log('DEBUG');
 					console.log(game.core.state);
 					toggleGameOver();
@@ -38,6 +41,9 @@
 			}
 		});
 
+		/**
+		 * Keyboard listener for releasing a valid key
+		 */
 		window,addEventListener('keyup', function(e) {
 			switch(e.keyCode){
 				case UP: intent.up = 0; break;
@@ -81,9 +87,8 @@
 		});
 
 		// socket handler for starting a game
-		socket.on('gameover', () =>{
-			clearInterval(updateInterval);
-			gameOver(true);
+		socket.on('gameover', (results) =>{
+			gameOver(results);
 		});
 
 		document.getElementById('play_game_btn').addEventListener('click', async ()=>{
@@ -105,7 +110,7 @@
 		let gameOver = (didwin) => {
 			if(didwin) console.log("I won");
 			else console.log("I lost");
-			clearInterval(updateInterval);
+			toggleGameOver();
 			game.gui.stopAnimate();
 		};
 
@@ -116,6 +121,8 @@
 
 
 	let showGame = () =>{
+		let msg = document.getElementById('queue_msg');
+		msg.innerHTML = ``;
 		document.getElementById('homepage').style.display = "none";
 		document.getElementById('world').style.display = "block";
 	}
@@ -142,10 +149,16 @@
 	let toggleGameOver = (win=null) => {
 		let elmt = document.getElementById('gameover_modal');
 		elmt.style.display = elmt.style.display == "none" ? "block" : "none";
-		// if(elmt.style.display == "block"){
-		// 	document.getElementById('world').style.display = "none";
-		// }
-		if(win) console.log('You win');
+		if(elmt.style.display == "block"){
+			let button = document.createElement("button");
+			button.innerHTML = "Back to menu";
+			let cont = document.getElementById('gameover_modal_content');
+			cont.appendChild(button);
+			button.addEventListener("click", function(){
+				hideGame();
+				socket.emit('load');
+			});
+		}
 	}
 
 

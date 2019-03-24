@@ -89,6 +89,7 @@ io.on('connection', function(socket) {
     });    
 
     function startNewGame(room){
+        let rooms = io.sockets.adapter.rooms;
         let game = new Gameplay(Util.defaultGameboard(), Constants.GAME, Constants.GAME_CONT);
         let i = 0;
 
