@@ -15,6 +15,7 @@
 		hideGame();
 		let roomId = null;
 
+		socket.emit('load');
 		window.addEventListener( 'resize', onWindowResize, false );
 
 		function onWindowResize(){	
@@ -28,6 +29,9 @@
 			'right': 0,
 		};
 
+		/**
+		 * Keyboard listener for pressing a valid key
+		 */
 		window.addEventListener('keydown', function(e){
 			switch(e.keyCode){
 				case UP: intent.up = 1; break;
@@ -35,20 +39,23 @@
 				case LEFT: intent.left = 1; break;
 				case RIGHT: intent.right = 1; break;
 				case PLACEBOMB: socket.emit('placeBomb', {room: roomId}); break;
-				case 80: 
+				case 80: // P : Debug key USED FOR DEVELOPMENT
 					console.log('DEBUG');
 					console.log(game.core.state);
+					toggleGameOver();
 				break;
 			}
 		});
 
+		/**
+		 * Keyboard listener for releasing a valid key
+		 */
 		window,addEventListener('keyup', function(e) {
 			switch(e.keyCode){
 				case UP: intent.up = 0; break;
 				case DOWN: intent.down = 0; break;
 				case LEFT: intent.left = 0; break;
 				case RIGHT: intent.right = 0; break;
-				//case PLACEBOMB: socket.emit('placeBomb', {room: roomId}); break;
 			}
 		});
 
@@ -59,8 +66,7 @@
 		 * 'gameboard': gameboard information
 		 * */ 
 		socket.on('gamestate', function(state){
-			if(game)
-				game.core.updateGameState(state);
+			if(game) game.core.updateGameState(state);
 		});
 
 		// socket handler for starting a game
@@ -74,7 +80,7 @@
 				showGame();
 			}
 			if(!updateInterval){
-				setInterval(updateGameState, 1000/60);
+				updateInterval = setInterval(updateGameState, 1000/60);
 			}
 		});
 
@@ -87,9 +93,13 @@
 		});
 
 		// socket handler for starting a game
-		socket.on('gameover', () =>{
-			clearInterval(updateInterval);
-			gameOver(true);
+		socket.on('gameover', (result) =>{
+			console.log('gameover');
+			console.log(result);
+			toggleGameOver(result);
+			game.gui.stopAnimate();
+			game = null;
+			socket.emit('leaveRoom', roomId);
 		});
 
 		document.getElementById('play_game_btn').addEventListener('click', async ()=>{
@@ -136,7 +146,7 @@
 		let gameOver = (didwin) => {
 			if(didwin) console.log("I won");
 			else console.log("I lost");
-			clearInterval(updateInterval);
+			toggleGameOver();
 			game.gui.stopAnimate();
 		};
 
@@ -147,6 +157,9 @@
 
 
 	let showGame = () =>{
+		let msg = document.getElementById('queue_msg');
+		msg.innerHTML = ``;
+		document.querySelector('#gameover_modal').style.display = "none";
 		document.getElementById('homepage').style.display = "none";
 		document.getElementById('world').style.display = "block";
 	}
@@ -168,6 +181,28 @@
 		msg.innerHTML = `
 		<div id="game_not_found">No games were found. Please try again later</div>
 		`;
+	}
+
+	let toggleGameOver = (result=null) => {
+		if(document.querySelector('#gameover_modal').style.display == "none"){
+			document.querySelector('#gameover_modal').style.display = "block";
+		}else{
+			document.querySelector('#gameover_modal').style.display = "none";
+		}
+		if(document.querySelector('#gameover_modal').style.display == "block"){
+			let button = document.createElement("button");
+			button.innerHTML = "Back to menu";
+			let cont = document.getElementById('gameover_modal_content');
+			cont.innerHTML = `<div>
+			${JSON.stringify(result)}
+			</div>`;
+
+			cont.appendChild(button);
+			button.addEventListener("click", function(){
+				hideGame();
+				socket.emit('load');
+			});
+		}
 	}
 
 

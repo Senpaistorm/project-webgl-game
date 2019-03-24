@@ -6,24 +6,6 @@ const HashMap = require('hashmap');
 const Constants = require('./Constants');
 const Util = require('./Util');
 
-// representation of a bomb
-let bomb = function(x, y, power, name){
-    return{
-        xPos: x,
-        yPos: y,
-        power: power,
-        name: name,
-    };
-};
-
-let coord = function(x, y, type){
-    return{
-        xPos: x,
-        yPos: y,
-        type: type,
-    };
-};
-
 // types of materials on the gameboard
 const UNBLOCKED = 0;
 const SOFTBLOCK = 1;
@@ -42,13 +24,8 @@ function Gameplay(map, type, container) {
     this.bombs = [];
     // power up items
     this.room = null;
-}
-
-/**
- * Initialize a game with map, gametype, and the container it belongs
- */
-Gameplay.prototype._init = function(){
-
+    // game result to be sent once game is over
+    this.result = {};
 }
 
 /**
@@ -57,10 +34,12 @@ Gameplay.prototype._init = function(){
 Gameplay.prototype.addPlayer = function (name, id, i){
     this.players.set(id, new Character(name, Constants.initPositions[i].xPos,
         Constants.initPositions[i].yPos, Constants.INIT_SPEED, Constants.INIT_POWER, Constants.INIT_LOAD));
+    this.result[name] = {alive: 1};
 };
 
 Gameplay.prototype.removePlayer = function(id){
     if (this.players.has(id)) {
+        this.result[id].alive = 0;
         return this.players.remove(id);
     }
 };
@@ -91,8 +70,8 @@ Gameplay.prototype._collisionDetection = function(x, y, player) {
     let yOrig = Math.floor((y + 130.5)/24.2);
     let dx = Util._normalize(player.movement.x);
     let dy = Util._normalize(player.movement.y);
-    let xPos = Math.floor((x + 196 + (dx * 10))/24.2);
-    let yPos = Math.floor((y + 130.5 + (dy * 10))/24.2);
+    let xPos = Math.floor((x + 196 + (dx * 10 + player.speed))/24.2);
+    let yPos = Math.floor((y + 130.5 + (dy * 10 + player.speed))/24.2);
     if(xPos == xOrig && yPos == yOrig) return false;
 
     if(xPos < 0 || yPos < 0 || xPos >= this.gameboard.length || yPos >= this.gameboard.length){
@@ -143,6 +122,10 @@ Gameplay.prototype.getState = function(){
     return state;
 };
 
+Gameplay.prototype.getResult = function(){
+    return this.result;
+}
+
 /**
  * Change the movement vector of character based on intent of client
  */
@@ -184,7 +167,7 @@ Gameplay.prototype.placeBomb = async function(character, createCallback, explode
     let x = character.xPos, y = character.yPos;
     if(!this.isValidBombPosition(x,y)) return null;
     if(!this.canPlaceBomb(character)) return null;
-    let myBomb = bomb(x, y, character.power, character.name);
+    let myBomb = Util.bomb(x, y, character.power, character.name);
     createCallback(myBomb);
     this.gameboard[x][y] = BOMB;
     this.bombs.push(myBomb);
@@ -248,7 +231,7 @@ Gameplay.prototype.explodeBomb = function(bombExplode) {
     while(bombQueue.length > 0){
         let curBomb = bombQueue.shift();
         x = curBomb.xPos, y = curBomb.yPos, i = 1;
-        affected.expCoords.push(coord(x,y,0));
+        affected.expCoords.push(Util.coord(x,y,0));
         // check for boundaries
         foundRight = x + i >= this.gameboard.length;
         foundLeft = x - i < 0;
@@ -259,7 +242,7 @@ Gameplay.prototype.explodeBomb = function(bombExplode) {
             let affectedCoord;
             // check every direction
             if(!foundRight && x + i < this.gameboard.length){
-                affectedCoord = coord(x+i, y, this.gameboard[x+i][y]);
+                affectedCoord = Util.coord(x+i, y, this.gameboard[x+i][y]);
                 if(affectedCoord.type != HARDBLOCK)
                     affected.expCoords.push(affectedCoord);
                 if(affectedCoord.type == BOMB){ 
@@ -271,7 +254,7 @@ Gameplay.prototype.explodeBomb = function(bombExplode) {
                 foundRight = this.gameboard[x+i][y] != UNBLOCKED;
             }
             if(!foundLeft && x - i >= 0){
-                affectedCoord = coord(x-i, y, this.gameboard[x-i][y]);
+                affectedCoord = Util.coord(x-i, y, this.gameboard[x-i][y]);
                 if(affectedCoord.type != HARDBLOCK)
                     affected.expCoords.push(affectedCoord);
                 if(affectedCoord.type == BOMB){ 
@@ -283,7 +266,7 @@ Gameplay.prototype.explodeBomb = function(bombExplode) {
                 foundLeft =  this.gameboard[x-i][y] != UNBLOCKED;
             }
             if(!foundDown && y + i < this.gameboard.length){
-                affectedCoord = coord(x, y+i, this.gameboard[x][y+i]);
+                affectedCoord = Util.coord(x, y+i, this.gameboard[x][y+i]);
                 if(affectedCoord.type != HARDBLOCK)	
                     affected.expCoords.push(affectedCoord);
                 if(affectedCoord.type == BOMB){ 
@@ -295,7 +278,7 @@ Gameplay.prototype.explodeBomb = function(bombExplode) {
                 foundDown = this.gameboard[x][y+i] != UNBLOCKED;
             }
             if(!foundUp && y - i >= 0){
-                affectedCoord = coord(x, y-i, this.gameboard[x][y-i]);
+                affectedCoord = Util.coord(x, y-i, this.gameboard[x][y-i]);
                 if(affectedCoord.type != HARDBLOCK)
                     affected.expCoords.push(affectedCoord);
                 if(affectedCoord.type == BOMB){ 
@@ -312,7 +295,7 @@ Gameplay.prototype.explodeBomb = function(bombExplode) {
         this.gameboard[curBomb.xPos][curBomb.yPos] = UNBLOCKED;
     }
     // remove duplicate coordinates
-    affected.expCoords = removeDupCoords(affected.expCoords);
+    affected.expCoords = Util.removeDupCoords(affected.expCoords);
     this.checkPlayerHit(affected.expCoords, this.players);
     this.clearItemsHit(affected.expCoords);
     for(let i = 0; i < affected.blocks.length; i++){
@@ -345,16 +328,15 @@ Gameplay.prototype.onPlayerMoveChanged = function(player) {
     }
 };
 
-function removeDupCoords(coords) {
-    let unique = {};
-    let res = [];
-    coords.forEach(function(c) {
-        if(!unique[[c.xPos,c.yPos]]) {
-        unique[[c.xPos,c.yPos]] = true;
-        res.push(coord(c.xPos,c.yPos,0));
-        }
-    });
-    return res;
+/**
+ * Check if the game is over
+ */
+Gameplay.prototype.isGameOver = function(){
+    if(this.gametype == Constants.PREPARE_ROOM){
+        return false;
+    }else {
+        return this.players.size <= 1;
+    }
 }
 
 module.exports = Gameplay;

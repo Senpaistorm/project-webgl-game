@@ -24,27 +24,29 @@ app.use(function (req, res, next){
     next();
 });
 
+const UPDATE_FRAME_RATE = 30;
+const GAMEOVER_CHECK_RATE = 2000;
 // room status that contains all the queued players and their rooms
 let roomStatus = [];
-// character status of all game rooms
-let characterStatus = {};
-// character to room dictionary
-let charToRoom = {};
+// HashMap that maps a room name to a Gameplay Object
 let startedGames = new HashMap();
+// HashMap that maps a socket id to a username
+let socketToName = new HashMap();
 
 // WebSocket handlers
 io.on('connection', function(socket) {
 
-    let prepareroom = new Gameplay(Util.prepareroomGameboard(), Constants.PREPARE_ROOM, Constants.PROOM_CONT);
-    prepareroom.setRoom(socket.id);
-    prepareroom.addPlayer(socket.id, socket.id, 0);
-    startedGames.set(socket.id, prepareroom);
-    prepareroom.checkPlayerHit = function(areaAffected, players) {};
-    io.sockets.to(socket.id).emit('gamestart', prepareroom, socket.id);
+    socket.on('load', function(){
+        let prepareroom = new Gameplay(Util.prepareroomGameboard(), Constants.PREPARE_ROOM, Constants.PROOM_CONT);
+        prepareroom.setRoom(socket.id);
+        prepareroom.addPlayer(socket.id, socket.id, 0);
+        startedGames.set(socket.id, prepareroom);
+        prepareroom.checkPlayerHit = function(areaAffected, players) {};
+        io.sockets.to(socket.id).emit('gamestart', prepareroom, socket.id);
+    });
+
 
     socket.on('disconnect', function(){
-        delete charToRoom[socket.id];
-        delete characterStatus[socket.id];
         startedGames.delete(socket.id);
     });
 
@@ -75,21 +77,7 @@ io.on('connection', function(socket) {
         let rooms = io.sockets.adapter.rooms;
         roomStatus.forEach((room) =>{
             if(room.size >= 2){
-                let game = new Gameplay(Util.defaultGameboard(), Constants.GAME, Constants.GAME_CONT);
-                let i = 0;
-
-                game.setRoom(room.name);
-                for(const sid in rooms[room.name].sockets){
-                    game.addPlayer(sid, sid, i);
-                    i++;
-                }
-                startedGames.set(room.name, game);
-                startedGames.forEach(function(sid_game, sid){
-                    if(!(sid in rooms) || game.players.has(sid)){
-                        startedGames.delete(sid);
-                    }
-                });
-                io.sockets.to(room.name).emit('gamestart', game, room.name);
+                startNewGame(room);
             }else{
                 if(room.name in rooms){
                     socket.leave(room.name);
@@ -98,6 +86,25 @@ io.on('connection', function(socket) {
         });
         roomStatus = [];
     });    
+
+    function startNewGame(room){
+        let rooms = io.sockets.adapter.rooms;
+        let game = new Gameplay(Util.defaultGameboard(), Constants.GAME, Constants.GAME_CONT);
+        let i = 0;
+
+        game.setRoom(room.name);
+        for(const sid in rooms[room.name].sockets){
+            game.addPlayer(sid, sid, i);
+            i++;
+        }
+        startedGames.set(room.name, game);
+        startedGames.forEach(function(sid_game, sid){
+            if(!(sid in rooms) || game.players.has(sid)){
+                startedGames.delete(sid);
+            }
+        });
+        io.sockets.to(room.name).emit('gamestart', game, room.name);
+    }
 
     socket.on('player_action', (data) =>{
         let game = startedGames.get(data.room);
@@ -118,22 +125,34 @@ io.on('connection', function(socket) {
         }
     });
 
-    socket.on('gameover', (room) =>{
+    socket.on('leaveRoom', (room) =>{
         // leave room on gameover
         socket.leave(room);
     });
 
 });
 
-// Server side game loop, runs at 60Hz and sends out update packets to all
-// clients every tick.
+// Server side game loop that updates game state and send to game room
 setInterval(function() {
     startedGames.forEach(function(game, room){
         game.update();
         let state = game.getState();
         io.sockets.in(room).emit('gamestate', state);
     });
-}, 1000/30);
+}, 1000/UPDATE_FRAME_RATE);
+
+// Server side game loop that checks game over state
+// that ticks every 2 seconds
+let startedGamesCp;
+setInterval(function() {
+    startedGamesCp = startedGames.clone();
+    startedGamesCp.forEach(function(game, room){
+        if(game.isGameOver()){
+            io.sockets.in(room).emit('gameover', game.getResult());
+            startedGames.delete(room);
+        }
+    });
+}, GAMEOVER_CHECK_RATE);
 
 const PORT = 3000;
 

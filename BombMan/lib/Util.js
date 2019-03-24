@@ -55,7 +55,7 @@ Util.setRandomItems = function(gameboard){
     for(let i = 0; i < gameboard.length; i++){
         let arr = [];
         for (var j = 0; j < gameboard.length; j++){
-            if(Math.random() > Constants.ITEM_PROC_RATE && gameboard[i][j] == Constants.SOFTBLOCK){
+            if(Math.random() < Constants.ITEM_PROC_RATE && gameboard[i][j] == Constants.SOFTBLOCK){
                 arr.push(Math.floor(Math.random() * 3 + 1));
             }else{
                 arr.push(0);
@@ -64,8 +64,7 @@ Util.setRandomItems = function(gameboard){
         res.push(arr);
     }
     return res;
-    
-}
+};
 
 Util._normalize = function(num){
     if(num == 0){
@@ -77,6 +76,18 @@ Util._normalize = function(num){
     }
 };
 
+Util.removeDupCoords = function(coords) {
+    let unique = {};
+    let res = [];
+    coords.forEach(function(c) {
+        if(!unique[[c.xPos,c.yPos]]) {
+        unique[[c.xPos,c.yPos]] = true;
+        res.push(Util.coord(c.xPos,c.yPos,0));
+        }
+    });
+    return res;
+};
+
 Util.isValidBombPosition = function (x, y, block) {
     return Util.isValidPosition(x,y) && Util.unOccupied(block);
 };
@@ -84,11 +95,30 @@ Util.isValidBombPosition = function (x, y, block) {
 Util.isCollision = function(material){
 	return material == HARDBLOCK || material == SOFTBLOCK
 	  || material == BOMB;
-}
+};
 
 Util.unOccupied = (block) => {
     return !(block == SOFTBLOCK || block == HARDBLOCK || block == BOMB);
 };
+
+// representation of a bomb
+Util.bomb = function(x, y, power, name){
+    return{
+        xPos: x,
+        yPos: y,
+        power: power,
+        name: name,
+    };
+};
+
+Util.coord = function(x, y, type){
+    return{
+        xPos: x,
+        yPos: y,
+        type: type,
+    };
+};
+
 
 if (typeof module === 'object') {
     /**
