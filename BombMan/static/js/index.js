@@ -96,7 +96,10 @@
 		socket.on('gameover', (result) =>{
 			console.log('gameover');
 			console.log(result);
-			//gameOver(result);
+			toggleGameOver(result);
+			game.gui.stopAnimate();
+			game = null;
+			socket.emit('leaveRoom', roomId);
 		});
 
 		document.getElementById('play_game_btn').addEventListener('click', async ()=>{
@@ -156,6 +159,7 @@
 	let showGame = () =>{
 		let msg = document.getElementById('queue_msg');
 		msg.innerHTML = ``;
+		document.querySelector('#gameover_modal').style.display = "none";
 		document.getElementById('homepage').style.display = "none";
 		document.getElementById('world').style.display = "block";
 	}
@@ -179,13 +183,20 @@
 		`;
 	}
 
-	let toggleGameOver = (win=null) => {
-		let elmt = document.getElementById('gameover_modal');
-		elmt.style.display = elmt.style.display == "none" ? "block" : "none";
-		if(elmt.style.display == "block"){
+	let toggleGameOver = (result=null) => {
+		if(document.querySelector('#gameover_modal').style.display == "none"){
+			document.querySelector('#gameover_modal').style.display = "block";
+		}else{
+			document.querySelector('#gameover_modal').style.display = "none";
+		}
+		if(document.querySelector('#gameover_modal').style.display == "block"){
 			let button = document.createElement("button");
 			button.innerHTML = "Back to menu";
 			let cont = document.getElementById('gameover_modal_content');
+			cont.innerHTML = `<div>
+			${JSON.stringify(result)}
+			</div>`;
+
 			cont.appendChild(button);
 			button.addEventListener("click", function(){
 				hideGame();

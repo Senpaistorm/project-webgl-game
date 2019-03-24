@@ -87,7 +87,6 @@
 
 /* The Modal (background) */
 .modal {
-	display:none;
 	position: absolute; /* Stay in place */
 	z-index: 1; /* Sit on top */
 	padding-top: 100px; /* Location of the box */
@@ -117,4 +116,8 @@
 	border-radius: 10px;
 	color: white;
 	border: none;
+}
+
+#gameover_modal{
+	display:none;
 }

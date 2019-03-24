@@ -28,11 +28,10 @@ const UPDATE_FRAME_RATE = 30;
 const GAMEOVER_CHECK_RATE = 2000;
 // room status that contains all the queued players and their rooms
 let roomStatus = [];
-// character status of all game rooms
-let characterStatus = {};
-// character to room dictionary
-let charToRoom = {};
+// HashMap that maps a room name to a Gameplay Object
 let startedGames = new HashMap();
+// HashMap that maps a socket id to a username
+let socketToName = new HashMap();
 
 // WebSocket handlers
 io.on('connection', function(socket) {
@@ -48,8 +47,6 @@ io.on('connection', function(socket) {
 
 
     socket.on('disconnect', function(){
-        delete charToRoom[socket.id];
-        delete characterStatus[socket.id];
         startedGames.delete(socket.id);
     });
 
@@ -128,7 +125,7 @@ io.on('connection', function(socket) {
         }
     });
 
-    socket.on('gameover', (room) =>{
+    socket.on('leaveRoom', (room) =>{
         // leave room on gameover
         socket.leave(room);
     });
@@ -146,10 +143,13 @@ setInterval(function() {
 
 // Server side game loop that checks game over state
 // that ticks every 2 seconds
+let startedGamesCp;
 setInterval(function() {
-    startedGames.forEach(function(game, room){
+    startedGamesCp = startedGames.clone();
+    startedGamesCp.forEach(function(game, room){
         if(game.isGameOver()){
             io.sockets.in(room).emit('gameover', game.getResult());
+            startedGames.delete(room);
         }
     });
 }, GAMEOVER_CHECK_RATE);

@@ -39,6 +39,7 @@ Gameplay.prototype.addPlayer = function (name, id, i){
 
 Gameplay.prototype.removePlayer = function(id){
     if (this.players.has(id)) {
+        this.result[id].alive = 0;
         return this.players.remove(id);
     }
 };
@@ -69,8 +70,8 @@ Gameplay.prototype._collisionDetection = function(x, y, player) {
     let yOrig = Math.floor((y + 130.5)/24.2);
     let dx = Util._normalize(player.movement.x);
     let dy = Util._normalize(player.movement.y);
-    let xPos = Math.floor((x + 196 + (dx * 10))/24.2);
-    let yPos = Math.floor((y + 130.5 + (dy * 10))/24.2);
+    let xPos = Math.floor((x + 196 + (dx * 10 + player.speed))/24.2);
+    let yPos = Math.floor((y + 130.5 + (dy * 10 + player.speed))/24.2);
     if(xPos == xOrig && yPos == yOrig) return false;
 
     if(xPos < 0 || yPos < 0 || xPos >= this.gameboard.length || yPos >= this.gameboard.length){
