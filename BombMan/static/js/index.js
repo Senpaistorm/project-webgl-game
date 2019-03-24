@@ -71,7 +71,7 @@
 
 		// socket handler for starting a game
 		socket.on('gamestart', (gameplay, room) =>{
-			if(roomId == socket.id) game.gui.stopAnimate();
+			if(game) game.gui.stopAnimate();
 			game = new BombMan();
 			roomId = room;
 			game.core.startNewGame(gameplay);
@@ -79,7 +79,7 @@
 				showGame();
 			}
 			if(!updateInterval){
-				updateInterval = setInterval(updateGameState, 1000/60);
+				updateInterval = setInterval(updateGameState, 1000/30);
 			}
 		});
 
