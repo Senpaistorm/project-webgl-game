@@ -15,7 +15,7 @@
     		game.gui.resize();
 		}
 
-		let game;
+		let game = new BombMan();
 		var updateInterval = null;
 		hideGame();
 		let roomId = null;
@@ -37,6 +37,7 @@
 				case 80: 
 					console.log('DEBUG');
 					console.log(game.core.state);
+					toggleGameOver();
 				break;
 			}
 		});
@@ -47,7 +48,6 @@
 				case DOWN: intent.down = 0; break;
 				case LEFT: intent.left = 0; break;
 				case RIGHT: intent.right = 0; break;
-				//case PLACEBOMB: socket.emit('placeBomb', {room: roomId}); break;
 			}
 		});
 
@@ -58,8 +58,7 @@
 		 * 'gameboard': gameboard information
 		 * */ 
 		socket.on('gamestate', function(state){
-			if(game)
-				game.core.updateGameState(state);
+			game.core.updateGameState(state);
 		});
 
 		// socket handler for starting a game
@@ -73,7 +72,7 @@
 				showGame();
 			}
 			if(!updateInterval){
-				setInterval(updateGameState, 1000/60);
+				updateInterval = setInterval(updateGameState, 1000/60);
 			}
 		});
 
@@ -142,6 +141,15 @@
 		msg.innerHTML = `
 		<div id="game_not_found">No games were found. Please try again later</div>
 		`;
+	}
+
+	let toggleGameOver = (win=null) => {
+		let elmt = document.getElementById('gameover_modal');
+		elmt.style.display = elmt.style.display == "none" ? "block" : "none";
+		// if(elmt.style.display == "block"){
+		// 	document.getElementById('world').style.display = "none";
+		// }
+		if(win) console.log('You win');
 	}
 
 
