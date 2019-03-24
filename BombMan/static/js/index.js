@@ -15,8 +15,8 @@
     		game.gui.resize();
 		}
 
-		let game = new BombMan();
-		let updateInterval;
+		let game;
+		var updateInterval = null;
 		hideGame();
 		let roomId = null;
 
@@ -58,17 +58,23 @@
 		 * 'gameboard': gameboard information
 		 * */ 
 		socket.on('gamestate', function(state){
-			game.core.updateGameState(state);
+			if(game)
+				game.core.updateGameState(state);
 		});
 
 		// socket handler for starting a game
 		socket.on('gamestart', (gameplay, room) =>{
-			console.log(gameplay);
+			console.log('gamestart');
+			if(game) game.gui.stopAnimate();
+			game = new BombMan();
 			roomId = room;
 			game.core.startNewGame(gameplay);
-			showGame();
-			// send to the server information about main player on this client
-			updateInterval = setInterval(updateGameState,1000/30);
+			if(gameplay.gametype == GAME){
+				showGame();
+			}
+			if(!updateInterval){
+				setInterval(updateGameState, 1000/60);
+			}
 		});
 
 		socket.on('bombPlaced', (bomb) => {

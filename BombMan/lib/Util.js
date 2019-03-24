@@ -21,7 +21,7 @@ Util.emptyGameboard = function(){
 }
 
 Util.defaultGameboard = function() {
-    gameboard = [[0,0,1,1,1,1,1,1,1,1,1,1,1,0,0],
+    let gameboard = [[0,0,1,1,1,1,1,1,1,1,1,1,1,0,0],
                     [0,0,1,1,1,0,0,0,0,0,1,1,1,0,0],
                     [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
                     [1,1,1,1,1,0,0,4,0,0,1,1,1,1,1],
@@ -39,12 +39,23 @@ Util.defaultGameboard = function() {
     return gameboard;
 };
 
+Util.prepareroomGameboard = function(){
+    let gameboard = [[0,0,0,0,0,0,0],
+                [0,4,0,4,0,4,0],
+                [0,0,0,0,0,0,0],
+                [0,4,0,4,0,4,0],
+                [0,0,0,0,0,0,0],
+                [0,4,0,4,0,4,0],
+                [0,0,0,0,0,0,0]];
+    return gameboard;
+};
+
 Util.setRandomItems = function(gameboard){
     let res = [];
-    for(let i = 0; i < Constants.GAMEBOARD_SIZE; i++){
+    for(let i = 0; i < gameboard.length; i++){
         let arr = [];
-        for (var j = 0; j < Constants.GAMEBOARD_SIZE; j++){
-            if(Math.random() > Constants.ITEM_PROC_RATE && gameboard[i][j]){
+        for (var j = 0; j < gameboard.length; j++){
+            if(Math.random() > Constants.ITEM_PROC_RATE && gameboard[i][j] == Constants.SOFTBLOCK){
                 arr.push(Math.floor(Math.random() * 3 + 1));
             }else{
                 arr.push(0);
@@ -65,10 +76,6 @@ Util._normalize = function(num){
         return 1;
     }
 };
-
-Util.isValidPosition = function(x, y){
-    return x >= 0 && x < Constants.GAMEBOARD_SIZE && y >= 0 && y < Constants.GAMEBOARD_SIZE;
-}
 
 Util.isValidBombPosition = function (x, y, block) {
     return Util.isValidPosition(x,y) && Util.unOccupied(block);

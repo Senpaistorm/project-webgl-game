@@ -2,7 +2,7 @@ function Constants() {
     throw new Error('Constants should not be instantiated!');
 }
 
-Constants.INIT_SPEED = 2;
+Constants.INIT_SPEED = 1.5;
 Constants.INIT_POWER = 1;
 Constants.INIT_LOAD = 1;
 
@@ -17,6 +17,16 @@ Constants.ITEM_PROC_RATE = 0.4;
 
 Constants.GAME = 1;
 Constants.PREPARE_ROOM = 2;
+Constants.POWER_ITEM = 1;
+Constants.SPEED_ITEM = 2;
+Constants.BOMB_ITEM = 3;
+
+Constants.PROOM_CONT = 'homepage';
+Constants.GAME_CONT = 'world';
+
+Constants.SPEED_LIMIT = 4.5;
+Constants.LOAD_LIMIT = 8;
+Constants.POWER_LIMIT = 10;
 
 Constants.initPositions = [{xPos: 0, yPos:0}, {xPos:14, yPos:0},
     {xPos:0, yPos:14}, {xPos:14, yPos:14}];

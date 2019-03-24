@@ -12,7 +12,7 @@
 	function Gui(core) {
 		this.core = core;
 		this.scene = new THREE.Scene();
-		this.camera = new THREE.PerspectiveCamera(82, window.innerWidth/window.innerHeight, 1, 10000);
+		this.camera = new THREE.PerspectiveCamera(72, window.innerWidth/window.innerHeight, 1, 10000);
 		this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 		this.renderer.autoClear = false;
 		this.renderer.autoClearDepth = false;
@@ -22,14 +22,12 @@
 	}
 
 	Gui.prototype.onNewGame = function(gameplay) {
-
-		
 		this.gameplay = gameplay;
 		this.createCharacters(gameplay.players);
-		this._animate();
+		this.container = document.getElementById(gameplay.container);
 		this._init();
 		this._createGameBoard(gameplay.gameboard, gameplay.gametype);
-		this.container = document.getElementById(gameplay.container);
+		this._animate();
 	};
 
 	/**
@@ -260,7 +258,9 @@
 
 
 	Gui.prototype.stopAnimate = function() {
-		if(this.animationFrameID) window.cancelAnimationFrame(this.animationFrameID);
+		this.scene = null;
+		this.renderer = null;
+		window.cancelAnimationFrame(this.animationFrameID);
 	};
 
 	// Export to window

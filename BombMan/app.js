@@ -15,6 +15,7 @@ const Character = require('./lib/Character');
 const Gameplay = require('./lib/Gameplay');
 const Constants = require('./lib/Constants');
 const HashMap = require('hashmap');
+const Util = require('./lib/Util');
 
 app.use(express.static('static'));
 
@@ -31,15 +32,20 @@ let characterStatus = {};
 let charToRoom = {};
 let startedGames = new HashMap();
 
-const GAMEBOARD_SIZE = 15;
-const ITEM_PROC_RATE = 0.5;
-
 // WebSocket handlers
 io.on('connection', function(socket) {
+
+    let prepareroom = new Gameplay(Util.prepareroomGameboard(), Constants.PREPARE_ROOM, Constants.PROOM_CONT);
+    prepareroom.setRoom(socket.id);
+    prepareroom.addPlayer(socket.id, socket.id, 0);
+    startedGames.set(socket.id, prepareroom);
+    prepareroom.checkPlayerHit = function(areaAffected, players) {};
+    io.sockets.to(socket.id).emit('gamestart', prepareroom, socket.id);
 
     socket.on('disconnect', function(){
         delete charToRoom[socket.id];
         delete characterStatus[socket.id];
+        startedGames.delete(socket.id);
     });
 
     // check all game rooms, join if there exists an unfilled room
@@ -69,7 +75,7 @@ io.on('connection', function(socket) {
         let rooms = io.sockets.adapter.rooms;
         roomStatus.forEach((room) =>{
             if(room.size >= 2){
-                let game = new Gameplay();
+                let game = new Gameplay(Util.defaultGameboard(), Constants.GAME, Constants.GAME_CONT);
                 let i = 0;
 
                 game.setRoom(room.name);
@@ -78,6 +84,11 @@ io.on('connection', function(socket) {
                     i++;
                 }
                 startedGames.set(room.name, game);
+                startedGames.forEach(function(sid_game, sid){
+                    if(!(sid in rooms) || game.players.has(sid)){
+                        startedGames.delete(sid);
+                    }
+                });
                 io.sockets.to(room.name).emit('gamestart', game, room.name);
             }else{
                 if(room.name in rooms){
@@ -88,11 +99,6 @@ io.on('connection', function(socket) {
         roomStatus = [];
     });    
 
-    // socket.on('serverInit', (roomId, gameplay) => {
-    //     let itemboard = setRandomItems(gameplay.gameboard);
-    //     io.sockets.to(roomId).emit('itemsInit', itemboard);
-    // })
-
     socket.on('player_action', (data) =>{
         let game = startedGames.get(data.room);
         if(game) game.handleKey(socket.id, data.intent);
@@ -100,7 +106,6 @@ io.on('connection', function(socket) {
 
     socket.on('placeBomb', (data) =>{
         let game = startedGames.get(data.room);
-        console.log('place bomb');
         if(game){
             let player = game.getPlayerBySocketId(socket.id);
             if(player){
@@ -127,7 +132,7 @@ setInterval(function() {
         game.update();
         let state = game.getState();
         io.sockets.in(room).emit('gamestate', state);
-    })
+    });
 }, 1000/30);
 
 const PORT = 3000;

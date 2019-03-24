@@ -1,6 +1,10 @@
 /**
  * Gameplay on the server to manage the state of the gameboard and players.
  */
+const Character = require('./Character');
+const HashMap = require('hashmap');
+const Constants = require('./Constants');
+const Util = require('./Util');
 
 // representation of a bomb
 let bomb = function(x, y, power, name){
@@ -20,37 +24,31 @@ let coord = function(x, y, type){
     };
 };
 
-const GAMEBOARD_SIZE = 15;
 // types of materials on the gameboard
 const UNBLOCKED = 0;
 const SOFTBLOCK = 1;
 const BOMB = 2;
 const HARDBLOCK = 4;
-// powerup items
-const POWER_ITEM = 1;
-const SPEED_ITEM = 2;
-const BOMB_ITEM = 3;
-const ITEM_PROC_RATE = 0.5;
-const SPEED_LIMIT = 6;
-const LOAD_LIMIT = 8;
-const POWER_LIMIT = 10;
 
-const Character = require('./Character');
-const HashMap = require('hashmap');
-const Constants = require('./Constants');
-const Util = require('./Util');
 
-function Gameplay() {
+function Gameplay(map, type, container) {
     // map from socket to character
     this.players = new HashMap();
-    this.gameboard = Util.defaultGameboard();
-    this.gametype = Constants.GAME;
-
+    this.gameboard = map;
+    this.gametype = type;
+    this.container = container;
+    this.items = Util.setRandomItems(this.gameboard);
     // all the bombs currently in this game
     this.bombs = [];
     // power up items
-    this.items = Util.setRandomItems(this.gameboard);
     this.room = null;
+}
+
+/**
+ * Initialize a game with map, gametype, and the container it belongs
+ */
+Gameplay.prototype._init = function(){
+
 }
 
 /**
@@ -58,7 +56,7 @@ function Gameplay() {
  */
 Gameplay.prototype.addPlayer = function (name, id, i){
     this.players.set(id, new Character(name, Constants.initPositions[i].xPos,
-        Constants.initPositions[i].yPos, Constants.INIT_POWER, Constants.INIT_SPEED, Constants.INIT_LOAD));
+        Constants.initPositions[i].yPos, Constants.INIT_SPEED, Constants.INIT_POWER, Constants.INIT_LOAD));
 };
 
 Gameplay.prototype.removePlayer = function(id){
@@ -93,18 +91,18 @@ Gameplay.prototype._collisionDetection = function(x, y, player) {
     let yOrig = Math.floor((y + 130.5)/24.2);
     let dx = Util._normalize(player.movement.x);
     let dy = Util._normalize(player.movement.y);
-    let xPos = Math.floor((x + 196 + (dx * 8))/24.2);
-    let yPos = Math.floor((y + 130.5 + (dy * 8))/24.2);
+    let xPos = Math.floor((x + 196 + (dx * 10))/24.2);
+    let yPos = Math.floor((y + 130.5 + (dy * 10))/24.2);
     if(xPos == xOrig && yPos == yOrig) return false;
 
-    if(xPos < 0 || yPos < 0 || xPos >= GAMEBOARD_SIZE || yPos >= GAMEBOARD_SIZE){
+    if(xPos < 0 || yPos < 0 || xPos >= this.gameboard.length || yPos >= this.gameboard.length){
         return true;
     }
     let location = this.gameboard[xPos][yPos];
     let ret = Util.isCollision(location);
     // in case of diagonal, calculate adjacent collisions
-    if(Util.isValidPosition(xPos, yPos - dy) && 
-            Util.isValidPosition(xPos - dx, yPos)){
+    if(this.isValidPosition(xPos, yPos - dy) && 
+            this.isValidPosition(xPos - dx, yPos)){
                 
         let collidableX = this.gameboard[xPos - dx][yPos];
         let collidableY = this.gameboard[xPos][yPos - dy];
@@ -115,10 +113,21 @@ Gameplay.prototype._collisionDetection = function(x, y, player) {
 
 Gameplay.prototype.update = function(){
     var characters = this.getPlayers();
-    for(var i = 0; i < characters.length; i++){
-        characters[i].update(this._collisionDetection, this.onPlayerMoveChanged.bind(this));
-    }
+
+    characters.forEach((character) =>{
+        let xOrig = character.xPos;
+        let yOrig = character.yPos;
+        character.update(this._collisionDetection.bind(this));
+        if(Math.abs(character.xPos - xOrig) > 0 || Math.abs(character.yPos - yOrig) > 0){
+            this.onPlayerMoveChanged(character);
+        }
+    })
+    
 };
+
+Gameplay.prototype.isValidPosition = function(x, y){
+    return x >= 0 && x < this.gameboard.length && y >= 0 && y < this.gameboard.length;
+}
 
 /**
  * Serialize gameplay to a state for communication usage
@@ -163,7 +172,7 @@ Gameplay.prototype.canPlaceBomb = function(character){
 }
 
 Gameplay.prototype.isValidBombPosition = function (x, y) {
-    return Util.isValidPosition(x,y) && Util.unOccupied(this.gameboard[x][y]);
+    return this.isValidPosition(x,y) && Util.unOccupied(this.gameboard[x][y]);
 };
 
 /**
@@ -241,15 +250,15 @@ Gameplay.prototype.explodeBomb = function(bombExplode) {
         x = curBomb.xPos, y = curBomb.yPos, i = 1;
         affected.expCoords.push(coord(x,y,0));
         // check for boundaries
-        foundRight = x + i >= GAMEBOARD_SIZE;
+        foundRight = x + i >= this.gameboard.length;
         foundLeft = x - i < 0;
-        foundDown = y + i >= GAMEBOARD_SIZE;
+        foundDown = y + i >= this.gameboard.length;
         foundUp = y - i < 0;
         // find closest impact
         while(!(foundLeft && foundRight && foundUp && foundDown) && i <= curBomb.power){
             let affectedCoord;
             // check every direction
-            if(!foundRight && x + i < GAMEBOARD_SIZE){
+            if(!foundRight && x + i < this.gameboard.length){
                 affectedCoord = coord(x+i, y, this.gameboard[x+i][y]);
                 if(affectedCoord.type != HARDBLOCK)
                     affected.expCoords.push(affectedCoord);
@@ -273,7 +282,7 @@ Gameplay.prototype.explodeBomb = function(bombExplode) {
                 }
                 foundLeft =  this.gameboard[x-i][y] != UNBLOCKED;
             }
-            if(!foundDown && y + i < GAMEBOARD_SIZE){
+            if(!foundDown && y + i < this.gameboard.length){
                 affectedCoord = coord(x, y+i, this.gameboard[x][y+i]);
                 if(affectedCoord.type != HARDBLOCK)	
                     affected.expCoords.push(affectedCoord);
@@ -331,15 +340,7 @@ Gameplay.prototype.clearItemsHit = function(expCoords){
 Gameplay.prototype.onPlayerMoveChanged = function(player) {
     //Check if there is any item on the current location
     if(this.items[player.xPos][player.yPos] != 0) {
-        console.log(`character ${player.name} taking item ${this.items[player.xPos][player.yPos]}`);
-        if(this.items[player.xPos][player.yPos] == POWER_ITEM && player.power < POWER_LIMIT) {
-            player.power ++;
-        } else if(this.items[player.xPos][player.yPos] == SPEED_ITEM && player.power < SPEED_LIMIT){
-            player.speed += 0.5;
-        } else if(this.items[player.xPos][player.yPos] == BOMB_ITEM && player.power < LOAD_LIMIT) {
-            player.load ++;
-        }
-
+        player.powerup(this.items[player.xPos][player.yPos]);
         this.items[player.xPos][player.yPos] = 0;
     }
 };

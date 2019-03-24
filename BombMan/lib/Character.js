@@ -1,3 +1,5 @@
+const Constants = require('./Constants');
+
 function Character(name, xPos, yPos, speed, power, load) {
     this.name = name;
     this.xPos = xPos;
@@ -17,15 +19,8 @@ function Character(name, xPos, yPos, speed, power, load) {
         if(!(this.movement.x == 0 && this.movement.y == 0)){
             this.armAndLegSwitchMovement *= -1;
         }
-    }, 200);
+    }, 150);
 }
-
-Character.prototype.resetAnimation = function() {
-    this.movementAnimation(CHARACTER_BODY_PART.leftLeg, STATIC);
-    this.movementAnimation(CHARACTER_BODY_PART.rightLeg, STATIC);
-    this.movementAnimation(CHARACTER_BODY_PART.rightArm, STATIC);
-    this.movementAnimation(CHARACTER_BODY_PART.leftArm, STATIC);
-};
 
 Character.prototype.updatePosition = function(vector) {
     this.absoluteXPos += vector.x;
@@ -44,15 +39,19 @@ Character.prototype.move = function(vector){
     Object.assign(this.movement, vector);
 };
 
-Character.prototype.update = function(checkCollision, onPlayerMoveChanged){
-    let xOrig = this.xPos;
-    let yOrig = this.yPos;
-
+Character.prototype.update = function(checkCollision){
     if(!checkCollision(this.absoluteXPos, this.absoluteYPos, this)){
         this.updatePosition(this.movement);
     }
-    if(Math.abs(this.xPos - xOrig) > 0 || Math.abs(this.yPos - yOrig) > 0){
-        onPlayerMoveChanged(this);
+};
+
+Character.prototype.powerup = function(power){
+    if(power == Constants.POWER_ITEM && this.power < Constants.POWER_LIMIT){
+        this.power ++;
+    }else if(power == Constants.BOMB_ITEM && this.load < Constants.LOAD_LIMIT){
+        this.load ++;
+    }else if(this.speed < Constants.SPEED_LIMIT){
+        this.speed += 0.4;
     }
 };
 
