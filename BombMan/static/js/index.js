@@ -9,16 +9,16 @@
 			this.core.addGameGui(this.gui);
 		}
 
-		window.addEventListener( 'resize', onWindowResize, false );
-
-		function onWindowResize(){	
-    		game.gui.resize();
-		}
-
 		let game;
 		var updateInterval = null;
 		hideGame();
 		let roomId = null;
+
+		window.addEventListener( 'resize', onWindowResize, false );
+
+		function onWindowResize(){	
+			if(game) game.gui.resize();
+		}
 
 		let intent = {
 			'up': 0,
