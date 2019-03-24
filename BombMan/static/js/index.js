@@ -15,10 +15,12 @@
     		game.gui.resize();
 		}
 
-		let game = new BombMan();
+		let game;
 		var updateInterval = null;
 		hideGame();
 		let roomId = null;
+
+		socket.emit('load');
 
 		let intent = {
 			'up': 0,
@@ -58,7 +60,7 @@
 		 * 'gameboard': gameboard information
 		 * */ 
 		socket.on('gamestate', function(state){
-			game.core.updateGameState(state);
+			if(game) game.core.updateGameState(state);
 		});
 
 		// socket handler for starting a game

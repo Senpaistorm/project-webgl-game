@@ -35,12 +35,15 @@ let startedGames = new HashMap();
 // WebSocket handlers
 io.on('connection', function(socket) {
 
-    let prepareroom = new Gameplay(Util.prepareroomGameboard(), Constants.PREPARE_ROOM, Constants.PROOM_CONT);
-    prepareroom.setRoom(socket.id);
-    prepareroom.addPlayer(socket.id, socket.id, 0);
-    startedGames.set(socket.id, prepareroom);
-    prepareroom.checkPlayerHit = function(areaAffected, players) {};
-    io.sockets.to(socket.id).emit('gamestart', prepareroom, socket.id);
+    socket.on('load', function(){
+        let prepareroom = new Gameplay(Util.prepareroomGameboard(), Constants.PREPARE_ROOM, Constants.PROOM_CONT);
+        prepareroom.setRoom(socket.id);
+        prepareroom.addPlayer(socket.id, socket.id, 0);
+        startedGames.set(socket.id, prepareroom);
+        prepareroom.checkPlayerHit = function(areaAffected, players) {};
+        io.sockets.to(socket.id).emit('gamestart', prepareroom, socket.id);
+    });
+
 
     socket.on('disconnect', function(){
         delete charToRoom[socket.id];
