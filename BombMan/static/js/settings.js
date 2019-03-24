@@ -33,6 +33,10 @@ const STATIC = 0;
 const GAME = 1;
 const PREPARE_ROOM = 2;
 
+const STARTING_X = -185.5;
+const STARTING_Y = -120;
+const BLOCK_SIZE = 24.2;
+
 let movementToVector = { 
 	65: {x:-1 ,y: 0, keyDown: false}, 
 	83: {x: 0, y: 1, keyDown: false},

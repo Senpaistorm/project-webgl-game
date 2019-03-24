@@ -70,7 +70,7 @@ let gameobject = (function() {
 		return mesh;
 	}
 
-	module.createCharactorModel = function(x, y, callback) {
+	module.createCharactorModel = function(x, y, color, callback) {
 		var loader = new THREE.OBJLoader();
 		loader.load("./media/models/charactor/basicCharacter.obj", function ( object ) {
 		    //For any meshes in the model, add our material.
@@ -80,9 +80,9 @@ let gameobject = (function() {
 		 //    	}
 			// });
 			(object.children).forEach((child) =>{
-				let r = Math.random(),g=Math.random(),b=Math.random();
+				//let r = Math.random(),g=Math.random(),b=Math.random();
 				child.material.color.set(
-					new THREE.Color(r,g,b)
+					new THREE.Color(color.r,color.g,color.b)
 					);
 			});
 			object.position.set(x, 3, y);

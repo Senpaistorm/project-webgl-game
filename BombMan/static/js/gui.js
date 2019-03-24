@@ -8,9 +8,6 @@
 	 * In addition, Core calls these methods to notify the Gui
  	 * when it should update its display
 	 */
-	const STARTING_X = -185.5;
-	const STARTING_Y = -120;
-	const BLOCK_SIZE = 24.2;
 
 	function Gui(core) {
 		this.core = core;
@@ -20,49 +17,107 @@
 		this.renderer.autoClear = false;
 		this.renderer.autoClearDepth = false;
 		this.container = document.getElementById('world');
-		this.keyboardEvent = {};
-		this.playerMovement = {x:0, y:0};
+		this.playersmesh = {};
 		this.animationFrameID = null;
 	}
 
 	Gui.prototype.onNewGame = function(gameplay) {
 		this.gameplay = gameplay;
+		this.createCharacters(gameplay.players);
 		this.container = document.getElementById(gameplay.container);
 		this._init();
 		this._createGameBoard(gameplay.gameboard, gameplay.gametype);
+		this._animate();
 	};
 
-	// Called this method when player is moving along with the given vector 
-	// direction
-	Gui.prototype.changePlayerMovement = function(vector) {
-		if(vector.x != 0 || vector.y != 0)
-			this.playerMovement = vector;
+	/**
+	 * Update the position of gui representation of a player
+	 */
+	Gui.prototype.updatePlayerPosition = function(player, x, y) {
+		let id = player.name;
+		if(this.playersmesh[id]){
+			this.playersmesh[id].position.x = x;
+			this.playersmesh[id].position.z = y;
+		}
+	};
+
+	Gui.prototype.createCharacters = function(characters) {
+		for(const data in characters._data){
+			let character = characters._data[data];
+			this.createCharacter(character[1]);
+		}
 	}
 
 	Gui.prototype.createCharacter = function(character) {
-		gameobject.createCharactorModel(character.absoluteXPos, character.absoluteYPos, (mesh) => {
-			character.setModel(mesh);
+		gameobject.createCharactorModel(character.absoluteXPos, character.absoluteYPos, character.color, (mesh) => {
+			this.playersmesh[character.name] = mesh;
 			this.scene.add(mesh);
 		});
+	};
+
+	Gui.prototype.movementAnimation = function(model, bodyPart, movementDirection) {
+
+        if(!model) return;
+        model.children[bodyPart].rotation.x = -Math.PI/8 * movementDirection;
+
+        if(bodyPart == CHARACTER_BODY_PART.leftLeg || bodyPart == CHARACTER_BODY_PART.rightLeg) {
+            model.children[bodyPart].position.z = 2 * movementDirection;
+        } else model.children[bodyPart].position.z = 4 * movementDirection;
+    };
+
+    Gui.prototype.updateModelRotation = function (player) {
+		let id = player.name;
+		let model = this.playersmesh[id];
+        if(model != null) {
+            model.rotation.y = player.rotation;
+            
+            //arm and leg will switch movement every frame while moving
+            if(player.movement.x == 0 && player.movement.y == 0){
+				this.resetAnimation(model);
+			}else{
+				this.movementAnimation(model, CHARACTER_BODY_PART.leftLeg, FORWARD * player.armAndLegSwitchMovement);
+				this.movementAnimation(model, CHARACTER_BODY_PART.rightLeg, BACKWARD * player.armAndLegSwitchMovement);
+				this.movementAnimation(model, CHARACTER_BODY_PART.rightArm, FORWARD * player.armAndLegSwitchMovement);
+				this.movementAnimation(model, CHARACTER_BODY_PART.leftArm, BACKWARD * player.armAndLegSwitchMovement);
+			}
+        }
+	};
+	
+	Gui.prototype.resetAnimation = function(model) {
+		this.movementAnimation(model, CHARACTER_BODY_PART.leftLeg, STATIC);
+		this.movementAnimation(model, CHARACTER_BODY_PART.rightLeg, STATIC);
+		this.movementAnimation(model, CHARACTER_BODY_PART.rightArm, STATIC);
+		this.movementAnimation(model, CHARACTER_BODY_PART.leftArm, STATIC);
+	};
+
+	Gui.prototype.createBomb = function(bomb) {
+		let x = bomb.xPos;
+		let y = bomb.yPos;
+		gameobject.createBomb(x, y, (mesh) => {
+			this.gameboardMesh[x][y] = mesh;
+			this.scene.add(mesh);
+		});
+	
 	}
-
-	Gui.prototype.createBomb = function(character) {
-		let x = character.xPos;
-		let y = character.yPos;
-
-		if(this.gameplay.isValidPosition(x, y)) {
-			gameobject.createBomb(x, y, (mesh) => {
-				this.gameboardMesh[x][y] = mesh;
-				this.scene.add(mesh);
+	
+	Gui.prototype.checkPlayerDeath = function(players){
+		let playerIds = Object.keys(this.playersmesh);
+		if(players.length != playerIds.length){
+			playerIds.forEach((id) =>{
+				let index = players.findIndex((player) => {
+					return player.name == id;
+				});
+				if (index == -1) this.removePlayer(id);
 			});
 		}
 	}
-	
+
 	/**
 	 * Destory charactor model of given character
 	 */
-	Gui.prototype.removePlayer = function(character) {
-		this.scene.remove(character.model);
+	Gui.prototype.removePlayer = function(id) {
+		this.scene.remove(this.playersmesh[id]);
+		delete this.playersmesh[id];
 	}
 
 	/*
@@ -104,7 +159,6 @@
 	Gui.prototype._init = function() {
 		this._createScene();
 		this._createLights();
-		this._animate();
 	};
 
 	Gui.prototype._createGameBoard = function(gameboard, gametype) {
@@ -194,95 +248,20 @@
         shadowLight.shadow.mapSize.height = 2048;
         this.scene.add(hemisphereLight);  
         this.scene.add(shadowLight);	
-    }
+    };
 
 	Gui.prototype._animate = function() {
-	  //this.animationFrameID = window.requestAnimationFrame(this._frame.bind(this));
-		//Player movement
-		setInterval(this._frame.bind(this), 1000/30);
-		//this._frame();
-	}
-
-	Gui.prototype._frame = function() {
-		if(this.core.getMainPlayer()){
-			if(this._hasMovement()) {
-
-				if(!this._collisionDetection(this.core.getMainPlayer().absoluteXPos, 
-					this.core.getMainPlayer().absoluteYPos)){
-					this.core.getMainPlayer().updatePosition(this.playerMovement);
-					this.core.onPlayerMoveChanged();			
-				}
-			} else {
-				this.core.getMainPlayer().resetAnimation();
-			}
-		}
-
+		this.animationFrameID = window.requestAnimationFrame(this._animate.bind(this));
 		this.renderer.render(this.scene, this.camera);
-	}
-
-	Gui.prototype.stopAnimate = function() {
-		if(this.animationFrameID) window.cancelAnimationFrame(this.animationFrameID);
-	}
-
-	/**
-	 * If the player currently standing on a bomb, the function checks if the next step of the player after the movement
-	 * contains any object or not. it will return false if the player is not standing on a bomb or the player's next step is invalid
-	 */
-	Gui.prototype._onBombDoesNextStepisValid = function() {
-		let character = this.core.getMainPlayer();
-
-		if (this.gameboardMesh[character.xPos][character.yPos] == null || this.gameboardMesh[character.xPos][character.yPos].name != "bomb")
-			return false;
-
-		let x = (this.playerMovement.x == 0)? character.xPos: character.xPos + this.playerMovement.x / Math.abs(this.playerMovement.x);
-		let y = (this.playerMovement.y == 0)? character.yPos: character.yPos + this.playerMovement.y / Math.abs(this.playerMovement.y);
-
-		return x >= 0 && x <= 14 && y >= 0 && y <= 14 && this.gameboardMesh[x][y] == null;
-	}
-
-	Gui.prototype._hasMovement = function() {
-		return this.playerMovement.x != 0 || this.playerMovement.y != 0;
-	}
-
-	/**
-	 * Calculate where player might be in the future based on its movement
-	 * , return true if this location is blocked
-	 */
-	Gui.prototype._collisionDetection = function(x, y) {
-		let xOrig = Math.floor((x + 196)/24.2);
-		let yOrig = Math.floor((y + 130.5)/24.2);
-		let dx = this._normalize(this.playerMovement.x);
-		let dy = this._normalize(this.playerMovement.y);
-		let xPos = Math.floor((x + 196 + (dx * 8))/24.2);
-		let yPos = Math.floor((y + 130.5 + (dy * 8))/24.2);
-		if(xPos == xOrig && yPos == yOrig) return false;
-
-		if(xPos < 0 || yPos < 0 || xPos >= this.gameplay.gameboardsize || yPos >= this.gameplay.gameboardsize){
-			return true;
-		}
-
-		let ret = this.gameplay.isCollision(xPos, yPos);
-		// in case of diagonal, calculate adjacent collisions
-		if(this.isValidPosition(xPos, yPos - dy) && 
-				this.isValidPosition(xPos - dx, yPos)){
-			ret = ret || (this.gameplay.isCollision(xPos - dx, yPos) && this.gameplay.isCollision(xPos, yPos - dy));
-		}
-		return ret;
-	}
-
-	Gui.prototype._normalize = function(num){
-		if(num == 0){
-			return 0;
-		}else if(num < 0){
-			return -1;
-		}else{
-			return 1;
-		}
+		//setInterval(this._frame.bind(this), 1000/30);
 	};
 
-	Gui.prototype.isValidPosition = function(x, y){
-		return x >= 0 && x < this.gameplay.gameboardsize && y >= 0 && y < this.gameplay.gameboardsize;
-	}
+
+	Gui.prototype.stopAnimate = function() {
+		this.scene = null;
+		this.renderer = null;
+		window.cancelAnimationFrame(this.animationFrameID);
+	};
 
 	// Export to window
 	window.app = window.app || {};

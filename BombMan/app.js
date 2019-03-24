@@ -1,3 +1,6 @@
+// main node server for Bomb Man
+
+// import dependencies
 const path = require('path');
 const express = require('express');
 const app = express();
@@ -7,6 +10,13 @@ const httpServer = http.Server(app);
 
 const socketIO = require('socket.io');
 const io = socketIO(httpServer);
+
+const Character = require('./lib/Character');
+const Gameplay = require('./lib/Gameplay');
+const Constants = require('./lib/Constants');
+const HashMap = require('hashmap');
+const Util = require('./lib/Util');
+
 app.use(express.static('static'));
 
 app.use(function (req, res, next){
@@ -20,16 +30,22 @@ let roomStatus = [];
 let characterStatus = {};
 // character to room dictionary
 let charToRoom = {};
-
-const GAMEBOARD_SIZE = 15;
-const ITEM_PROC_RATE = 0.5;
+let startedGames = new HashMap();
 
 // WebSocket handlers
 io.on('connection', function(socket) {
 
+    let prepareroom = new Gameplay(Util.prepareroomGameboard(), Constants.PREPARE_ROOM, Constants.PROOM_CONT);
+    prepareroom.setRoom(socket.id);
+    prepareroom.addPlayer(socket.id, socket.id, 0);
+    startedGames.set(socket.id, prepareroom);
+    prepareroom.checkPlayerHit = function(areaAffected, players) {};
+    io.sockets.to(socket.id).emit('gamestart', prepareroom, socket.id);
+
     socket.on('disconnect', function(){
         delete charToRoom[socket.id];
         delete characterStatus[socket.id];
+        startedGames.delete(socket.id);
     });
 
     // check all game rooms, join if there exists an unfilled room
@@ -59,12 +75,21 @@ io.on('connection', function(socket) {
         let rooms = io.sockets.adapter.rooms;
         roomStatus.forEach((room) =>{
             if(room.size >= 2){
-                // notify every player in the room to start game                 
-                io.sockets.in(room.name).emit('gamestart', rooms[room.name].sockets, room.name);
-                Object.keys(rooms[room.name].sockets).forEach((char) =>{
-                    charToRoom[char] = room.name;
-                })
-                console.log(charToRoom);
+                let game = new Gameplay(Util.defaultGameboard(), Constants.GAME, Constants.GAME_CONT);
+                let i = 0;
+
+                game.setRoom(room.name);
+                for(const sid in rooms[room.name].sockets){
+                    game.addPlayer(sid, sid, i);
+                    i++;
+                }
+                startedGames.set(room.name, game);
+                startedGames.forEach(function(sid_game, sid){
+                    if(!(sid in rooms) || game.players.has(sid)){
+                        startedGames.delete(sid);
+                    }
+                });
+                io.sockets.to(room.name).emit('gamestart', game, room.name);
             }else{
                 if(room.name in rooms){
                     socket.leave(room.name);
@@ -74,24 +99,23 @@ io.on('connection', function(socket) {
         roomStatus = [];
     });    
 
-    socket.on('serverInit', (roomId, gameplay) => {
-        let itemboard = setRandomItems(gameplay.gameboard);
-        io.sockets.to(roomId).emit('itemsInit', itemboard);
-    })
-
-    socket.on('placeBomb', (roomId, player) =>{
-        io.sockets.to(roomId).emit('placeBomb', player);
+    socket.on('player_action', (data) =>{
+        let game = startedGames.get(data.room);
+        if(game) game.handleKey(socket.id, data.intent);
     });
 
-    socket.on('updateCharacters', (room, character) =>{
-        if(!(character.name in characterStatus)){
-            characterStatus[character.name] = character;
-        }else{
-            characterStatus[character.name].absoluteXPos = character.absoluteXPos;
-            characterStatus[character.name].absoluteYPos = character.absoluteYPos;   
-            characterStatus[character.name].rotation = character.rotation;
+    socket.on('placeBomb', (data) =>{
+        let game = startedGames.get(data.room);
+        if(game){
+            let player = game.getPlayerBySocketId(socket.id);
+            if(player){
+                game.placeBomb(player, (bomb) => {
+                    io.sockets.to(data.room).emit('bombPlaced', bomb);
+                }, (res) => {
+                    io.sockets.to(data.room).emit('explode', res);
+                });
+            }
         }
-        io.sockets.to(room).emit('updateCharacters', characterStatus[character.name]);
     });
 
     socket.on('gameover', (room) =>{
@@ -101,21 +125,15 @@ io.on('connection', function(socket) {
 
 });
 
-function setRandomItems(gameboard){
-    let res = [];
-    for(let i = 0; i < GAMEBOARD_SIZE; i++){
-        let arr = [];
-        for (var j = 0; j < GAMEBOARD_SIZE; j++){
-            if(Math.random() > ITEM_PROC_RATE && gameboard[i][j]){
-                arr.push(Math.floor(Math.random() * 3 + 1));
-            }else{
-                arr.push(0);
-            }
-        }
-        res.push(arr);
-    }
-    return res;
-}
+// Server side game loop, runs at 60Hz and sends out update packets to all
+// clients every tick.
+setInterval(function() {
+    startedGames.forEach(function(game, room){
+        game.update();
+        let state = game.getState();
+        io.sockets.in(room).emit('gamestate', state);
+    });
+}, 1000/30);
 
 const PORT = 3000;
 

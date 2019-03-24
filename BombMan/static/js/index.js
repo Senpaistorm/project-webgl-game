@@ -11,79 +11,84 @@
 
 		window.addEventListener( 'resize', onWindowResize, false );
 
-
-
-		let game = new BombMan();
-		let gameplay = new app.Prepareroom();
-		game.core.startNewGame(gameplay);
-
-		let newChar = new app.Character("you", initPositions[0].xPos,
-					 initPositions[0].yPos, 3, INIT_POWER, 4);
-		game.core.addPlayer(newChar, true);
-
-		let updateInterval;
-		hideGame();
-		let roomId = null;
-
 		function onWindowResize(){	
     		game.gui.resize();
 		}
 
+		let game;
+		var updateInterval = null;
+		hideGame();
+		let roomId = null;
+
+		let intent = {
+			'up': 0,
+			'down': 0,
+			'left': 0,
+			'right': 0,
+		};
+
 		window.addEventListener('keydown', function(e){
-			if(isValidKey(e.keyCode) && game.core.getMainPlayer()){
-				game.core.keyDown(e);
-				if(e.keyCode == PLACEBOMB){
-					socket.emit('placeBomb', roomId, game.core.getMainPlayer());
-				}
+			switch(e.keyCode){
+				case UP: intent.up = 1; break;
+				case DOWN: intent.down = 1; break;
+				case LEFT: intent.left = 1; break;
+				case RIGHT: intent.right = 1; break;
+				case PLACEBOMB: socket.emit('placeBomb', {room: roomId}); break;
+				case 80: 
+					console.log('DEBUG');
+					console.log(game.core.state);
+				break;
 			}
 		});
 
 		window,addEventListener('keyup', function(e) {
-			if(isValidKey(e.keyCode) && game.core.getMainPlayer()) game.core.keyUp(e);
-		});
-
-		// socket handler for updating character position
-		socket.on('updateCharacters', (character) =>{
-			if(!game.core.getMainPlayer() || game.core.getMainPlayer().name != character.name){
-				game.core.updatePositions(character);
+			switch(e.keyCode){
+				case UP: intent.up = 0; break;
+				case DOWN: intent.down = 0; break;
+				case LEFT: intent.left = 0; break;
+				case RIGHT: intent.right = 0; break;
+				//case PLACEBOMB: socket.emit('placeBomb', {room: roomId}); break;
 			}
 		});
 
-		socket.on('itemsInit', (itemboard) => {
-			game.core.setItems(itemboard);
+		/**
+		 *  receive game state
+		 * 'players': player information
+		 * 'bombs': bomb information
+		 * 'gameboard': gameboard information
+		 * */ 
+		socket.on('gamestate', function(state){
+			if(game)
+				game.core.updateGameState(state);
 		});
 
 		// socket handler for starting a game
-		socket.on('gamestart', (players, roomname) =>{
-			let i = 0;
-			roomId = roomname;
+		socket.on('gamestart', (gameplay, room) =>{
+			console.log('gamestart');
+			if(game) game.gui.stopAnimate();
 			game = new BombMan();
-
-			Object.keys(players).forEach((player) =>{
-				let newChar = new app.Character(player, initPositions[i].xPos,
-					 initPositions[i].yPos, INIT_SPEED, INIT_POWER, INIT_LOAD);
-				if(socket.id == player){
-					game.core.addPlayer(newChar, true);
-				}else{
-					game.core.addPlayer(newChar);
-				}
-				i++;
-			});
-
-			gameplay = new app.Gameplay();
-			socket.emit('serverInit', roomId, gameplay);
+			roomId = room;
 			game.core.startNewGame(gameplay);
-			showGame();
-	
-			// send to the server information about main player on this client
-			updateInterval = setInterval(updateCharacters,1000/30);
+			if(gameplay.gametype == GAME){
+				showGame();
+			}
+			if(!updateInterval){
+				setInterval(updateGameState, 1000/60);
+			}
 		});
 
-		// socket handler for bombs being placed
-		socket.on('placeBomb', (character) => {
-			if(!game.core.getMainPlayer() || game.core.getMainPlayer().name != character.name){
-				game.core.placeBomb(character);
-			}
+		socket.on('bombPlaced', (bomb) => {
+			game.core.placeBomb(bomb);
+		});
+
+		socket.on('explode', (res) => {
+			game.core.explode(res);
+		});
+
+		// socket handler for starting a game
+		socket.on('gameover', () =>{
+			clearInterval(updateInterval);
+			gameOver(true);
 		});
 
 		document.getElementById('play_game_btn').addEventListener('click', async ()=>{
@@ -102,22 +107,16 @@
 			if(!roomId) setNoGameFoundMsg();
 		});
 
-		function updateCharacters(){ 
-			if(game.core.getMainPlayer()){
-				socket.emit('updateCharacters', roomId, game.core.getMainPlayer());
-			}
-			// gameover condition
-			if(game.core.getPlayers().length == 1){
-				gameOver(game.core.getMainPlayer() != null);
-			}
-		}
-
 		let gameOver = (didwin) => {
 			if(didwin) console.log("I won");
 			else console.log("I lost");
 			clearInterval(updateInterval);
 			game.gui.stopAnimate();
 		};
+
+		function updateGameState(){ 
+			socket.emit('player_action', {'room': roomId, 'intent':intent});
+		}
 	});
 
 

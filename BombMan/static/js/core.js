@@ -10,6 +10,7 @@
 
 	function Core() {
 		this.players = [];
+		this.state = null;
 	}
 
 	Core.prototype.addGameGui = function(gui) {
@@ -19,8 +20,20 @@
 
 	Core.prototype.startNewGame = function(gameplay) {
 		this.gameplay = gameplay;
-		this.gameplay.register(this);
 		this._notifyNewGameStarted(gameplay);
+	};
+
+	Core.prototype.updateGameState = function(state){
+		this.state = state;
+		let players = state.players;
+		players.forEach((cur) =>{
+			let absX = cur.absoluteXPos;
+			let absY = cur.absoluteYPos;
+			this.gui.updatePlayerPosition(cur, absX, absY);
+			this.gui.updateModelRotation(cur);
+			this.onPlayerMoveChanged(cur);
+		});
+		this.gui.checkPlayerDeath(players);
 	};
 
 	/**
@@ -28,14 +41,13 @@
      */
 	Core.prototype.getPlayers = function() {
 		return this.players;
-	}
+	};
 
     /**
      * Adds a player to the game and notifies the GUI about the
      * change.
      */
 	Core.prototype.addPlayer = function(character, isMainPlayer = false) {
-		this.gui.createCharacter(character);
 		if (isMainPlayer) this.setMainPlayer(character);
 		this.players.push(character);
 	}
@@ -69,7 +81,7 @@
 	 */
 	 Core.prototype.onPlayerMoveChanged = function(player=this.mainPlayer) {
 	 	//Check if there is any item on the current location
-	 	if(this.gameplay.items[player.xPos][player.yPos] != 0 && this.gameplay.isValidPosition(player.xPos, player.yPos)) {
+	 	if(this.gameplay.items[player.xPos][player.yPos] != 0) {
 
 			if(this.gameplay.items[player.xPos][player.yPos] == POWER_ITEM && player.power < POWER_LIMIT) {
 				player.power ++;
@@ -118,7 +130,6 @@
      */
     Core.prototype.explode = function(res) {
     	let areaAffected = res.expCoords;
-    	this.gameplay.checkPlayerHit(areaAffected, this.players);
 		areaAffected.forEach((position) => {
 			this.gui.distoryObject(position.xPos, position.yPos);
 			this.gui.createExplosion(position.xPos, position.yPos);
@@ -147,16 +158,18 @@
 	}
 
 	/**
-	 * Send to gui and gameplay the intent of placing a bomb,
-	 * if a bomb can be placed by this character
+	 * Check if there is an item in location (x,y)
+	 */
+	Core.prototype.checkItem = function(x, y){
+		return this.state.items[x][y] > 0 && this.state.gameboard[x][y] == 0;
+	}
+
+	/**
+	 * Send to gui the intent of placing a bomb
 	 */
 	Core.prototype.placeBomb = function(character){
-		if(this.gameplay.isValidPosition(character.xPos, character.yPos)
-			&& this.gameplay.canPlaceBomb(character)) {
-			this.gui.createBomb(character);
-			this.gameplay.placeBomb(character);
-		}
-	}
+		this.gui.createBomb(character);
+	};
 
 	/**
 	 * Set the item board of gameplay if it hasn't been set
@@ -170,41 +183,12 @@
 	 * Notify gui display the item
 	 */
 	Core.prototype.showItem = function(x, y) {
-		this.gui.createItem(x, y, this.gameplay.items[x][y]);
+		this.gui.createItem(x, y, this.state.items[x][y]);
 	}
 
 	Core.prototype._notifyNewGameStarted = function(gameplay) {
 		this.gui.onNewGame(gameplay);
 	};
-
-	// keyboard handler and notify gui about the change
-	Core.prototype.keyDown = function(e) {
-		let character = this.getMainPlayer();
-		if(e.keyCode == PLACEBOMB){
-			this.placeBomb(character);
-		}
-
-		if(e.keyCode != PLACEBOMB 
-			&& movementToVector[e.keyCode].keyDown == false) {
-
-			movementToVector[e.keyCode].keyDown = true;
-			vector.x += movementToVector[e.keyCode].x * character.speed;
-			vector.y += movementToVector[e.keyCode].y * character.speed;
-			//A vector represents the player's movement
-			this.gui.changePlayerMovement(vector);
-		}
-	}
-
-	Core.prototype.keyUp = function(e) {
-	    let character = this.getMainPlayer();
-
-		if (e.keyCode != PLACEBOMB && this.getMainPlayer()) {
-			movementToVector[e.keyCode].keyDown = false;
-			vector.x -= movementToVector[e.keyCode].x * character.speed;
-			vector.y -= movementToVector[e.keyCode].y * character.speed;
-			this.gui.changePlayerMovement(vector);
-		}
-	}
 
     // Export to window
     window.app = window.app || {};
