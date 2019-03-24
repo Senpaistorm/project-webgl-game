@@ -44,36 +44,13 @@
 	/**
 	 * Notify gameplay the new player position
 	 */
-	 Core.prototype.onPlayerMoveChanged = function(player=this.mainPlayer) {
+	 Core.prototype.onPlayerMoveChanged = function(player) {
 	 	//Check if there is any item on the current location
 	 	if(this.gameplay.items[player.xPos][player.yPos] != 0) {
-
-			if(this.gameplay.items[player.xPos][player.yPos] == POWER_ITEM && player.power < POWER_LIMIT) {
-				player.power ++;
-			} else if(this.gameplay.items[player.xPos][player.yPos] == SPEED_ITEM && player.power < SPEED_LIMIT){
-				player.speed ++;
-				if (player == this.getMainPlayer()) this.increaseMainPlayerSpeed();
-			} else if(this.gameplay.items[player.xPos][player.yPos] == BOMB_ITEM && player.power < LOAD_LIMIT) {
-				player.load ++;
-			}
-
 			this.gameplay.items[player.xPos][player.yPos] = 0;
 			this.gui.distoryObject(player.xPos, player.yPos);
 		}
-	 }
-
-	/**
-	 * Update character position 
-	 */
-	Core.prototype.updatePositions = function(player) {
-		for(let i = 0; i < this.getPlayers().length; i++){
-			if(player.name == this.getPlayers()[i].name){
-				this.getPlayers()[i].updatePositionAbs(player.absoluteXPos, player.absoluteYPos, player.rotation);
-				this.onPlayerMoveChanged(this.getPlayers()[i]);
-				return;
-			}
-		}
-	};
+	 };
 
     /**
      * Notify gui after bomb explode
@@ -105,14 +82,14 @@
 					this.showItem(position.xPos, position.yPos);
 			});
 	   	}, 200);
-	}
+	};
 
 	/**
 	 * Check if there is an item in location (x,y)
 	 */
 	Core.prototype.checkItem = function(x, y){
 		return this.state.items[x][y] > 0 && this.state.gameboard[x][y] == 0;
-	}
+	};
 
 	/**
 	 * Send to gui the intent of placing a bomb
@@ -126,7 +103,7 @@
 	 */
 	Core.prototype.showItem = function(x, y) {
 		this.gui.createItem(x, y, this.state.items[x][y]);
-	}
+	};
 
 	Core.prototype._notifyNewGameStarted = function(gameplay) {
 		this.gui.onNewGame(gameplay);
