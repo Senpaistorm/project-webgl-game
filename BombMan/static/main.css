@@ -3,7 +3,8 @@
 	width: 100%;
 	height: 100%;
 	overflow: hidden;
-	background: #9FD4D9;
+	background: url('./media/sky.png') no-repeat ;
+	background-size: 100%;
 }
 
 #homepage {
@@ -12,7 +13,9 @@
 	width: 100%;
 	height: 100%;
 	overflow: hidden;
-	background: #9FD4D9;
+	background: url('./media/sky.png') no-repeat ;
+	background-size: 100%;
+
 }
 
 #header {

@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/UTSCC09/project-webgl-game#readme",
   "dependencies": {
+    "body-parser": "^1.18.3",
     "express": "^4.16.4",
     "hashmap": "^2.3.0",
     "http": "0.0.0",

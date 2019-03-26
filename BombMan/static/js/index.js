@@ -16,6 +16,10 @@
 		let roomId = null;
 
 		socket.emit('load');
+
+		console.log(user.getName());
+        user.setSocket(socket.id);
+		
 		window.addEventListener( 'resize', onWindowResize, false );
 
 		function onWindowResize(){	
@@ -126,6 +130,10 @@
       			<button type="submit" class="form_btn" id = "positive_btn">Invite</button>
       			<button class="form_btn" id = "negative_btn">Cancel</button>
 			`;
+			//cancel btn
+			document.getElementById('negative_btn').addEventListener('click', async () => {
+				document.querySelector('.complex_form').innerHTML = ``;
+			});
 		});
 
 		//join room btn
@@ -136,11 +144,18 @@
       			<button type="submit" class="form_btn" id = "positive_btn">Join</button>
       			<button class="form_btn" id = "negative_btn">Cancel</button>
 			`;
-		});
 
-		//cancel btn
-		document.getElementById('negative_btn').addEventListener('click', async () => {
-			document.querySelector('.complex_form').innerHTML = ``;
+			document.querySelector('.complex_form').addEventListener('submit', function(e){        
+	        	e.preventDefault();
+            	let id = document.querySelector(".form_element").value;
+            	joinRoom(id);
+
+        	});  
+
+			//cancel btn
+			document.getElementById('negative_btn').addEventListener('click', async () => {
+				document.querySelector('.complex_form').innerHTML = ``;
+			});
 		});
 
 		let gameOver = (didwin) => {
@@ -155,6 +170,13 @@
 		}
 	});
 
+	let joinRoom = (userId) => {
+		user.getSocket(userId, (socketId) => {
+        	console.log("join room..... static " + socketId);
+
+			socket.emit('joinRoom', socketId);
+		})
+	}
 
 	let showGame = () =>{
 		let msg = document.getElementById('queue_msg');
