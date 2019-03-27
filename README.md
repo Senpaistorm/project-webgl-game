@@ -7,8 +7,11 @@
 ## About the Application
 Bomb Man is a WebGL based 3D multi-player game. The number of players in a single game can be 2-4. The goal of Bomb Man is to eliminate your opponent by placing your bombs in tactical positions. You can get closer to your opponent by blasting your way through the obstacles. The player side that eliminates all other players wins.  
 
+### [Live Game](https://bombman.me)
+### [Demo]
+
 ## Beta Version 
-In the Beta version, all basic game mechanics will be implemented. We will not worry about user signin/signup or authentication. Players can queue for a game whenever they open the website. The server refreshes periodically to check the number of players in queue. A game can be started with at least 2 players in queue. We will have one basic map ready for play. 
+In the Beta version, all basic game mechanics will be implemented. Players can queue for a game whenever they open the website. The server refreshes periodically to check the number of players in queue. A game can be started with at least 2 players in queue. We will have one basic map ready for play. 
 
 ### Controls: 
 * W: Up
@@ -18,7 +21,7 @@ In the Beta version, all basic game mechanics will be implemented. We will not w
 * J: Place Bomb
 
 ## Final Version
-In the Final version, we will implement user signin/signup and a game menu. The game menu will allow players to choose a game mode to queue in (free-for-all, 1v1, 2v2). It will also allow players to choose their character. Different characters will have different starting stats. We will also support multiple game maps.
+In the Final version, we will implement a game menu, power-up items, and more maps! The game menu will allow players to practice controls in a mini game room. The game menu also lets users to join/invite other players' game room by providing a username. It will also allow players to start a game with their friends without having to queue. Power-up items gives players the ability to walk faster, place more bombs, and place more powerful bombs. We will also implement more game maps.
 
 ## Technologies
 * WebGL - JavaScript API for rendering interactive 2D and 3D graphics 

@@ -258,8 +258,8 @@
 
 
 	Gui.prototype.stopAnimate = function() {
+		this.renderer.domElement.remove();
 		this.scene = null;
-		this.renderer = null;
 		window.cancelAnimationFrame(this.animationFrameID);
 	};
 
