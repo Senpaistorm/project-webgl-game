@@ -24,7 +24,6 @@
 	Gui.prototype.onNewGame = function(gameplay) {
 		this.gameplay = gameplay;
 		this.createCharacters(gameplay.players);
-
 		console.log("contianer --- " + gameplay.container);
 		this.container = document.getElementById(gameplay.container);
 		this._init();
@@ -260,8 +259,8 @@
 
 
 	Gui.prototype.stopAnimate = function() {
+		this.renderer.domElement.remove();
 		this.scene = null;
-		this.renderer = null;
 		window.cancelAnimationFrame(this.animationFrameID);
 	};
 
