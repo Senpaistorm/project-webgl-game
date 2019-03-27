@@ -75,8 +75,7 @@
 
 		// socket handler for starting a game
 		socket.on('gamestart', (gameplay, room) =>{
-			console.log('gamestart');
-			console.log(gameplay.players);
+
 			if(game) game.gui.stopAnimate();
 			game = new BombMan();
 			roomId = room;
@@ -174,8 +173,6 @@
 
 	let joinRoom = (userId) => {
 		user.getSocket(userId, (socketId) => {
-        	console.log("join room..... static " + socketId);
-
 			socket.emit('joinRoom', socketId);
 		})
 	}

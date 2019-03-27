@@ -95,23 +95,22 @@ io.on('connection', function(socket) {
         let prepareroom = new Gameplay(Util.prepareroomGameboard(), Constants.PREPARE_ROOM, Constants.PROOM_CONT);
         prepareroom.setRoom(socket.id);
 
-        socket.join(socket.id, (err) => {
-            if(err) console.error("Error joining room");
-        });
+        // socket.join(socket.id, (err) => {
+        //     if(err) console.error("Error joining room");
+        // });
 
         prepareroom.addPlayer(socket.id, socket.id, 0);
         startedGames.set(socket.id, prepareroom);
         prepareroom.checkPlayerHit = function(areaAffected, players) {};
         preparerooms.push({name:socket.id, size:1})
         io.sockets.to(socket.id).emit('gamestart', prepareroom, socket.id);
+        
         console.log(startedGames);
         console.log(users);
 
     });
 
     socket.on('joinRoom', (socketId) => {
-                console.log(socket.id);
-
         startedGames.delete(socket.id);
         console.log(startedGames);
 
