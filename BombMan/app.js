@@ -54,6 +54,7 @@ app.post('/api/user/', function (req, res, next) {
     let user = new User(req.body);
     users.push(user);
     res.json(user);
+    next();
 });
 
 //find user by ID
@@ -64,15 +65,22 @@ app.get('/api/user/:id/', function(req, res, next) {
     });
     if (index === -1) res.status(404).end('user does not exist');
     else res.json(users[index]);
+    next();
 });
 
 //Change socketId
 app.patch('/api/user/socket/', function (req, res, next) {
+    console.log("app set socketId " + req.body);
+    console.log("users " + users);
     let index = users.findIndex((user) => {
         return user._id == req.body._id;
     });
     if(index === -1) return res.status(404).end('username does not exist');
+
+    console.log("-----------------------");
+    console.log(users[index].socketId + " " + req.body.socketId);
     users[index].socketId = req.body.socketId;
+    console.log(users[index].socketId);
 });
 
 //Change name
@@ -86,20 +94,44 @@ io.on('connection', function(socket) {
     socket.on('load', function(){
         let prepareroom = new Gameplay(Util.prepareroomGameboard(), Constants.PREPARE_ROOM, Constants.PROOM_CONT);
         prepareroom.setRoom(socket.id);
+
+        socket.join(socket.id, (err) => {
+            if(err) console.error("Error joining room");
+        });
+
         prepareroom.addPlayer(socket.id, socket.id, 0);
         startedGames.set(socket.id, prepareroom);
         prepareroom.checkPlayerHit = function(areaAffected, players) {};
         preparerooms.push({name:socket.id, size:1})
         io.sockets.to(socket.id).emit('gamestart', prepareroom, socket.id);
+        console.log(startedGames);
+        console.log(users);
+
     });
 
     socket.on('joinRoom', (socketId) => {
+                console.log(socket.id);
+
+        startedGames.delete(socket.id);
+        console.log(startedGames);
+
+        console.log(startedGames);
         let game = startedGames.get(socketId);
+        console.log(game.gametype);
         console.log("join room.....")
         if(game) {
+            console.log(preparerooms);
             preparerooms.forEach((prepareroom) => {
                 if (prepareroom.name == socketId) {
-                    game.addPlayer(socketId, socketId, prepareroom.size);
+                    console.log("add player");
+                    console.log(socket.id, game.room);
+
+                    game.addPlayer(socket.id, socket.id, prepareroom.size, 2, 2);
+
+                    socket.join(socketId, (err) => {
+                        if(err) console.error("Error joining room");
+                    });
+
                     prepareroom.size ++;
                 }
             });

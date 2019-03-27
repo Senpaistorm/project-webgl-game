@@ -18,7 +18,7 @@
 		socket.emit('load');
 
 		console.log(user.getName());
-        user.setSocket(socket.id);
+        user.setSocketId(socket.id);
 		
 		window.addEventListener( 'resize', onWindowResize, false );
 
@@ -71,15 +71,17 @@
 		 * */ 
 		socket.on('gamestate', function(state){
 			if(game) game.core.updateGameState(state);
-		});
+		}); 
 
 		// socket handler for starting a game
 		socket.on('gamestart', (gameplay, room) =>{
 			console.log('gamestart');
+			console.log(gameplay.players);
 			if(game) game.gui.stopAnimate();
 			game = new BombMan();
 			roomId = room;
 			game.core.startNewGame(gameplay);
+			console.log(gameplay.gametype == GAME);
 			if(gameplay.gametype == GAME){
 				showGame();
 			}

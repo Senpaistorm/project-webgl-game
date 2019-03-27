@@ -27,6 +27,7 @@
 		this.container = document.getElementById(gameplay.container);
 		this._init();
 		this._createGameBoard(gameplay.gameboard, gameplay.gametype);
+		console.log("animation start");
 		this._animate();
 	};
 
@@ -97,7 +98,6 @@
 			this.gameboardMesh[x][y] = mesh;
 			this.scene.add(mesh);
 		});
-	
 	}
 	
 	Gui.prototype.checkPlayerDeath = function(players){

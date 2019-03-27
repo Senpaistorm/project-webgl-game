@@ -31,9 +31,11 @@ function Gameplay(map, type, container) {
 /**
  * Add a player with name and socket id
  */
-Gameplay.prototype.addPlayer = function (name, id, i){
-    this.players.set(id, new Character(name, Constants.initPositions[i].xPos,
-        Constants.initPositions[i].yPos, Constants.INIT_SPEED, Constants.INIT_POWER, Constants.INIT_LOAD));
+Gameplay.prototype.addPlayer = function (name, id, i, 
+                                         x=Constants.initPositions[i].xPos, 
+                                         y=Constants.initPositions[i].yPos){
+    this.players.set(id, new Character(name, x, y, Constants.INIT_SPEED, 
+        Constants.INIT_POWER, Constants.INIT_LOAD));
     this.result[name] = {alive: 1};
 };
 
