@@ -205,7 +205,7 @@
 			button.innerHTML = "Back to menu";
 			let cont = document.getElementById('gameover_modal_content');
 			cont.innerHTML = `<div>
-			${JSON.stringify(result)}
+			${makeResultTable(result)}
 			</div>`;
 			button.addEventListener("click", function(){
 				hideGame();
@@ -213,6 +213,33 @@
 			});
 			cont.appendChild(button);
 		}
+	}
+
+	let makeResultTable = (result) => {
+		let res = `<div class="Table">
+								<div class="Title">
+										<p>Game Results</p>
+								</div>
+								<div class="Heading">
+								<div class="Cell">
+										<p>Name</p>
+								</div>
+								<div class="Cell">
+										<p>Status</p>
+								</div>
+								</div>`;
+		for(const id in result){
+			res += `<div class="Row">
+									<div class="Cell">
+											<p>${user.getName(id).username}</p>
+									</div>
+									<div class="Cell">
+											<p>${result[id].alive ? "Alive" : "Dead"}</p>
+									</div>
+							</div>`;
+		}						
+		res += `</div>`;
+		return res;
 	}
 
 })();

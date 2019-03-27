@@ -44,8 +44,8 @@ let user = (function() {
     	});
     }
 
-    module.getName = function() {
-    	let id = JSON.parse(localStorage.getItem('user'))._id;
+    module.getName = function(socketId=null) {
+        let id = socketId ? socketId : JSON.parse(localStorage.getItem('user'))._id;
 
     	send("GET", "/api/user/" + id + "/", {}, (err, res) => {
     		//if name is out of date
