@@ -16,6 +16,10 @@
 		let roomId = null;
 
 		socket.emit('load');
+
+		console.log(user.getName());
+        user.setSocketId(socket.id);
+		
 		window.addEventListener( 'resize', onWindowResize, false );
 
 		function onWindowResize(){	
@@ -67,14 +71,17 @@
 		 * */ 
 		socket.on('gamestate', function(state){
 			if(game) game.core.updateGameState(state);
-		});
+		}); 
 
 		// socket handler for starting a game
 		socket.on('gamestart', (gameplay, room) =>{
+      
 			if(game) game.gui.stopAnimate();
 			game = new BombMan();
+
 			roomId = room;
 			game.core.startNewGame(gameplay);
+			
 			if(gameplay.gametype == GAME){
 				showGame();
 			}
@@ -121,6 +128,10 @@
       			<button type="submit" class="form_btn" id = "positive_btn">Invite</button>
       			<button class="form_btn" id = "negative_btn">Cancel</button>
 			`;
+			//cancel btn
+			document.getElementById('negative_btn').addEventListener('click', async () => {
+				document.querySelector('.complex_form').innerHTML = ``;
+			});
 		});
 
 		//join room btn
@@ -131,11 +142,18 @@
       			<button type="submit" class="form_btn" id = "positive_btn">Join</button>
       			<button class="form_btn" id = "negative_btn">Cancel</button>
 			`;
-		});
 
-		//cancel btn
-		document.getElementById('negative_btn').addEventListener('click', async () => {
-			document.querySelector('.complex_form').innerHTML = ``;
+			document.querySelector('.complex_form').addEventListener('submit', function(e){        
+	        	e.preventDefault();
+            	let id = document.querySelector(".form_element").value;
+            	joinRoom(id);
+
+        	});  
+
+			//cancel btn
+			document.getElementById('negative_btn').addEventListener('click', async () => {
+				document.querySelector('.complex_form').innerHTML = ``;
+			});
 		});
 
 		function updateGameState(){ 
@@ -143,6 +161,11 @@
 		}
 	});
 
+	let joinRoom = (userId) => {
+		user.getSocket(userId, (socketId) => {
+			socket.emit('joinRoom', socketId);
+		})
+	}
 
 	let showGame = () =>{
 		let msg = document.getElementById('queue_msg');

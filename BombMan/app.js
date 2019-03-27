@@ -17,6 +17,9 @@ const Constants = require('./lib/Constants');
 const HashMap = require('hashmap');
 const Util = require('./lib/Util');
 
+var bodyParser = require('body-parser');
+app.use(bodyParser.json());
+
 app.use(express.static('static'));
 
 app.use(function (req, res, next){
@@ -33,18 +36,93 @@ let startedGames = new HashMap();
 // HashMap that maps a socket id to a username
 let socketToName = new HashMap();
 
+let User = (function(){
+    let _id = 1000000;
+    return function user(user) {
+        this._id = _id++;
+        this.username = (user.username)? user.username: "Player: " + _id;
+        this.socketId = user.socketId;
+    };
+}());
+
+let users = [];
+
+let preparerooms = [];
+
+//add user
+app.post('/api/user/', function (req, res, next) {
+    let user = new User(req.body);
+    users.push(user);
+    res.json(user);
+    next();
+});
+
+//find user by ID
+app.get('/api/user/:id/', function(req, res, next) {
+    console.log(req.params.id);
+    let index = users.findIndex(function(user) {
+        return user._id == parseInt(req.params.id);
+    });
+    if (index === -1) res.status(404).end('user does not exist');
+    else res.json(users[index]);
+    next();
+});
+
+//Change socketId
+app.patch('/api/user/socket/', function (req, res, next) {
+    console.log("app set socketId " + req.body);
+    console.log("users " + users);
+    let index = users.findIndex((user) => {
+        return user._id == req.body._id;
+    });
+    if(index === -1) return res.status(404).end('username does not exist');
+
+    console.log("-----------------------");
+    console.log(users[index].socketId + " " + req.body.socketId);
+    users[index].socketId = req.body.socketId;
+    console.log(users[index].socketId);
+});
+
+//Change name
+// app.patch('/api/user/:newusername/', function (req, res, next) {
+//     let index = user.findIndex(users)
+// });
+
 // WebSocket handlers
 io.on('connection', function(socket) {
 
     socket.on('load', function(){
         let prepareroom = new Gameplay(Util.prepareroomGameboard(), Constants.PREPARE_ROOM, Constants.PROOM_CONT);
         prepareroom.setRoom(socket.id);
+
+        // socket.join(socket.id, (err) => {
+        //     if(err) console.error("Error joining room");
+        // });
+
         prepareroom.addPlayer(socket.id, socket.id, 0);
         startedGames.set(socket.id, prepareroom);
         prepareroom.checkPlayerHit = function(areaAffected, players) {};
+        preparerooms.push({name:socket.id, size:1})
         io.sockets.to(socket.id).emit('gamestart', prepareroom, socket.id);
     });
 
+    socket.on('joinRoom', (socketId) => {
+        startedGames.delete(socket.id);
+
+        let game = startedGames.get(socketId);
+        if(game) {
+            preparerooms.forEach((prepareroom) => {
+                if (prepareroom.name == socketId) {
+                    game.addPlayer(socket.id, socket.id, prepareroom.size, 2, 2);
+                    socket.join(socketId, (err) => {
+                        if(err) console.error("Error joining room");
+                    });
+                    prepareroom.size ++;
+                }
+            });
+            io.sockets.to(socketId).emit('gamestart', game, socketId);
+        }
+    });
 
     socket.on('disconnect', function(){
         startedGames.delete(socket.id);
