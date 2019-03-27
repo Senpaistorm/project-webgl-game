@@ -40,7 +40,7 @@ let User = (function(){
     let _id = 1000000;
     return function user(user) {
         this._id = _id++;
-        this.username = (user.username)? user.username: "Player: " + _id;
+        this.username = (user.username)? user.username: "Player: " + this._id;
         this.socketId = user.socketId;
     };
 }());

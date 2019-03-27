@@ -202,6 +202,7 @@
 		}
 		if(document.querySelector('#gameover_modal').style.display == "block"){
 			let button = document.createElement("button");
+			button.id = "back_btn";
 			button.innerHTML = "Back to menu";
 			let cont = document.getElementById('gameover_modal_content');
 			cont.innerHTML = `<div>
