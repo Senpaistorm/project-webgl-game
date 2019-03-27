@@ -19,8 +19,6 @@ let user = (function() {
 
     //add a new user and return the given user name
     function addNewUser() {
-    	console.log("add new user")
-
     	send("POST", "/api/user/", {}, function(err, res) {
     		localStorage.setItem('user', JSON.stringify({_id: res._id, username: res.username}));
     	});
@@ -36,23 +34,17 @@ let user = (function() {
     // };
 
     module.setSocketId = function(socketId) {
-    	console.log("set socket: "+ socketId);
-
     	let id = JSON.parse(localStorage.getItem('user'))._id;
     	send("PATCH", "/api/user/socket", {_id: id, socketId: socketId}, (err, res) => {});
     }
 
     module.getSocket = function(id, callback) {
-    	console.log("get socket")
-
     	send("GET", "/api/user/" + id + "/", {}, (err, res) => {
     		if(!err) callback(res.socketId);
     	});
     }
 
     module.getName = function() {
-    	console.log("get name")
-
     	let id = JSON.parse(localStorage.getItem('user'))._id;
 
     	send("GET", "/api/user/" + id + "/", {}, (err, res) => {

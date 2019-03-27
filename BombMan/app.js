@@ -104,33 +104,19 @@ io.on('connection', function(socket) {
         prepareroom.checkPlayerHit = function(areaAffected, players) {};
         preparerooms.push({name:socket.id, size:1})
         io.sockets.to(socket.id).emit('gamestart', prepareroom, socket.id);
-        
-        console.log(startedGames);
-        console.log(users);
-
     });
 
     socket.on('joinRoom', (socketId) => {
         startedGames.delete(socket.id);
-        console.log(startedGames);
 
-        console.log(startedGames);
         let game = startedGames.get(socketId);
-        console.log(game.gametype);
-        console.log("join room.....")
         if(game) {
-            console.log(preparerooms);
             preparerooms.forEach((prepareroom) => {
                 if (prepareroom.name == socketId) {
-                    console.log("add player");
-                    console.log(socket.id, game.room);
-
                     game.addPlayer(socket.id, socket.id, prepareroom.size, 2, 2);
-
                     socket.join(socketId, (err) => {
                         if(err) console.error("Error joining room");
                     });
-
                     prepareroom.size ++;
                 }
             });

@@ -75,12 +75,13 @@
 
 		// socket handler for starting a game
 		socket.on('gamestart', (gameplay, room) =>{
-
+			console.log("GAME START");
 			if(game) game.gui.stopAnimate();
 			game = new BombMan();
+
 			roomId = room;
 			game.core.startNewGame(gameplay);
-			console.log(gameplay.gametype == GAME);
+			
 			if(gameplay.gametype == GAME){
 				showGame();
 			}
