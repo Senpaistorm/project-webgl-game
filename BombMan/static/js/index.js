@@ -292,7 +292,7 @@
 		for(const id in result){
 			res += `<div class="Row">
 									<div class="Cell">
-											<p>${user.getName(id).username}</p>
+											<p>${id}</p>
 									</div>
 									<div class="Cell">
 											<p>${result[id].alive ? "Alive" : "Dead"}</p>
