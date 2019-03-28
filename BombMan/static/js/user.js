@@ -61,8 +61,8 @@ let user = (function() {
     	});
     }
 
-    module.getMyInfo = function() {
-    	let id = JSON.parse(localStorage.getItem('user'))._id;
+    module.getMyInfo = function(socketId=null) {
+        let id = socketId ? socketId : JSON.parse(localStorage.getItem('user'))._id;
     	send("GET", "/api/user/" + id + "/", {}, (err, res) => {
     		//if name is out of date
     		if(err) addNewUser();

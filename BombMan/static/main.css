@@ -127,13 +127,45 @@
 }
 
 #back_btn{
+	font-size: 36px;
 	width: 250px;
 	height: 100px;
-	border-radius: 10px;
-	color: white;
+	border-radius: 5px;
+	margin-top: 20px;
+	cursor: pointer;
 	border: none;
 }
 
 #gameover_modal{
 	display:none;
+}
+
+.Table
+{
+	display: table;
+}
+.Title
+{
+	display: table-caption;
+	text-align: center;
+	font-weight: bold;
+	font-size: larger;
+}
+.Heading
+{
+	display: table-row;
+	font-weight: bold;
+	text-align: center;
+}
+.Row
+{
+	display: table-row;
+}
+.Cell
+{
+	display: table-cell;
+	border: solid;
+	border-width: thin;
+	padding-left: 5px;
+	padding-right: 5px;
 }
