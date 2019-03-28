@@ -53,8 +53,21 @@
 	box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
 }
 
+#player_info {
+	position: absolute;
+	font-family: Sans-serif;
+	font-size: 15px;
+	top: 2%;
+	left: 2%;
+}
+
 #play_game_btn{
 	top: 25%;
+}
+
+#exit_room_btn{
+	top: 25%;
+	visibility: hidden;
 }
 
 #invite_player_btn{

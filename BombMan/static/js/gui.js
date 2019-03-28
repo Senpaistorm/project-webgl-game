@@ -24,11 +24,9 @@
 	Gui.prototype.onNewGame = function(gameplay) {
 		this.gameplay = gameplay;
 		this.createCharacters(gameplay.players);
-		console.log("contianer --- " + gameplay.container);
 		this.container = document.getElementById(gameplay.container);
 		this._init();
 		this._createGameBoard(gameplay.gameboard, gameplay.gametype);
-		console.log("animation start");
 		this._animate();
 	};
 
