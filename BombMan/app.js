@@ -100,6 +100,22 @@ io.on('connection', function(socket) {
         io.sockets.to(socket.id).emit('gamestart', prepareroom, socket.id);
     });
 
+    socket.on('socketChange', (username) => {
+        if(!socketToName.search(username)){
+            socketToName.set(socket.id, username);
+        }else{
+            let i = 0;
+            let usernameCp = `${username}_${i}`;
+            while(socketToName.search(usernameCp)){
+                i++;
+                usernameCp = `${username}_${i}`;
+            }
+            socketToName.set(socket.id, usernameCp);
+            io.sockets.to(socket.id).emit('nameRepeat', usernameCp, socket.id);
+        }
+        
+    });
+
     socket.on('invitePlayer', (socketId, inviterId) => {
         console.log(socketId);
         console.log(io.sockets.to(socketId));
@@ -190,7 +206,9 @@ io.on('connection', function(socket) {
 
         game.setRoom(room.name);
         for(const sid in rooms[room.name].sockets){
-            game.addPlayer(sid, sid, i);
+            console.log(socketToName.get(sid));
+            console.log(sid)
+            game.addPlayer(socketToName.get(sid), sid, i);
             i++;
         }
         startedGames.set(room.name, game);

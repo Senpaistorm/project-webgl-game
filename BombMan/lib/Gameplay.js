@@ -40,8 +40,9 @@ Gameplay.prototype.addPlayer = function (name, id, i,
 };
 
 Gameplay.prototype.removePlayer = function(id){
+
     if (this.players.has(id)) {
-        this.result[id].alive = 0;
+        this.result[this.players.get(id).name].alive = 0;
         return this.players.remove(id);
     }
 };
@@ -216,9 +217,9 @@ Gameplay.prototype.bombExists = function(myBomb) {
 // check if any player hit by the boom
 Gameplay.prototype.checkPlayerHit = function(areaAffected, players) {
     areaAffected.forEach((explodeArea) => {
-        players.forEach((player) => {
+        players.forEach((player, sid) => {
             if (player.xPos == explodeArea.xPos && player.yPos == explodeArea.yPos) 
-                this.removePlayer(player.name);
+                this.removePlayer(sid);
         });
     });
 }

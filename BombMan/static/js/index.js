@@ -12,33 +12,53 @@
 		//let game;
 		let game;
 		var updateInterval = null;
-		hideGame();
 		let roomId = null;
-
-		socket.emit('load');
-
-        user.onUserInfoUpdate(function(user) {
-			document.getElementById('player_info').innerHTML = `
-					<p>Name: ${user.username}</p>
-					<p>ID: ${user._id}</p>
-				`;
-		});
-
-		user.getMyInfo();
-        user.setSocketId(socket.id);
-		
-		window.addEventListener('resize', onWindowResize, false );
-
-		function onWindowResize(){	
-			game.gui.resize();
-		}
-
 		let intent = {
 			'up': 0,
 			'down': 0,
 			'left': 0,
 			'right': 0,
 		};
+
+		hideGame();
+		socket.emit('load');
+
+        // user.onUserInfoUpdate(function(user) {
+		// 	document.getElementById('player_info').innerHTML = `
+		// 			<p>Name: ${user.username}</p>
+		// 			<p>ID: ${user._id}</p>
+		// 		`;
+		// });
+
+		user.getMyInfo();
+		user.setSocketId(socket.id);
+		if(localStorage.getItem('username')){
+			usernameChanged();
+		}else{
+			document.getElementById('username_prompt').style.display = "block";
+			document.getElementById('username_prompt_form').addEventListener('submit', (e) => {
+				e.preventDefault();
+				let username = document.getElementById('username_prompt_input').value;
+				localStorage.setItem('username', username);
+				usernameChanged();
+			});
+		}
+
+		function usernameChanged(){
+			let username = localStorage.getItem('username');
+			document.getElementById('username_prompt').style.display = "none";
+			socket.emit('socketChange', username);
+			document.getElementById('player_info').innerHTML = `
+				<p>Name: ${username}</p>
+				<p>ID: ${socket.id}</p>
+			`;
+		}
+		
+		window.addEventListener('resize', onWindowResize, false );
+
+		function onWindowResize(){	
+			game.gui.resize();
+		}
 
 		/**
 		 * Keyboard listener for pressing a valid key
@@ -54,6 +74,7 @@
 					console.log('DEBUG');
 					console.log(game.core.state);
 					toggleGameOver();
+					//localStorage.clear();
 				break;
 			}
 		});
