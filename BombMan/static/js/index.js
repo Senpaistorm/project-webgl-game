@@ -1,7 +1,7 @@
 (function(){
 	"use strict";
 
-  window.addEventListener('load', function(){
+  	window.addEventListener('load', function(){
     	/* Main Method */
 		function BombMan() {
 			this.core = new app.Core();
@@ -17,10 +17,17 @@
 
 		socket.emit('load');
 
-		console.log(user.getName());
+        user.onUserInfoUpdate(function(user) {
+			document.getElementById('player_info').innerHTML = `
+					<p>Name: ${user.username}</p>
+					<p>ID: ${user._id}</p>
+				`;
+		});
+
+		user.getMyInfo();
         user.setSocketId(socket.id);
 		
-		window.addEventListener( 'resize', onWindowResize, false );
+		window.addEventListener('resize', onWindowResize, false );
 
 		function onWindowResize(){	
 			game.gui.resize();
@@ -98,6 +105,23 @@
 			game.core.explode(res);
 		});
 
+		socket.on('onInvite', (id) => {
+			document.querySelector('.complex_form').innerHTML = `
+				<div class="form_title">${user.username} invites you to his game</div>
+      			<button type="submit" class="form_btn" id = "positive_btn">Invite</button>
+      			<button class="form_btn" id = "negative_btn">Cancel</button>
+			`;
+			//accept btn
+			document.getElementById('positive_btn').addEventListener('click', async () => {
+				document.querySelector('.complex_form').innerHTML = ``;
+				 joinRoom(id);
+			});
+			//cancel btn
+			document.getElementById('negative_btn').addEventListener('click', async () => {
+				document.querySelector('.complex_form').innerHTML = ``;
+			});
+		});
+
 		// socket handler for starting a game
 		socket.on('gameover', (result) =>{
 			socket.emit('leaveRoom', roomId);
@@ -128,6 +152,14 @@
       			<button type="submit" class="form_btn" id = "positive_btn">Invite</button>
       			<button class="form_btn" id = "negative_btn">Cancel</button>
 			`;
+
+			document.querySelector('.complex_form').addEventListener('submit', function(e){        
+	        	e.preventDefault();
+            	let id = document.querySelector(".form_element").value;
+            	document.querySelector('.complex_form').innerHTML = ``;
+            	invitePlayer(id);
+        	}); 
+
 			//cancel btn
 			document.getElementById('negative_btn').addEventListener('click', async () => {
 				document.querySelector('.complex_form').innerHTML = ``;
@@ -146,8 +178,8 @@
 			document.querySelector('.complex_form').addEventListener('submit', function(e){        
 	        	e.preventDefault();
             	let id = document.querySelector(".form_element").value;
+            	document.querySelector('.complex_form').innerHTML = ``;
             	joinRoom(id);
-
         	});  
 
 			//cancel btn
@@ -162,9 +194,35 @@
 	});
 
 	let joinRoom = (userId) => {
-		user.getSocket(userId, (socketId) => {
-			socket.emit('joinRoom', socketId);
-		})
+		user.getUser(userId, (err, res) => {
+			let room = res.room;
+			if(err) showErrorMessage('Player does not exist'); 
+			else if(status == GAME) showErrorMessage('Player currently in game');
+			else socket.emit('joinRoom', room, (success) => {
+				if(success) {
+					user.setMyRoom(room);
+					showRoomParticipantMenu();
+				}
+				// the only possibility left is the room is full
+				else showErrorMessage('Room is full');
+			});
+		});
+	}
+
+	let invitePlayer = (userId) => {
+		let myId = user.getMyId;
+
+		user.getUser(userId, (err, res) => {
+			if(err) showErrorMessage('Player does not exist'); 
+			else  socket.emit('invitePlayer', res.socketId, myId);
+		});
+	}
+
+	let showRoomParticipantMenu = () => {
+		document.getElementById('play_game_btn').style.visibility = 'hidden';
+		document.getElementById('invite_player_btn').style.visibility = 'hidden';
+		document.getElementById('join_room_btn').style.visibility = 'hidden';
+		document.getElementById('exit_room_btn').style.visibility = 'visible';
 	}
 
 	let showGame = () =>{
@@ -182,9 +240,11 @@
 
 	let setQueueMsg = () => {
 		let msg = document.getElementById('queue_msg');
-		msg.innerHTML = `
-		Looking for players <div class="loader"></div>
-		`;
+		msg.innerHTML = `Looking for players <div class="loader"></div>`;
+	}
+
+	let showErrorMessage = (message) => {
+		document.getElementById('error_msg').innerHTML = message;
 	}
 
 	let setNoGameFoundMsg = () => {
@@ -214,5 +274,4 @@
 			cont.appendChild(button);
 		}
 	}
-
 })();
