@@ -122,12 +122,12 @@ io.on('connection', function(socket) {
         io.sockets.to(socketId).emit('onInvite', inviterId);
     });
 
-    socket.on('joinRoom', (socketId, callback) => {
+    socket.on('joinRoom', (username, callback) => {
+        let socketId = socketToName.search(username);
         let game = startedGames.get(socketId);
 
-        console.log(socketIdToSockets.get(socketId));
+        console.log(game);
         if(isJoinablePrepareroom(game)) {
-            callback(true);
             startedGames.delete(socket.id);
             socketIdToSockets.delete(socket.id);
             socketIdToSockets.get(socketId).push(socket);
@@ -139,6 +139,7 @@ io.on('connection', function(socket) {
             console.log(io.sockets.adapter.rooms);
 
             io.sockets.to(socketId).emit('gamestart', game, socketId);
+            callback(true);
         } else {
             callback(false);
         }
@@ -206,8 +207,6 @@ io.on('connection', function(socket) {
 
         game.setRoom(room.name);
         for(const sid in rooms[room.name].sockets){
-            console.log(socketToName.get(sid));
-            console.log(sid)
             game.addPlayer(socketToName.get(sid), sid, i);
             i++;
         }

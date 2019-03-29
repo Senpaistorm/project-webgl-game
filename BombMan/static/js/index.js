@@ -166,7 +166,7 @@
 		});
 
 		//Invite player btn
-		document.getElementById('invite_player_btn').addEventListener('click', async () => {
+		document.getElementById('invite_player_btn').addEventListener('click',  () => {
 			document.querySelector('.complex_form').innerHTML = `
 				<div class="form_title">Invite player</div>
       			<input type="text" class="form_element" placeholder="username" name="user_name">
@@ -182,13 +182,13 @@
         	}); 
 
 			//cancel btn
-			document.getElementById('negative_btn').addEventListener('click', async () => {
+			document.getElementById('negative_btn').addEventListener('click', () => {
 				document.querySelector('.complex_form').innerHTML = ``;
 			});
 		});
 
 		//join room btn
-		document.getElementById('join_room_btn').addEventListener('click', async () => {
+		document.getElementById('join_room_btn').addEventListener('click', () => {
 			document.querySelector('.complex_form').innerHTML = `
 				<div class="form_title">Join Room</div>
       			<input type="text" class="form_element" placeholder="room number" name="user_name">
@@ -215,18 +215,25 @@
 	});
 
 	let joinRoom = (userId) => {
-		user.getUser(userId, (err, res) => {
-			let room = res.room;
-			if(err) showErrorMessage('Player does not exist'); 
-			else if(status == GAME) showErrorMessage('Player currently in game');
-			else socket.emit('joinRoom', room, (success) => {
-				if(success) {
-					user.setMyRoom(room);
-					showRoomParticipantMenu();
-				}
-				// the only possibility left is the room is full
-				else showErrorMessage('Room is full');
-			});
+		// user.getUser(userId, (err, res) => {
+		// 	let room = res.room;
+		// 	if(err) showErrorMessage('Player does not exist'); 
+		// 	else if(status == GAME) showErrorMessage('Player currently in game');
+		// 	else socket.emit('joinRoom', room, (success) => {
+		// 		if(success) {
+		// 			user.setMyRoom(room);
+		// 			showRoomParticipantMenu();
+		// 		}
+		// 		// the only possibility left is the room is full
+		// 		else showErrorMessage('Room is full');
+		// 	});
+		// });
+
+		socket.emit('joinRoom', userId, (success) => {
+			if(success) {
+				showRoomParticipantMenu();
+			}
+			else showErrorMessage('Cannot join room');
 		});
 	}
 
