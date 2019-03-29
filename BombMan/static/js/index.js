@@ -37,8 +37,10 @@
 			document.getElementById('username_prompt_form').addEventListener('submit', (e) => {
 				e.preventDefault();
 				let username = document.getElementById('username_prompt_input').value;
-				localStorage.setItem('username', username);
-				usernameChanged();
+				socket.emit('newUsername', username, (res) => {
+					localStorage.setItem('username', res);
+					usernameChanged();
+				});
 			});
 		}
 
@@ -72,7 +74,7 @@
 					console.log('DEBUG');
 					console.log(game.core.state);
 					toggleGameOver();
-					//localStorage.clear();
+					localStorage.clear();
 				break;
 			}
 		});

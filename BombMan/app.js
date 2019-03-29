@@ -106,20 +106,22 @@ io.on('connection', function(socket) {
         io.sockets.to(socket.id).emit('gamestart', prepareroom, socket.id);
     }
 
-    socket.on('socketChange', (username) => {
-        if(!socketToName.search(username)){
-            socketToName.set(socket.id, username);
-        }else{
+    socket.on('newUsername', (username, callback) => {
+        let orig = username;
+        if(socketToName.search(username)){
             let i = 0;
-            let usernameCp = `${username}_${i}`;
-            while(socketToName.search(usernameCp)){
+            username = `${orig}_${i}`;
+            while(socketToName.search(username)){
                 i++;
-                usernameCp = `${username}_${i}`;
+                username = `${orig}_${i}`;
             }
-            socketToName.set(socket.id, usernameCp);
-            io.sockets.to(socket.id).emit('nameRepeat', usernameCp, socket.id);
+            socketToName.set(socket.id, username);
         }
-        
+        callback(username);
+    });
+
+    socket.on('socketChange', (username) => {
+        socketToName.set(socket.id, username);
     });
 
     socket.on('invitePlayer', (userId) => {
