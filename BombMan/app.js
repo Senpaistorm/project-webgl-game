@@ -22,11 +22,6 @@ app.use(bodyParser.json());
 
 app.use(express.static('static'));
 
-app.use(function (req, res, next){
-    console.log("HTTP request", req.method, req.url, req.body);
-    next();
-});
-
 const UPDATE_FRAME_RATE = 30;
 const GAMEOVER_CHECK_RATE = 2000;
 // room status that contains all the queued players and their rooms
@@ -43,51 +38,7 @@ let socketIdToSockets = new HashMap();
 // prepare room cache
 let prepareroomCache = new HashMap();
 
-let User = (function(){
-    let _id = 1000000;
-    return function user(user) {
-        this._id = _id++;
-        this.username = (user.username)? user.username: "Player" + this._id;
-        this.socketId = user.socketId;
-        this.status = user.status;
-        this.room = (user.room)? user.room: user.socketId;
-    };
-}());
-
-let users = [];
-
-//add user
-app.post('/api/user/', function (req, res, next) {
-    let user = new User(req.body);
-    users.push(user);
-    res.json(user);
-    next();
-});
-
-//find user by ID
-app.get('/api/user/:id/', function(req, res, next) {
-    let index = users.findIndex(function(user) {
-        return user._id == parseInt(req.params.id);
-    });
-    if (index === -1) return res.status(404).end('user does not exist');
-    else res.json(users[index]);
-    next();
-});
-
-//Change socketId
-app.patch('/api/user/socket/', function (req, res, next) {
-    let index = users.findIndex((user) => {
-        return user._id == req.body._id;
-    });
-    if(index === -1) return res.status(404).end('username does not exist');
-    users[index].socketId = req.body.socketId;
-    if (!users[index].room) users[index].room = req.body.socketId;
-});
-
-//Change name
-// app.patch('/api/user/:newusername/', function (req, res, next) {
-//     let index = user.findIndex(users)
-// });
+let usernames = [];
 
 // WebSocket handlers
 io.on('connection', function(socket) {
@@ -106,20 +57,30 @@ io.on('connection', function(socket) {
         io.sockets.to(socket.id).emit('gamestart', prepareroom, socket.id);
     }
 
-    socket.on('socketChange', (username) => {
+    socket.on('socketChange', (username, callback) => {
+        let usernameCp = username;
         if(!socketToName.search(username)){
             socketToName.set(socket.id, username);
         }else{
             let i = 0;
-            let usernameCp = `${username}_${i}`;
+            usernameCp = `${username}_${i}`;
             while(socketToName.search(usernameCp)){
                 i++;
                 usernameCp = `${username}_${i}`;
             }
             socketToName.set(socket.id, usernameCp);
-            io.sockets.to(socket.id).emit('nameRepeat', usernameCp, socket.id);
+            //io.sockets.to(socket.id).emit('nameRepeat', usernameCp, socket.id);
         }
-        
+        callback(usernameCp);
+    });
+
+    socket.on('isRegsistered', (name, callback) => {
+        if (usernames.includes(name)) {
+            usernames.push(name);
+            callback(true);
+        } else {
+            callback(false);
+        }
     });
 
     socket.on('invitePlayer', (userId) => {
@@ -130,11 +91,12 @@ io.on('connection', function(socket) {
     });
 
     socket.on('joinRoom', (username, callback) => {
+
         // fails if user tries to join his own room
         let socketId = socketToName.search(username);
+
         if(socketId == socket.id) callback(false);
         let game = startedGames.get(socketId);
-
 
         if(isJoinablePrepareroom(game)) {
             startedGames.delete(socket.id);
@@ -150,14 +112,15 @@ io.on('connection', function(socket) {
             });
 
             io.sockets.to(socketId).emit('gamestart', game, socketId);
+
             callback(true);
         } else {
             callback(false);
         }
     });
 
-    socket.on('exitRoom', function(){
-
+    socket.on('exitRoom', function(roomId){
+        removePlayer(roomId, socket.id);
     });
 
     socket.on('backToMenu', function(){
@@ -176,10 +139,50 @@ io.on('connection', function(socket) {
         return game && game.gametype == Constants.PREPARE_ROOM && game.players.size < 4;
     }
 
-    socket.on('disconnect', function(){
+    socket.on('disconnecting', function(){
+        //leave all rooms he/she connects to 
+        Object.keys(socket.rooms).forEach(function(roomName){
+            if(roomName != socket.id)
+                removePlayer(roomName, socket.id)
+        });
+
         startedGames.delete(socket.id);
+        //kick all players in his room
+        let players = socketIdToSockets.get(socket.id);
+        if(players) {
+            players.forEach((player) => {
+                if(player.id != socket.id) {
+                    io.sockets.to(player.id).emit('newGame', 'Room host has left game');
+                }
+            });
+        }
         socketIdToSockets.delete(socket.id);
+        socketToName.delete(socket.id);
     });
+
+    /**
+     * Remove a player of given room
+     * roomId: the socketId of the room host
+     * player: socketId of taget player that will be removed
+     * */ 
+    function removePlayer(roomId, playerId) {
+        //left game 
+        game = startedGames.get(roomId);
+        if(game) game.removePlayer(playerId);
+
+        //remove from the group
+        group = socketIdToSockets.get(roomId);
+        if(group) {
+            let index = group.findIndex((player) => {
+                return player.id == playerId;
+            });
+            if(index != -1) group.splice(index, 1);
+        }
+
+        //leave room and start a new game
+        io.sockets.connected[playerId].leave(roomId);
+        io.sockets.to(playerId).emit('newGame');
+    }
 
     // check all game rooms, join if there exists an unfilled room
     socket.on('enqueuePlayer', function(){
