@@ -9,7 +9,6 @@
 			this.core.addGameGui(this.gui);
 		}
 
-		//let game;
 		let game;
 		var updateInterval = null;
 		let roomId = null;
@@ -23,12 +22,11 @@
 		hideGame();
 		socket.emit('load');
 
-        // user.onUserInfoUpdate(function(user) {
-		// 	document.getElementById('player_info').innerHTML = `
-		// 			<p>Name: ${user.username}</p>
-		// 			<p>ID: ${user._id}</p>
-		// 		`;
-		// });
+		socket.on('newGame', function(message=''){
+			showRoomMainMenu();
+			socket.emit('load');
+			showErrorMessage(message);
+		});
 
 		if(localStorage.getItem('username')){
 			usernameChanged();
@@ -37,9 +35,13 @@
 			document.getElementById('username_prompt_form').addEventListener('submit', (e) => {
 				e.preventDefault();
 				let username = document.getElementById('username_prompt_input').value;
-				socket.emit('newUsername', username, (res) => {
-					localStorage.setItem('username', res);
-					usernameChanged();
+				socket.emit('isRegsistered', username, (success) => {
+					if(success) {
+						localStorage.setItem('username', username);
+						usernameChanged();
+					} else {
+						showErrorMessage('username is already taken');
+					}
 				});
 			});
 		}
@@ -47,11 +49,12 @@
 		function usernameChanged(){
 			let username = localStorage.getItem('username');
 			document.getElementById('username_prompt').style.display = "none";
-			socket.emit('socketChange', username);
-			document.getElementById('player_info').innerHTML = `
-				<p>Name: ${username}</p>
-				<p>ID: ${socket.id}</p>
-			`;
+			socket.emit('socketChange', username, (newusername) => {
+				document.getElementById('player_info').innerHTML = `
+					<p>Name: ${newusername}</p>
+					<p>ID: ${socket.id}</p>
+				`;
+			});
 		}
 		
 		window.addEventListener('resize', onWindowResize, false );
@@ -210,7 +213,7 @@
 		});
 
 		document.getElementById('exit_room_btn').addEventListener('click', () => {
-			showRoomMainMenu();
+			socket.emit('exitRoom', roomId);
 		});
 
 		function updateGameState(){ 
@@ -219,20 +222,6 @@
 	});
 
 	let joinRoom = (userId) => {
-		// user.getUser(userId, (err, res) => {
-		// 	let room = res.room;
-		// 	if(err) showErrorMessage('Player does not exist'); 
-		// 	else if(status == GAME) showErrorMessage('Player currently in game');
-		// 	else socket.emit('joinRoom', room, (success) => {
-		// 		if(success) {
-		// 			user.setMyRoom(room);
-		// 			showRoomParticipantMenu();
-		// 		}
-		// 		// the only possibility left is the room is full
-		// 		else showErrorMessage('Room is full');
-		// 	});
-		// });
-
 		socket.emit('joinRoom', userId, (success) => {
 			if(success) {
 				showRoomParticipantMenu();
