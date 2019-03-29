@@ -38,8 +38,6 @@ let socketIdToSockets = new HashMap();
 // prepare room cache
 let prepareroomCache = new HashMap();
 
-let usernames = [];
-
 // WebSocket handlers
 io.on('connection', function(socket) {
 
@@ -59,27 +57,23 @@ io.on('connection', function(socket) {
 
     socket.on('socketChange', (username, callback) => {
         let usernameCp = username;
-        if(!socketToName.search(username)){
-            socketToName.set(socket.id, username);
-        }else{
+        if(socketToName.search(username)){
             let i = 0;
-            usernameCp = `${username}_${i}`;
+            username = `${username}_${i}`;
             while(socketToName.search(usernameCp)){
                 i++;
-                usernameCp = `${username}_${i}`;
+                username = `${usernameCp}_${i}`;
             }
-            socketToName.set(socket.id, usernameCp);
-            //io.sockets.to(socket.id).emit('nameRepeat', usernameCp, socket.id);
         }
-        callback(usernameCp);
+        socketToName.set(socket.id, username);
+        callback(username);
     });
 
     socket.on('isRegsistered', (name, callback) => {
-        if (usernames.includes(name)) {
-            usernames.push(name);
-            callback(true);
-        } else {
+        if (socketToName.search(name)) {
             callback(false);
+        } else {
+            callback(true);
         }
     });
 

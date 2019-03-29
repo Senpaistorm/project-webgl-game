@@ -9,7 +9,6 @@
 			this.core.addGameGui(this.gui);
 		}
 
-		//let game;
 		let game;
 		var updateInterval = null;
 		let roomId = null;
@@ -36,7 +35,6 @@
 			document.getElementById('username_prompt_form').addEventListener('submit', (e) => {
 				e.preventDefault();
 				let username = document.getElementById('username_prompt_input').value;
-
 				socket.emit('isRegsistered', username, (success) => {
 					if(success) {
 						localStorage.setItem('username', username);
@@ -79,7 +77,7 @@
 					console.log('DEBUG');
 					console.log(game.core.state);
 					toggleGameOver();
-					//localStorage.clear();
+					localStorage.clear();
 				break;
 			}
 		});
@@ -196,14 +194,14 @@
 		document.getElementById('join_room_btn').addEventListener('click', () => {
 			document.querySelector('.complex_form').innerHTML = `
 				<div class="form_title">Join Room</div>
-      			<input type="text" class="form_element" placeholder="room number" name="user_name">
+      			<input type="text" id="join_room_form" class="form_element" placeholder="room number" name="user_name">
       			<button type="submit" class="form_btn" id = "positive_btn">Join</button>
       			<button class="form_btn" id = "negative_btn">Cancel</button>
 			`;
 
 			document.querySelector('.complex_form').addEventListener('submit', function(e){        
 	        	e.preventDefault();
-            	let id = document.querySelector(".form_element").value;
+            	let id = document.querySelector("#join_room_form").value;
             	document.querySelector('.complex_form').innerHTML = ``;
             	joinRoom(id);
         	});  
