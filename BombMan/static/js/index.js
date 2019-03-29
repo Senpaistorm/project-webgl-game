@@ -52,7 +52,6 @@
 			socket.emit('socketChange', username, (newusername) => {
 				document.getElementById('player_info').innerHTML = `
 					<p>Name: ${newusername}</p>
-					<p>ID: ${socket.id}</p>
 				`;
 			});
 		}
@@ -130,7 +129,9 @@
 		});
 
 		socket.on('onInvite', (username) => {
-			document.querySelector('.complex_form').innerHTML = `
+			document.getElementById('game_option_form').style.display = "block";
+
+			document.querySelector('.complex_form').innerHTML = `	
 				<div class="form_title">${username} invites you to his/her game</div>
       			<button type="submit" class="form_btn" id = "positive_btn">Join</button>
       			<button class="form_btn" id = "negative_btn">Cancel</button>
@@ -139,9 +140,11 @@
 			document.getElementById('positive_btn').addEventListener('click', () => {
 				document.querySelector('.complex_form').innerHTML = ``;
 				joinRoom(username);
+				document.getElementById('game_option_form').style.display = "none";
 			});
 			//cancel btn
 			document.getElementById('negative_btn').addEventListener('click', () => {
+				document.getElementById('game_option_form').style.display = "none";
 				document.querySelector('.complex_form').innerHTML = ``;
 			});
 		});
@@ -170,6 +173,9 @@
 
 		//Invite player btn
 		document.getElementById('invite_player_btn').addEventListener('click',  () => {
+
+			document.getElementById('game_option_form').style.display = "block";
+
 			document.querySelector('.complex_form').innerHTML = `
 				<div class="form_title">Invite player</div>
       			<input type="text" class="form_element" placeholder="username" name="user_name">
@@ -180,34 +186,41 @@
 			document.querySelector('.complex_form').addEventListener('submit', function(e){        
 	        	e.preventDefault();
             	let id = document.querySelector(".form_element").value;
+            	document.getElementById('game_option_form').style.display = "none";
             	document.querySelector('.complex_form').innerHTML = ``;
             	invitePlayer(id);
         	}); 
 
 			//cancel btn
 			document.getElementById('negative_btn').addEventListener('click', () => {
+				document.getElementById('game_option_form').style.display = "none";
 				document.querySelector('.complex_form').innerHTML = ``;
 			});
 		});
 
 		//join room btn
 		document.getElementById('join_room_btn').addEventListener('click', () => {
+
+			document.getElementById('game_option_form').style.display = "block";
+
 			document.querySelector('.complex_form').innerHTML = `
 				<div class="form_title">Join Room</div>
       			<input type="text" id="join_room_form" class="form_element" placeholder="room number" name="user_name">
-      			<button type="submit" class="form_btn" id = "positive_btn">Join</button>
+	      		<button type="submit" class="form_btn" id = "positive_btn">Join</button>
       			<button class="form_btn" id = "negative_btn">Cancel</button>
 			`;
 
 			document.querySelector('.complex_form').addEventListener('submit', function(e){        
 	        	e.preventDefault();
             	let id = document.querySelector("#join_room_form").value;
+            	document.getElementById('game_option_form').style.display = "none";
             	document.querySelector('.complex_form').innerHTML = ``;
             	joinRoom(id);
         	});  
 
 			//cancel btn
 			document.getElementById('negative_btn').addEventListener('click', async () => {
+				document.getElementById('game_option_form').style.display = "none";
 				document.querySelector('.complex_form').innerHTML = ``;
 			});
 		});
@@ -273,7 +286,7 @@
 	let setNoGameFoundMsg = () => {
 		let msg = document.getElementById('queue_msg');
 		msg.innerHTML = `
-		<div id="game_not_found">No games were found. Please try again later</div>
+			<div id="game_not_found">No games were found. Please try again later</div>
 		`;
 	}
 
@@ -285,12 +298,17 @@
 		}
 		if(document.querySelector('#gameover_modal').style.display == "block"){
 			let button = document.createElement("button");
+			button.className = "form_btn";
 			button.id = "back_btn";
 			button.innerHTML = "Back to menu";
+			
 			let cont = document.getElementById('gameover_modal_content');
-			cont.innerHTML = `<div>
-			${makeResultTable(result)}
-			</div>`;
+			
+			cont.innerHTML = `
+				<div class="form_title">
+					${makeResultTable(result)}
+				</div>`;
+
 			button.addEventListener("click", function(){
 				hideGame();
 				showRoomMainMenu();
@@ -301,29 +319,12 @@
 	}
 
 	let makeResultTable = (result) => {
-		let res = `<div class="Table">
-								<div class="Title">
-										<p>Game Results</p>
-								</div>
-								<div class="Heading">
-								<div class="Cell">
-										<p>Name</p>
-								</div>
-								<div class="Cell">
-										<p>Status</p>
-								</div>
-								</div>`;
+		let res = 'Tie'
 		for(const id in result){
-			res += `<div class="Row">
-									<div class="Cell">
-											<p>${id}</p>
-									</div>
-									<div class="Cell">
-											<p>${result[id].alive ? "Alive" : "Dead"}</p>
-									</div>
-							</div>`;
+			if (result[id].alive) {
+				res = `Player ${id} win the game`
+			}
 		}						
-		res += `</div>`;
 		return res;
 	}
 
