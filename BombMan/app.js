@@ -122,10 +122,11 @@ io.on('connection', function(socket) {
         
     });
 
-    socket.on('invitePlayer', (socketId, inviterId) => {
-        console.log(socketId);
-        console.log(io.sockets.to(socketId));
-        io.sockets.to(socketId).emit('onInvite', inviterId);
+    socket.on('invitePlayer', (userId) => {
+        let invitedSocketId = socketToName.search(userId);
+        if(invitedSocketId != socket.id){
+            io.sockets.to(invitedSocketId).emit('onInvite', socketToName.get(socket.id));
+        }
     });
 
     socket.on('joinRoom', (username, callback) => {

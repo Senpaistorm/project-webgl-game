@@ -30,8 +30,6 @@
 		// 		`;
 		// });
 
-		user.getMyInfo();
-		user.setSocketId(socket.id);
 		if(localStorage.getItem('username')){
 			usernameChanged();
 		}else{
@@ -126,19 +124,19 @@
 			game.core.explode(res);
 		});
 
-		socket.on('onInvite', (id) => {
+		socket.on('onInvite', (username) => {
 			document.querySelector('.complex_form').innerHTML = `
-				<div class="form_title">${user.username} invites you to his game</div>
-      			<button type="submit" class="form_btn" id = "positive_btn">Invite</button>
+				<div class="form_title">${username} invites you to his/her game</div>
+      			<button type="submit" class="form_btn" id = "positive_btn">Join</button>
       			<button class="form_btn" id = "negative_btn">Cancel</button>
 			`;
 			//accept btn
-			document.getElementById('positive_btn').addEventListener('click', async () => {
+			document.getElementById('positive_btn').addEventListener('click', () => {
 				document.querySelector('.complex_form').innerHTML = ``;
-				 joinRoom(id);
+				joinRoom(username);
 			});
 			//cancel btn
-			document.getElementById('negative_btn').addEventListener('click', async () => {
+			document.getElementById('negative_btn').addEventListener('click', () => {
 				document.querySelector('.complex_form').innerHTML = ``;
 			});
 		});
@@ -242,12 +240,7 @@
 	}
 
 	let invitePlayer = (userId) => {
-		let myId = user.getMyId;
-
-		user.getUser(userId, (err, res) => {
-			if(err) showErrorMessage('Player does not exist'); 
-			else  socket.emit('invitePlayer', res.socketId, myId);
-		});
+		socket.emit('invitePlayer', userId);
 	}
 
 	let showRoomParticipantMenu = () => {
