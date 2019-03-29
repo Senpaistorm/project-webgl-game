@@ -35,8 +35,8 @@
 			document.getElementById('username_prompt_form').addEventListener('submit', (e) => {
 				e.preventDefault();
 				let username = document.getElementById('username_prompt_input').value;
-				socket.emit('isRegsistered', username, (success) => {
-					if(success) {
+				socket.emit('isRegsistered', username, (isRegsistered) => {
+					if(!isRegsistered) {
 						localStorage.setItem('username', username);
 						usernameChanged();
 					} else {
