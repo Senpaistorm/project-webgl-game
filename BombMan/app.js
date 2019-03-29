@@ -40,6 +40,9 @@ let socketToName = new HashMap();
 // HashMap that maps a socket id to a list of sockets in that socket id
 let socketIdToSockets = new HashMap();
 
+// prepare room cache
+let prepareroomCache = new HashMap();
+
 let User = (function(){
     let _id = 1000000;
     return function user(user) {
@@ -90,41 +93,82 @@ app.patch('/api/user/socket/', function (req, res, next) {
 io.on('connection', function(socket) {
 
     socket.on('load', function(){
+        socketIdToSockets.set(socket.id, [socket]);
+        loadPrepareRoom(socket);
+    });
+
+    function loadPrepareRoom(socket) {
         let prepareroom = new Gameplay(Util.prepareroomGameboard(), Constants.PREPARE_ROOM, Constants.PROOM_CONT);
         prepareroom.setRoom(socket.id);
         prepareroom.addPlayer(socket.id, socket.id, 0);
         startedGames.set(socket.id, prepareroom);
-
-        socketIdToSockets.set(socket.id, [socket]);
         prepareroom.checkPlayerHit = function(areaAffected, players) {};
         io.sockets.to(socket.id).emit('gamestart', prepareroom, socket.id);
+    }
+
+    socket.on('socketChange', (username) => {
+        if(!socketToName.search(username)){
+            socketToName.set(socket.id, username);
+        }else{
+            let i = 0;
+            let usernameCp = `${username}_${i}`;
+            while(socketToName.search(usernameCp)){
+                i++;
+                usernameCp = `${username}_${i}`;
+            }
+            socketToName.set(socket.id, usernameCp);
+            io.sockets.to(socket.id).emit('nameRepeat', usernameCp, socket.id);
+        }
+        
     });
 
-    socket.on('invitePlayer', (socketId, inviterId) => {
-        console.log(socketId);
-        console.log(io.sockets.to(socketId));
-        io.sockets.to(socketId).emit('onInvite', inviterId);
+    socket.on('invitePlayer', (userId) => {
+        let invitedSocketId = socketToName.search(userId);
+        if(invitedSocketId != socket.id){
+            io.sockets.to(invitedSocketId).emit('onInvite', socketToName.get(socket.id));
+        }
     });
 
-    socket.on('joinRoom', (socketId, callback) => {
+    socket.on('joinRoom', (username, callback) => {
+        // fails if user tries to join his own room
+        let socketId = socketToName.search(username);
+        if(socketId == socket.id) callback(false);
         let game = startedGames.get(socketId);
 
-        console.log(socketIdToSockets.get(socketId));
+
         if(isJoinablePrepareroom(game)) {
-            callback(true);
             startedGames.delete(socket.id);
             socketIdToSockets.delete(socket.id);
             socketIdToSockets.get(socketId).push(socket);
             game.addPlayer(socket.id, socket.id, game.players.count + 1, 2, 2);
+            // cache preparegame for later use
+            socketIdToSockets.get(socketId).forEach((s) => {
+                prepareroomCache.set(s.id, game);
+            });
             socket.join(socketId, (err) => {
                 if(err) console.error("Error joining room");
             });
 
-            console.log(io.sockets.adapter.rooms);
-
             io.sockets.to(socketId).emit('gamestart', game, socketId);
+            callback(true);
         } else {
             callback(false);
+        }
+    });
+
+    socket.on('exitRoom', function(){
+
+    });
+
+    socket.on('backToMenu', function(){
+        // if a cached preparegame exists, start that insteam
+        if(prepareroomCache.has(socket.id)){
+            let game = prepareroomCache.get(socket.id);
+            startedGames.set(game.getRoom(), game);
+            io.sockets.to(socket.id).emit('gamestart', game, game.getRoom());
+        }else{
+            socketIdToSockets.set(socket.id, [socket]);
+            loadPrepareRoom(socket);
         }
     });
 
@@ -134,6 +178,7 @@ io.on('connection', function(socket) {
 
     socket.on('disconnect', function(){
         startedGames.delete(socket.id);
+        socketIdToSockets.delete(socket.id);
     });
 
     // check all game rooms, join if there exists an unfilled room
@@ -190,7 +235,7 @@ io.on('connection', function(socket) {
 
         game.setRoom(room.name);
         for(const sid in rooms[room.name].sockets){
-            game.addPlayer(sid, sid, i);
+            game.addPlayer(socketToName.get(sid), sid, i);
             i++;
         }
         startedGames.set(room.name, game);

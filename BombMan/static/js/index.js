@@ -12,33 +12,51 @@
 		//let game;
 		let game;
 		var updateInterval = null;
-		hideGame();
 		let roomId = null;
-
-		socket.emit('load');
-
-        user.onUserInfoUpdate(function(user) {
-			document.getElementById('player_info').innerHTML = `
-					<p>Name: ${user.username}</p>
-					<p>ID: ${user._id}</p>
-				`;
-		});
-
-		user.getMyInfo();
-        user.setSocketId(socket.id);
-		
-		window.addEventListener('resize', onWindowResize, false );
-
-		function onWindowResize(){	
-			game.gui.resize();
-		}
-
 		let intent = {
 			'up': 0,
 			'down': 0,
 			'left': 0,
 			'right': 0,
 		};
+
+		hideGame();
+		socket.emit('load');
+
+        // user.onUserInfoUpdate(function(user) {
+		// 	document.getElementById('player_info').innerHTML = `
+		// 			<p>Name: ${user.username}</p>
+		// 			<p>ID: ${user._id}</p>
+		// 		`;
+		// });
+
+		if(localStorage.getItem('username')){
+			usernameChanged();
+		}else{
+			document.getElementById('username_prompt').style.display = "block";
+			document.getElementById('username_prompt_form').addEventListener('submit', (e) => {
+				e.preventDefault();
+				let username = document.getElementById('username_prompt_input').value;
+				localStorage.setItem('username', username);
+				usernameChanged();
+			});
+		}
+
+		function usernameChanged(){
+			let username = localStorage.getItem('username');
+			document.getElementById('username_prompt').style.display = "none";
+			socket.emit('socketChange', username);
+			document.getElementById('player_info').innerHTML = `
+				<p>Name: ${username}</p>
+				<p>ID: ${socket.id}</p>
+			`;
+		}
+		
+		window.addEventListener('resize', onWindowResize, false );
+
+		function onWindowResize(){	
+			game.gui.resize();
+		}
 
 		/**
 		 * Keyboard listener for pressing a valid key
@@ -54,6 +72,7 @@
 					console.log('DEBUG');
 					console.log(game.core.state);
 					toggleGameOver();
+					//localStorage.clear();
 				break;
 			}
 		});
@@ -105,19 +124,19 @@
 			game.core.explode(res);
 		});
 
-		socket.on('onInvite', (id) => {
+		socket.on('onInvite', (username) => {
 			document.querySelector('.complex_form').innerHTML = `
-				<div class="form_title">${user.username} invites you to his game</div>
-      			<button type="submit" class="form_btn" id = "positive_btn">Invite</button>
+				<div class="form_title">${username} invites you to his/her game</div>
+      			<button type="submit" class="form_btn" id = "positive_btn">Join</button>
       			<button class="form_btn" id = "negative_btn">Cancel</button>
 			`;
 			//accept btn
-			document.getElementById('positive_btn').addEventListener('click', async () => {
+			document.getElementById('positive_btn').addEventListener('click', () => {
 				document.querySelector('.complex_form').innerHTML = ``;
-				 joinRoom(id);
+				joinRoom(username);
 			});
 			//cancel btn
-			document.getElementById('negative_btn').addEventListener('click', async () => {
+			document.getElementById('negative_btn').addEventListener('click', () => {
 				document.querySelector('.complex_form').innerHTML = ``;
 			});
 		});
@@ -145,7 +164,7 @@
 		});
 
 		//Invite player btn
-		document.getElementById('invite_player_btn').addEventListener('click', async () => {
+		document.getElementById('invite_player_btn').addEventListener('click',  () => {
 			document.querySelector('.complex_form').innerHTML = `
 				<div class="form_title">Invite player</div>
       			<input type="text" class="form_element" placeholder="username" name="user_name">
@@ -161,13 +180,13 @@
         	}); 
 
 			//cancel btn
-			document.getElementById('negative_btn').addEventListener('click', async () => {
+			document.getElementById('negative_btn').addEventListener('click', () => {
 				document.querySelector('.complex_form').innerHTML = ``;
 			});
 		});
 
 		//join room btn
-		document.getElementById('join_room_btn').addEventListener('click', async () => {
+		document.getElementById('join_room_btn').addEventListener('click', () => {
 			document.querySelector('.complex_form').innerHTML = `
 				<div class="form_title">Join Room</div>
       			<input type="text" class="form_element" placeholder="room number" name="user_name">
@@ -188,34 +207,40 @@
 			});
 		});
 
+		document.getElementById('exit_room_btn').addEventListener('click', () => {
+			showRoomMainMenu();
+		});
+
 		function updateGameState(){ 
 			socket.emit('player_action', {'room': roomId, 'intent':intent});
 		}
 	});
 
 	let joinRoom = (userId) => {
-		user.getUser(userId, (err, res) => {
-			let room = res.room;
-			if(err) showErrorMessage('Player does not exist'); 
-			else if(status == GAME) showErrorMessage('Player currently in game');
-			else socket.emit('joinRoom', room, (success) => {
-				if(success) {
-					user.setMyRoom(room);
-					showRoomParticipantMenu();
-				}
-				// the only possibility left is the room is full
-				else showErrorMessage('Room is full');
-			});
+		// user.getUser(userId, (err, res) => {
+		// 	let room = res.room;
+		// 	if(err) showErrorMessage('Player does not exist'); 
+		// 	else if(status == GAME) showErrorMessage('Player currently in game');
+		// 	else socket.emit('joinRoom', room, (success) => {
+		// 		if(success) {
+		// 			user.setMyRoom(room);
+		// 			showRoomParticipantMenu();
+		// 		}
+		// 		// the only possibility left is the room is full
+		// 		else showErrorMessage('Room is full');
+		// 	});
+		// });
+
+		socket.emit('joinRoom', userId, (success) => {
+			if(success) {
+				showRoomParticipantMenu();
+			}
+			else showErrorMessage('Cannot join room');
 		});
 	}
 
 	let invitePlayer = (userId) => {
-		let myId = user.getMyId;
-
-		user.getUser(userId, (err, res) => {
-			if(err) showErrorMessage('Player does not exist'); 
-			else  socket.emit('invitePlayer', res.socketId, myId);
-		});
+		socket.emit('invitePlayer', userId);
 	}
 
 	let showRoomParticipantMenu = () => {
@@ -223,6 +248,13 @@
 		document.getElementById('invite_player_btn').style.visibility = 'hidden';
 		document.getElementById('join_room_btn').style.visibility = 'hidden';
 		document.getElementById('exit_room_btn').style.visibility = 'visible';
+	}
+
+	let showRoomMainMenu = () => {
+		document.getElementById('play_game_btn').style.visibility = 'visible';
+		document.getElementById('invite_player_btn').style.visibility = 'visible';
+		document.getElementById('join_room_btn').style.visibility = 'visible';
+		document.getElementById('exit_room_btn').style.visibility = 'hidden';
 	}
 
 	let showGame = () =>{
@@ -270,7 +302,8 @@
 			</div>`;
 			button.addEventListener("click", function(){
 				hideGame();
-				socket.emit('load');
+				showRoomMainMenu();
+				socket.emit('backToMenu');
 			});
 			cont.appendChild(button);
 		}
