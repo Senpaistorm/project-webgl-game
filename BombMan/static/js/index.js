@@ -209,6 +209,10 @@
 			});
 		});
 
+		document.getElementById('exit_room_btn').addEventListener('click', () => {
+			showRoomMainMenu();
+		});
+
 		function updateGameState(){ 
 			socket.emit('player_action', {'room': roomId, 'intent':intent});
 		}
@@ -251,6 +255,13 @@
 		document.getElementById('invite_player_btn').style.visibility = 'hidden';
 		document.getElementById('join_room_btn').style.visibility = 'hidden';
 		document.getElementById('exit_room_btn').style.visibility = 'visible';
+	}
+
+	let showRoomMainMenu = () => {
+		document.getElementById('play_game_btn').style.visibility = 'visible';
+		document.getElementById('invite_player_btn').style.visibility = 'visible';
+		document.getElementById('join_room_btn').style.visibility = 'visible';
+		document.getElementById('exit_room_btn').style.visibility = 'hidden';
 	}
 
 	let showGame = () =>{
@@ -298,7 +309,8 @@
 			</div>`;
 			button.addEventListener("click", function(){
 				hideGame();
-				socket.emit('load');
+				showRoomMainMenu();
+				socket.emit('backToMenu');
 			});
 			cont.appendChild(button);
 		}
