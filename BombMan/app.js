@@ -33,37 +33,45 @@ const GAMEOVER_CHECK_RATE = 2000;
 let roomStatus = [];
 // HashMap that maps a room name to a Gameplay Object
 let startedGames = new HashMap();
+
 // HashMap that maps a socket id to a username
 let socketToName = new HashMap();
+
+// HashMap that maps a socket id to a list of sockets in that socket id
+let socketIdToSockets = new HashMap();
+
+// prepare room cache
+let prepareroomCache = new HashMap();
 
 let User = (function(){
     let _id = 1000000;
     return function user(user) {
         this._id = _id++;
-        this.username = (user.username)? user.username: "Player: " + _id;
+        this.username = (user.username)? user.username: "Player" + this._id;
         this.socketId = user.socketId;
+        this.status = user.status;
+        this.room = (user.room)? user.room: user.socketId;
     };
 }());
 
 let users = [];
-
-let preparerooms = [];
 
 //add user
 app.post('/api/user/', function (req, res, next) {
     let user = new User(req.body);
     users.push(user);
     res.json(user);
+    next();
 });
 
 //find user by ID
 app.get('/api/user/:id/', function(req, res, next) {
-    console.log(req.params.id);
     let index = users.findIndex(function(user) {
         return user._id == parseInt(req.params.id);
     });
-    if (index === -1) res.status(404).end('user does not exist');
+    if (index === -1) return res.status(404).end('user does not exist');
     else res.json(users[index]);
+    next();
 });
 
 //Change socketId
@@ -73,6 +81,7 @@ app.patch('/api/user/socket/', function (req, res, next) {
     });
     if(index === -1) return res.status(404).end('username does not exist');
     users[index].socketId = req.body.socketId;
+    if (!users[index].room) users[index].room = req.body.socketId;
 });
 
 //Change name
@@ -84,58 +93,129 @@ app.patch('/api/user/socket/', function (req, res, next) {
 io.on('connection', function(socket) {
 
     socket.on('load', function(){
+        socketIdToSockets.set(socket.id, [socket]);
+        loadPrepareRoom(socket);
+    });
+
+    function loadPrepareRoom(socket) {
         let prepareroom = new Gameplay(Util.prepareroomGameboard(), Constants.PREPARE_ROOM, Constants.PROOM_CONT);
         prepareroom.setRoom(socket.id);
         prepareroom.addPlayer(socket.id, socket.id, 0);
         startedGames.set(socket.id, prepareroom);
         prepareroom.checkPlayerHit = function(areaAffected, players) {};
-        preparerooms.push({name:socket.id, size:1})
         io.sockets.to(socket.id).emit('gamestart', prepareroom, socket.id);
+    }
+
+    socket.on('socketChange', (username) => {
+        if(!socketToName.search(username)){
+            socketToName.set(socket.id, username);
+        }else{
+            let i = 0;
+            let usernameCp = `${username}_${i}`;
+            while(socketToName.search(usernameCp)){
+                i++;
+                usernameCp = `${username}_${i}`;
+            }
+            socketToName.set(socket.id, usernameCp);
+            io.sockets.to(socket.id).emit('nameRepeat', usernameCp, socket.id);
+        }
+        
     });
 
-    socket.on('joinRoom', (socketId) => {
-        let game = startedGames.get(socketId);
-        console.log("join room.....")
-        if(game) {
-            preparerooms.forEach((prepareroom) => {
-                if (prepareroom.name == socketId) {
-                    game.addPlayer(socketId, socketId, prepareroom.size);
-                    prepareroom.size ++;
-                }
-            });
-            io.sockets.to(socketId).emit('gamestart', game, socketId);
+    socket.on('invitePlayer', (userId) => {
+        let invitedSocketId = socketToName.search(userId);
+        if(invitedSocketId != socket.id){
+            io.sockets.to(invitedSocketId).emit('onInvite', socketToName.get(socket.id));
         }
     });
 
+    socket.on('joinRoom', (username, callback) => {
+        // fails if user tries to join his own room
+        let socketId = socketToName.search(username);
+        if(socketId == socket.id) callback(false);
+        let game = startedGames.get(socketId);
+
+
+        if(isJoinablePrepareroom(game)) {
+            startedGames.delete(socket.id);
+            socketIdToSockets.delete(socket.id);
+            socketIdToSockets.get(socketId).push(socket);
+            game.addPlayer(socket.id, socket.id, game.players.count + 1, 2, 2);
+            // cache preparegame for later use
+            socketIdToSockets.get(socketId).forEach((s) => {
+                prepareroomCache.set(s.id, game);
+            });
+            socket.join(socketId, (err) => {
+                if(err) console.error("Error joining room");
+            });
+
+            io.sockets.to(socketId).emit('gamestart', game, socketId);
+            callback(true);
+        } else {
+            callback(false);
+        }
+    });
+
+    socket.on('exitRoom', function(){
+
+    });
+
+    socket.on('backToMenu', function(){
+        // if a cached preparegame exists, start that insteam
+        if(prepareroomCache.has(socket.id)){
+            let game = prepareroomCache.get(socket.id);
+            startedGames.set(game.getRoom(), game);
+            io.sockets.to(socket.id).emit('gamestart', game, game.getRoom());
+        }else{
+            socketIdToSockets.set(socket.id, [socket]);
+            loadPrepareRoom(socket);
+        }
+    });
+
+    function isJoinablePrepareroom(game) {
+        return game && game.gametype == Constants.PREPARE_ROOM && game.players.size < 4;
+    }
+
     socket.on('disconnect', function(){
         startedGames.delete(socket.id);
+        socketIdToSockets.delete(socket.id);
     });
 
     // check all game rooms, join if there exists an unfilled room
     socket.on('enqueuePlayer', function(){
-        // if there's an available room, join it
-        if(roomStatus.length > 0){
-            roomStatus.forEach((room) =>{
-                if(room.size < 4){
-                    socket.join(room.name, (err) => {
+        //find all players in that socket room
+        let players = socketIdToSockets.get(socket.id);
+
+        if(players){
+            // if there's an available room, join it
+            if(roomStatus.length > 0){
+                roomStatus.forEach((room) =>{
+                    if(room.size + players.length <= 4){
+                        players.forEach(player => {
+                            player.join(room.name, (err) => {
+                                if(err) console.error("Error joining room");
+                            });
+                            room.size++;
+                        });
+                    }
+                });
+            }else{
+                let roomName = `${socket.id}room`;
+                // there is no available room, create one with own name
+                players.forEach((player) => {
+                    player.join(roomName, (err) => {
                         if(err) console.error("Error joining room");
                     });
-                    room.size++;
-                }
-            })
-        }else{
-            // there is no available room, create one with own name
-            let roomName = `${socket.id}room`;
-            socket.join(roomName, (err) => {
-                if(err) console.error("Error joining room");
-            });
-            roomStatus.push({name:roomName, size:1});
+                });
+
+                roomStatus.push({name:roomName, size:players.length});
+            }
         }
     });
 
     socket.on('resolveQueue', () =>{
-        console.log('resolving game queue');
         let rooms = io.sockets.adapter.rooms;
+
         roomStatus.forEach((room) =>{
             if(room.size >= 2){
                 startNewGame(room);
@@ -155,7 +235,7 @@ io.on('connection', function(socket) {
 
         game.setRoom(room.name);
         for(const sid in rooms[room.name].sockets){
-            game.addPlayer(sid, sid, i);
+            game.addPlayer(socketToName.get(sid), sid, i);
             i++;
         }
         startedGames.set(room.name, game);
@@ -174,7 +254,7 @@ io.on('connection', function(socket) {
 
     socket.on('placeBomb', (data) =>{
         let game = startedGames.get(data.room);
-        if(game){
+        if(game) {
             let player = game.getPlayerBySocketId(socket.id);
             if(player){
                 game.placeBomb(player, (bomb) => {
@@ -190,7 +270,6 @@ io.on('connection', function(socket) {
         // leave room on gameover
         socket.leave(room);
     });
-
 });
 
 // Server side game loop that updates game state and send to game room

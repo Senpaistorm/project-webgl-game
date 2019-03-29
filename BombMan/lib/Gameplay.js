@@ -31,15 +31,18 @@ function Gameplay(map, type, container) {
 /**
  * Add a player with name and socket id
  */
-Gameplay.prototype.addPlayer = function (name, id, i){
-    this.players.set(id, new Character(name, Constants.initPositions[i].xPos,
-        Constants.initPositions[i].yPos, Constants.INIT_SPEED, Constants.INIT_POWER, Constants.INIT_LOAD));
+Gameplay.prototype.addPlayer = function (name, id, i, 
+                                         x=Constants.initPositions[i].xPos, 
+                                         y=Constants.initPositions[i].yPos){
+    this.players.set(id, new Character(name, x, y, Constants.INIT_SPEED, 
+        Constants.INIT_POWER, Constants.INIT_LOAD));
     this.result[name] = {alive: 1};
 };
 
 Gameplay.prototype.removePlayer = function(id){
+
     if (this.players.has(id)) {
-        this.result[id].alive = 0;
+        this.result[this.players.get(id).name].alive = 0;
         return this.players.remove(id);
     }
 };
@@ -214,9 +217,9 @@ Gameplay.prototype.bombExists = function(myBomb) {
 // check if any player hit by the boom
 Gameplay.prototype.checkPlayerHit = function(areaAffected, players) {
     areaAffected.forEach((explodeArea) => {
-        players.forEach((player) => {
+        players.forEach((player, sid) => {
             if (player.xPos == explodeArea.xPos && player.yPos == explodeArea.yPos) 
-                this.removePlayer(player.name);
+                this.removePlayer(sid);
         });
     });
 }

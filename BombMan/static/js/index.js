@@ -1,7 +1,7 @@
 (function(){
 	"use strict";
 
-  window.addEventListener('load', function(){
+  	window.addEventListener('load', function(){
     	/* Main Method */
 		function BombMan() {
 			this.core = new app.Core();
@@ -12,26 +12,51 @@
 		//let game;
 		let game;
 		var updateInterval = null;
-		hideGame();
 		let roomId = null;
-
-		socket.emit('load');
-
-		console.log(user.getName());
-        user.setSocket(socket.id);
-		
-		window.addEventListener( 'resize', onWindowResize, false );
-
-		function onWindowResize(){	
-			game.gui.resize();
-		}
-
 		let intent = {
 			'up': 0,
 			'down': 0,
 			'left': 0,
 			'right': 0,
 		};
+
+		hideGame();
+		socket.emit('load');
+
+        // user.onUserInfoUpdate(function(user) {
+		// 	document.getElementById('player_info').innerHTML = `
+		// 			<p>Name: ${user.username}</p>
+		// 			<p>ID: ${user._id}</p>
+		// 		`;
+		// });
+
+		if(localStorage.getItem('username')){
+			usernameChanged();
+		}else{
+			document.getElementById('username_prompt').style.display = "block";
+			document.getElementById('username_prompt_form').addEventListener('submit', (e) => {
+				e.preventDefault();
+				let username = document.getElementById('username_prompt_input').value;
+				localStorage.setItem('username', username);
+				usernameChanged();
+			});
+		}
+
+		function usernameChanged(){
+			let username = localStorage.getItem('username');
+			document.getElementById('username_prompt').style.display = "none";
+			socket.emit('socketChange', username);
+			document.getElementById('player_info').innerHTML = `
+				<p>Name: ${username}</p>
+				<p>ID: ${socket.id}</p>
+			`;
+		}
+		
+		window.addEventListener('resize', onWindowResize, false );
+
+		function onWindowResize(){	
+			game.gui.resize();
+		}
 
 		/**
 		 * Keyboard listener for pressing a valid key
@@ -47,6 +72,7 @@
 					console.log('DEBUG');
 					console.log(game.core.state);
 					toggleGameOver();
+					//localStorage.clear();
 				break;
 			}
 		});
@@ -71,14 +97,17 @@
 		 * */ 
 		socket.on('gamestate', function(state){
 			if(game) game.core.updateGameState(state);
-		});
+		}); 
 
 		// socket handler for starting a game
 		socket.on('gamestart', (gameplay, room) =>{
+      
 			if(game) game.gui.stopAnimate();
 			game = new BombMan();
+
 			roomId = room;
 			game.core.startNewGame(gameplay);
+			
 			if(gameplay.gametype == GAME){
 				showGame();
 			}
@@ -93,6 +122,23 @@
 
 		socket.on('explode', (res) => {
 			game.core.explode(res);
+		});
+
+		socket.on('onInvite', (username) => {
+			document.querySelector('.complex_form').innerHTML = `
+				<div class="form_title">${username} invites you to his/her game</div>
+      			<button type="submit" class="form_btn" id = "positive_btn">Join</button>
+      			<button class="form_btn" id = "negative_btn">Cancel</button>
+			`;
+			//accept btn
+			document.getElementById('positive_btn').addEventListener('click', () => {
+				document.querySelector('.complex_form').innerHTML = ``;
+				joinRoom(username);
+			});
+			//cancel btn
+			document.getElementById('negative_btn').addEventListener('click', () => {
+				document.querySelector('.complex_form').innerHTML = ``;
+			});
 		});
 
 		// socket handler for starting a game
@@ -118,21 +164,29 @@
 		});
 
 		//Invite player btn
-		document.getElementById('invite_player_btn').addEventListener('click', async () => {
+		document.getElementById('invite_player_btn').addEventListener('click',  () => {
 			document.querySelector('.complex_form').innerHTML = `
 				<div class="form_title">Invite player</div>
       			<input type="text" class="form_element" placeholder="username" name="user_name">
       			<button type="submit" class="form_btn" id = "positive_btn">Invite</button>
       			<button class="form_btn" id = "negative_btn">Cancel</button>
 			`;
+
+			document.querySelector('.complex_form').addEventListener('submit', function(e){        
+	        	e.preventDefault();
+            	let id = document.querySelector(".form_element").value;
+            	document.querySelector('.complex_form').innerHTML = ``;
+            	invitePlayer(id);
+        	}); 
+
 			//cancel btn
-			document.getElementById('negative_btn').addEventListener('click', async () => {
+			document.getElementById('negative_btn').addEventListener('click', () => {
 				document.querySelector('.complex_form').innerHTML = ``;
 			});
 		});
 
 		//join room btn
-		document.getElementById('join_room_btn').addEventListener('click', async () => {
+		document.getElementById('join_room_btn').addEventListener('click', () => {
 			document.querySelector('.complex_form').innerHTML = `
 				<div class="form_title">Join Room</div>
       			<input type="text" class="form_element" placeholder="room number" name="user_name">
@@ -143,8 +197,8 @@
 			document.querySelector('.complex_form').addEventListener('submit', function(e){        
 	        	e.preventDefault();
             	let id = document.querySelector(".form_element").value;
+            	document.querySelector('.complex_form').innerHTML = ``;
             	joinRoom(id);
-
         	});  
 
 			//cancel btn
@@ -153,17 +207,54 @@
 			});
 		});
 
+		document.getElementById('exit_room_btn').addEventListener('click', () => {
+			showRoomMainMenu();
+		});
+
 		function updateGameState(){ 
 			socket.emit('player_action', {'room': roomId, 'intent':intent});
 		}
 	});
 
 	let joinRoom = (userId) => {
-		user.getSocket(userId, (socketId) => {
-        	console.log("join room..... static " + socketId);
+		// user.getUser(userId, (err, res) => {
+		// 	let room = res.room;
+		// 	if(err) showErrorMessage('Player does not exist'); 
+		// 	else if(status == GAME) showErrorMessage('Player currently in game');
+		// 	else socket.emit('joinRoom', room, (success) => {
+		// 		if(success) {
+		// 			user.setMyRoom(room);
+		// 			showRoomParticipantMenu();
+		// 		}
+		// 		// the only possibility left is the room is full
+		// 		else showErrorMessage('Room is full');
+		// 	});
+		// });
 
-			socket.emit('joinRoom', socketId);
-		})
+		socket.emit('joinRoom', userId, (success) => {
+			if(success) {
+				showRoomParticipantMenu();
+			}
+			else showErrorMessage('Cannot join room');
+		});
+	}
+
+	let invitePlayer = (userId) => {
+		socket.emit('invitePlayer', userId);
+	}
+
+	let showRoomParticipantMenu = () => {
+		document.getElementById('play_game_btn').style.visibility = 'hidden';
+		document.getElementById('invite_player_btn').style.visibility = 'hidden';
+		document.getElementById('join_room_btn').style.visibility = 'hidden';
+		document.getElementById('exit_room_btn').style.visibility = 'visible';
+	}
+
+	let showRoomMainMenu = () => {
+		document.getElementById('play_game_btn').style.visibility = 'visible';
+		document.getElementById('invite_player_btn').style.visibility = 'visible';
+		document.getElementById('join_room_btn').style.visibility = 'visible';
+		document.getElementById('exit_room_btn').style.visibility = 'hidden';
 	}
 
 	let showGame = () =>{
@@ -181,9 +272,11 @@
 
 	let setQueueMsg = () => {
 		let msg = document.getElementById('queue_msg');
-		msg.innerHTML = `
-		Looking for players <div class="loader"></div>
-		`;
+		msg.innerHTML = `Looking for players <div class="loader"></div>`;
+	}
+
+	let showErrorMessage = (message) => {
+		document.getElementById('error_msg').innerHTML = message;
 	}
 
 	let setNoGameFoundMsg = () => {
@@ -201,17 +294,46 @@
 		}
 		if(document.querySelector('#gameover_modal').style.display == "block"){
 			let button = document.createElement("button");
+			button.id = "back_btn";
 			button.innerHTML = "Back to menu";
 			let cont = document.getElementById('gameover_modal_content');
 			cont.innerHTML = `<div>
-			${JSON.stringify(result)}
+			${makeResultTable(result)}
 			</div>`;
 			button.addEventListener("click", function(){
 				hideGame();
-				socket.emit('load');
+				showRoomMainMenu();
+				socket.emit('backToMenu');
 			});
 			cont.appendChild(button);
 		}
+	}
+
+	let makeResultTable = (result) => {
+		let res = `<div class="Table">
+								<div class="Title">
+										<p>Game Results</p>
+								</div>
+								<div class="Heading">
+								<div class="Cell">
+										<p>Name</p>
+								</div>
+								<div class="Cell">
+										<p>Status</p>
+								</div>
+								</div>`;
+		for(const id in result){
+			res += `<div class="Row">
+									<div class="Cell">
+											<p>${id}</p>
+									</div>
+									<div class="Cell">
+											<p>${result[id].alive ? "Alive" : "Dead"}</p>
+									</div>
+							</div>`;
+		}						
+		res += `</div>`;
+		return res;
 	}
 
 })();

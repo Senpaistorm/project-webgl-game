@@ -97,7 +97,6 @@
 			this.gameboardMesh[x][y] = mesh;
 			this.scene.add(mesh);
 		});
-	
 	}
 	
 	Gui.prototype.checkPlayerDeath = function(players){

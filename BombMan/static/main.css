@@ -53,8 +53,21 @@
 	box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
 }
 
+#player_info {
+	position: absolute;
+	font-family: Sans-serif;
+	font-size: 15px;
+	top: 15%;
+	left: 2%;
+}
+
 #play_game_btn{
 	top: 25%;
+}
+
+#exit_room_btn{
+	top: 25%;
+	visibility: hidden;
 }
 
 #invite_player_btn{
@@ -114,13 +127,45 @@
 }
 
 #back_btn{
+	font-size: 36px;
 	width: 250px;
 	height: 100px;
-	border-radius: 10px;
-	color: white;
+	border-radius: 5px;
+	margin-top: 20px;
+	cursor: pointer;
 	border: none;
 }
 
 #gameover_modal{
 	display:none;
+}
+
+.Table
+{
+	display: table;
+}
+.Title
+{
+	display: table-caption;
+	text-align: center;
+	font-weight: bold;
+	font-size: larger;
+}
+.Heading
+{
+	display: table-row;
+	font-weight: bold;
+	text-align: center;
+}
+.Row
+{
+	display: table-row;
+}
+.Cell
+{
+	display: table-cell;
+	border: solid;
+	border-width: thin;
+	padding-left: 5px;
+	padding-right: 5px;
 }
