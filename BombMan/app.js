@@ -91,7 +91,6 @@ io.on('connection', function(socket) {
 
         // fails if user tries to join his own room
         let socketId = socketToName.search(username);
-
         if(socketId == socket.id) callback(false);
         let game = startedGames.get(socketId);
 
@@ -107,14 +106,15 @@ io.on('connection', function(socket) {
             socket.join(socketId, (err) => {
                 if(err) console.error("Error joining room");
             });
-
             io.sockets.to(socketId).emit('gamestart', game, socketId);
 
             callback(true);
+
         } else {
             callback(false);
         }
     });
+
 
     socket.on('exitRoom', function(roomId){
         socket.leave(roomId);
@@ -155,7 +155,10 @@ io.on('connection', function(socket) {
                 removePlayer(roomName, socket.id);
         });
 
-        startedGames.delete(socket.id);
+        if(startedGames.has(socket.id)){
+            io.sockets.to(socket.id).emit("newGame", "Room host has left the room.");
+            startedGames.delete(socket.id);
+        }
         socketIdToSockets.delete(socket.id);
         socketToName.delete(socket.id);
     });
@@ -178,10 +181,6 @@ io.on('connection', function(socket) {
             });
             if(index != -1) group.splice(index, 1);
         }
-
-        //leave room and start a new game
-        //io.sockets.connected[playerId].leave(roomId);
-        //io.sockets.to(playerId).emit('newGame');
     }
 
     // check all game rooms, join if there exists an unfilled room

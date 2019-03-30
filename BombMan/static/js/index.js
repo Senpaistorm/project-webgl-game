@@ -320,7 +320,7 @@
 	}
 
 	let makeResultTable = (result) => {
-		let res = 'Tie'
+		let res = 'Tie';
 		for(const id in result){
 			if (result[id].alive) {
 				res = `Player ${id} win the game`
