@@ -75,8 +75,6 @@
 				case PLACEBOMB: socket.emit('placeBomb', {room: roomId}); break;
 				case 80: // P : Debug key USED FOR DEVELOPMENT
 					console.log('DEBUG');
-					console.log(game.core.state);
-					toggleGameOver();
 					localStorage.clear();
 				break;
 			}
@@ -179,18 +177,18 @@
 
 			document.querySelector('.complex_form').innerHTML = `
 				<div class="form_title">Invite player</div>
-      			<input type="text" class="form_element" placeholder="username" name="user_name">
-      			<button type="submit" class="form_btn" id = "positive_btn">Invite</button>
+      			<input type="text" id="invite_player_form_input" class="form_element" placeholder="username" name="user_name">
+      			<button type="submit" class="form_btn" id = "invite_player_form_btn">Invite</button>
       			<button class="form_btn" id = "negative_btn">Cancel</button>
 			`;
-
-			document.querySelector('.complex_form').addEventListener('submit', function(e){        
+			document.querySelector('.complex_form').id = "invite_player_form";
+			document.getElementById('game_option_form').onsubmit = function(e){        
 	        	e.preventDefault();
-            	let id = document.querySelector(".form_element").value;
+            	let id = document.querySelector("#invite_player_form_input").value;
             	document.getElementById('game_option_form').style.display = "none";
-            	document.querySelector('.complex_form').innerHTML = ``;
+				document.querySelector('.complex_form').innerHTML = ``;
             	invitePlayer(id);
-        	}); 
+        	}; 
 
 			//cancel btn
 			document.getElementById('negative_btn').addEventListener('click', () => {
@@ -206,18 +204,18 @@
 
 			document.querySelector('.complex_form').innerHTML = `
 				<div class="form_title">Join Room</div>
-      			<input type="text" id="join_room_form" class="form_element" placeholder="room number" name="user_name">
-	      		<button type="submit" class="form_btn" id = "positive_btn">Join</button>
+      			<input type="text" id="join_room_form_input" class="form_element" placeholder="room number" name="user_name">
+	      		<button type="submit" class="form_btn" id = "join_room_form_btn">Join</button>
       			<button class="form_btn" id = "negative_btn">Cancel</button>
 			`;
-
-			document.querySelector('.complex_form').addEventListener('submit', function(e){        
+			document.querySelector('.complex_form').id = `join_room_form`;
+			document.getElementById('game_option_form').onsubmit = function(e){        
 	        	e.preventDefault();
-            	let id = document.querySelector("#join_room_form").value;
+            	let id = document.querySelector("#join_room_form_input").value;
             	document.getElementById('game_option_form').style.display = "none";
             	document.querySelector('.complex_form').innerHTML = ``;
             	joinRoom(id);
-        	});  
+        	};  
 
 			//cancel btn
 			document.getElementById('negative_btn').addEventListener('click', async () => {
@@ -227,7 +225,9 @@
 		});
 
 		document.getElementById('exit_room_btn').addEventListener('click', () => {
+			showRoomMainMenu();
 			socket.emit('exitRoom', roomId);
+			socket.emit('load');
 		});
 
 		function updateGameState(){ 

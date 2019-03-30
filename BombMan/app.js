@@ -117,11 +117,11 @@ io.on('connection', function(socket) {
     });
 
     socket.on('exitRoom', function(roomId){
+        socket.leave(roomId);
         removePlayer(roomId, socket.id);
     });
 
     socket.on('backToMenu', function(){
-        console.log(prepareroomCache);
         // if a cached preparegame exists, start that insteam
         if(prepareroomCache.has(socket.id)){
             let game = prepareroomCache.get(socket.id);
@@ -141,8 +141,12 @@ io.on('connection', function(socket) {
 
         //remove from cache
         if(prepareroomCache.has(socket.id)) {
-            prepareroomCache.get(socket.id).removePlayer(socket.id);
+            let cachedRoom = prepareroomCache.get(socket.id);
+            cachedRoom.removePlayer(socket.id);
             prepareroomCache.delete(socket.id);
+            if(cachedRoom.getPlayerIds().length == 1){
+                prepareroomCache.delete(cachedRoom.getPlayerIds()[0]);
+            }
         }
 
         //leave all rooms he/she connects to 
@@ -151,29 +155,9 @@ io.on('connection', function(socket) {
                 removePlayer(roomName, socket.id);
         });
 
-        //kick all players in his room
-        let game = startedGames.get(socket.id)
-        if(game) {
-            game.getPlayers().forEach((player) => {
-                if(player.id != socket.id) {
-                    io.sockets.to(player.id).emit('newGame', 'Room host has left game');
-                }
-
-                //Remove all player in prepare room cache
-                if(prepareroomCache.has(player.id)) {
-                    prepareroomCache.delete(player.id);
-                }
-            });
-        }
-
         startedGames.delete(socket.id);
         socketIdToSockets.delete(socket.id);
         socketToName.delete(socket.id);
-        // player has a cached room, remove that player from the room and remove its cache
-        if(prepareroomCache.has(socket.id)){
-            prepareroomCache.get(socket.id).removePlayer(socket.id);
-            prepareroomCache.remove(socket.id);
-        }
     });
 
     /**
@@ -196,8 +180,8 @@ io.on('connection', function(socket) {
         }
 
         //leave room and start a new game
-        io.sockets.connected[playerId].leave(roomId);
-        io.sockets.to(playerId).emit('newGame');
+        //io.sockets.connected[playerId].leave(roomId);
+        //io.sockets.to(playerId).emit('newGame');
     }
 
     // check all game rooms, join if there exists an unfilled room

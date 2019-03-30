@@ -53,7 +53,7 @@ Gameplay.prototype.getPlayers = function() {
 
 Gameplay.prototype.getPlayerIds = function() {
     return this.players.keys();
-}
+};
 
 Gameplay.prototype.getPlayerBySocketId = function(id) {
     var player = this.players.get(id);
