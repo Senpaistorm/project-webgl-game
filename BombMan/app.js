@@ -73,9 +73,9 @@ io.on('connection', function(socket) {
 
     socket.on('isRegsistered', (name, callback) => {
         if (usernames.includes(name)) {
-            usernames.push(name);
             callback(false);
         } else {
+            usernames.push(name);
             callback(true);
         }
     });
@@ -121,6 +121,7 @@ io.on('connection', function(socket) {
     });
 
     socket.on('backToMenu', function(){
+        console.log(prepareroomCache);
         // if a cached preparegame exists, start that insteam
         if(prepareroomCache.has(socket.id)){
             let game = prepareroomCache.get(socket.id);
@@ -155,6 +156,11 @@ io.on('connection', function(socket) {
         }
         socketIdToSockets.delete(socket.id);
         socketToName.delete(socket.id);
+        // player has a cached room, remove that player from the room and remove its cache
+        if(prepareroomCache.has(socket.id)){
+            prepareroomCache.get(socket.id).removePlayer(socket.id);
+            prepareroomCache.remove(socket.id);
+        }
     });
 
     /**
