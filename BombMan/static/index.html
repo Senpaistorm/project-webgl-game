@@ -16,18 +16,20 @@
 </head>
 <body>
 	<div id ="homepage">
-<!-- 		<h1 id="game_header">BombMan</h1>
- --><!-- 		<div id = "username_form">
-			<span id = "username_hint">Username</span>
-			<input id = "username_input" type="text"/>
-		</div> -->
 		<div id = "player_info"></div>
 		<div id = "header">Bomb Man!</div>
 		<button class = "btn" id = "play_game_btn">Play Game</button>
 		<button class = "btn" id = "invite_player_btn">Invite Player</button>
 		<button class = "btn" id = "join_room_btn">Join Room</button>
 		<button class = "btn" id = "exit_room_btn">Exit Room</button>
-		<form class = "complex_form"></form>
+
+		<div class="modal" id = "game_option_form">
+			<div class="modal-content">	
+				<form class="complex_form">
+				</form>
+	   		</div>
+		</div>
+
 		<div id = "queue_msg"></div>
 		<div id = "error_msg"></div>
 	</div>
@@ -42,8 +44,9 @@
 
 	<div class="modal" id="username_prompt">
 		<div class="modal-content" id = "username_prompt_content">	
-			<form id = "username_prompt_form">
-				<input type="text" id = "username_prompt_input" placeholder="Enter your username" 
+			<form class="complex_form" id = "username_prompt_form">
+      			<div class="form_title">Sign Up</div>
+				<input class="form_element" type="text" id = "username_prompt_input" placeholder="Enter your username" 
 				name="user_name" pattern="^[a-zA-Z0-9_]{1,12}$" required >
 				<button class="form_btn" id = "username_prompt_submit">Submit</button>
 			</form>

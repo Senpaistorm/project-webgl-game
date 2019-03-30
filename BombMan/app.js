@@ -73,10 +73,10 @@ io.on('connection', function(socket) {
 
     socket.on('isRegsistered', (name, callback) => {
         if (usernames.includes(name)) {
-            callback(false);
+            callback(true);
         } else {
             usernames.push(name);
-            callback(true);
+            callback(false);
         }
     });
 

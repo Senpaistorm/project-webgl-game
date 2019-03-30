@@ -29,35 +29,36 @@
 	width: 350px;
 	height: 100px;
 }
-/*
-#complex_form {
-	position: absolute;
-	top: 20%;
-	right: 75%;
+
+#username_prompt, #game_option_form {
+	display: none;
 }
-*/
+
 .btn {
 	position: absolute;
 	cursor: pointer;
-	background: rgba(211, 211,211, 0.3);
+	background: #079BCF;
+	color: white;
 	font-size: 50px;
 	top: 10%;
 	right: 10%;
 	width: 300px;
 	height: 100px;
-/*	border-radius: 10px;*/
+	border-radius: 8px;
 	border: none;
 }
 
-.btn:hover {
-	box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
-}
-
 #player_info {
+	border-radius: 8px;
+	border: none;
 	position: absolute;
 	font-family: Sans-serif;
-	font-size: 15px;
-	top: 15%;
+	font-weight: bold;
+	color: white;
+	background: #079BCF;
+	padding: 0px 20px 0px 20px;
+	font-size: 20px;
+	top: 5%;
 	left: 2%;
 }
 
@@ -113,27 +114,18 @@
 	overflow: auto; /* Enable scroll if needed */
 	background-color: rgb(0,0,0); /* Fallback color */
 	background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-  }
+}
   
 /* Modal Content */
 .modal-content {
 	display:flex;
 	flex-direction: column;
-	background-color: #fefefe;
 	margin: auto;
-	padding: 20px;
-	border: 1px solid #888;
-	width: 80%;
-}
-
-#back_btn{
-	font-size: 36px;
-	width: 250px;
-	height: 100px;
-	border-radius: 5px;
-	margin-top: 20px;
-	cursor: pointer;
+	padding-top: 40px;
+	padding-bottom: 40px;
+	background: #6ED0F6;
 	border: none;
+	width: 50%;
 }
 
 #gameover_modal{
@@ -168,4 +160,47 @@
 	border-width: thin;
 	padding-left: 5px;
 	padding-right: 5px;
+}
+
+.complex_form{
+  	font-family: 'Raleway', sans-serif;
+    display:flex;
+    flex-direction: column;
+}
+
+.form_title {
+	margin: 10px 30px 20px 30px;
+	font-size: 25px;
+  	font-family: 'Raleway', sans-serif;
+  	text-align: center;
+  	color: white;
+}
+
+.form_element{
+  	border: none;
+  	border-radius: 8px;
+  	font-size: 20px;
+  	margin: 20px 30px 20px 30px;
+  	font-family: 'Raleway', sans-serif;
+  	height: 35px;
+  	opacity: 1;
+  	text-indent: 20px;
+  	text-align: center;
+}
+
+.form_btn {
+	margin: 5px 30px 5px 30px;
+	background: #079BCF;
+  	border: none;
+  	border-radius: 8px;
+  	color: #fff;
+  	cursor: pointer;
+  	font-family: 'Raleway', sans-serif;
+  	font-size: 25px;
+  	height: 35px;
+  	overflow: hidden;
+}
+
+button:hover {
+  background: #007BA5;
 }
