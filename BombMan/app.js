@@ -137,22 +137,35 @@ io.on('connection', function(socket) {
     }
 
     socket.on('disconnecting', function(){
+
+        //remove from cache
+        if(prepareroomCache.has(socket.id)) {
+            prepareroomCache.get(socket.id).removePlayer(socket.id);
+            prepareroomCache.delete(socket.id);
+        }
+
         //leave all rooms he/she connects to 
         Object.keys(socket.rooms).forEach(function(roomName){
             if(roomName != socket.id)
-                removePlayer(roomName, socket.id)
+                removePlayer(roomName, socket.id);
         });
 
-        startedGames.delete(socket.id);
         //kick all players in his room
-        let players = socketIdToSockets.get(socket.id);
-        if(players) {
-            players.forEach((player) => {
+        let game = startedGames.get(socket.id)
+        if(game) {
+            game.getPlayers().forEach((player) => {
                 if(player.id != socket.id) {
                     io.sockets.to(player.id).emit('newGame', 'Room host has left game');
                 }
+
+                //Remove all player in prepare room cache
+                if(prepareroomCache.has(player.id)) {
+                    prepareroomCache.delete(player.id);
+                }
             });
         }
+
+        startedGames.delete(socket.id);
         socketIdToSockets.delete(socket.id);
         socketToName.delete(socket.id);
     });
