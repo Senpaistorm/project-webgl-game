@@ -1,3 +1,6 @@
+/**
+ * A set of utility functions used for Gameplay.
+ */
 const Constants = require('./Constants');
 
 const HARDBLOCK = Constants.HARDBLOCK;
@@ -18,7 +21,7 @@ Util.emptyGameboard = function(){
         gameboard.push(arr);
     }
     return gameboard;
-}
+};
 
 Util.defaultGameboard = function() {
     let gameboard = [[0,0,1,1,1,1,1,1,1,1,1,1,1,0,0],
@@ -93,8 +96,7 @@ Util.isValidBombPosition = function (x, y, block) {
 };
 
 Util.isCollision = function(material){
-	return material == HARDBLOCK || material == SOFTBLOCK
-	  || material == BOMB;
+	return material == HARDBLOCK || material == SOFTBLOCK || material == BOMB;
 };
 
 Util.unOccupied = (block) => {
