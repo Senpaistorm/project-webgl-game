@@ -49,10 +49,14 @@ io.on('connection', function(socket) {
     });
 
     function loadPrepareRoom(socket) {
+        socket.join(socket.id, (err) => {
+            if(err) console.error("Error joining room");
+        });
         let prepareroom = new Gameplay(Util.prepareroomGameboard(), Constants.PREPARE_ROOM, Constants.PROOM_CONT);
         prepareroom.setRoom(socket.id);
         prepareroom.addPlayer(socket.id, socket.id, 0);
         startedGames.set(socket.id, prepareroom);
+
         prepareroom.checkPlayerHit = function(areaAffected, players) {};
         io.sockets.to(socket.id).emit('gamestart', prepareroom, socket.id);
     }
@@ -83,38 +87,76 @@ io.on('connection', function(socket) {
     socket.on('invitePlayer', (userId) => {
         let invitedSocketId = socketToName.search(userId);
         if(invitedSocketId != socket.id){
-            io.sockets.to(invitedSocketId).emit('onInvite', socketToName.get(socket.id));
+            io.to(invitedSocketId).emit('onInvite', socketToName.get(socket.id));
         }
     });
 
     socket.on('joinRoom', (username, callback) => {
-
         // fails if user tries to join his own room
         let socketId = socketToName.search(username);
         if(socketId == socket.id) callback(false);
-        let game = startedGames.get(socketId);
+
+        let objRoom = io.sockets.adapter.sids[socketId];
+        if (!objRoom) return callback(false);  
+        //get last room that contains given socket
+        let rooms = Object.keys(objRoom);
+        let room = rooms[rooms.length - 1];
+        let game = startedGames.get(room);
 
         if(isJoinablePrepareroom(game)) {
-            startedGames.delete(socket.id);
+            //leave all rooms he/she connects to
+            Object.keys(socket.rooms).forEach(function(roomName){
+                if(roomName != socket.id) {
+                    socket.leave(roomName);
+                    removePlayer(roomName, socket.id);
+                }
+            });
+
             socketIdToSockets.delete(socket.id);
-            socketIdToSockets.get(socketId).push(socket);
+            //delete cache
+            prepareroomCache.delete(socket.id);
+
+            //kick all players in my room
+            if(startedGames.has(socket.id)){
+                let myGame = startedGames.get(socket.id);
+                myGame.getPlayerIds().forEach((id) => {
+                    if (id != socket.id) {
+                        io.sockets.connected[id].leave(socket.id);
+                        io.to(id).emit("newGame", "Room host has left the room.");
+                    }
+                });
+                startedGames.delete(socket.id);
+            }
+
+            socketIdToSockets.get(room).push(socket);
             game.addPlayer(socket.id, socket.id, game.players.count + 1, 2, 2);
             // cache preparegame for later use
-            socketIdToSockets.get(socketId).forEach((s) => {
+            socketIdToSockets.get(room).forEach((s) => {
                 prepareroomCache.set(s.id, game);
             });
-            socket.join(socketId, (err) => {
+            socket.join(room, (err) => {
                 if(err) console.error("Error joining room");
             });
-            io.sockets.to(socketId).emit('gamestart', game, socketId);
+            io.sockets.to(room).emit('gamestart', game, room);
 
             callback(true);
-
         } else {
             callback(false);
         }
     });
 
+    socket.on('message', function(message) {
+        let rooms = socket.rooms;
+
+        let cache = [];
+
+        Object.keys(socket.rooms).forEach(function(roomName){
+            if(startedGames.has(roomName)) {
+                io.sockets.to(roomName).emit('addMessage', message);
+            }
+        });
+
+    });
 
     socket.on('exitRoom', function(roomId){
         socket.leave(roomId);
@@ -126,6 +168,10 @@ io.on('connection', function(socket) {
         if(prepareroomCache.has(socket.id)){
             let game = prepareroomCache.get(socket.id);
             startedGames.set(game.getRoom(), game);
+            if (socket.id != game.getRoom()) {
+                io.to(socket.id).emit('showParticipentMenu');
+            }
+
             io.sockets.to(socket.id).emit('gamestart', game, game.getRoom());
         }else{
             socketIdToSockets.set(socket.id, [socket]);
@@ -151,8 +197,10 @@ io.on('connection', function(socket) {
 
         //leave all rooms he/she connects to 
         Object.keys(socket.rooms).forEach(function(roomName){
-            if(roomName != socket.id)
+            if(roomName != socket.id) {
+                socket.leave(roomName);
                 removePlayer(roomName, socket.id);
+            }
         });
 
         if(startedGames.has(socket.id)){
@@ -176,6 +224,8 @@ io.on('connection', function(socket) {
         //remove from the group
         group = socketIdToSockets.get(roomId);
         if(group) {
+            console.log(socketIdToSockets.get(roomId).length);
+
             let index = group.findIndex((player) => {
                 return player.id == playerId;
             });
@@ -189,6 +239,10 @@ io.on('connection', function(socket) {
         let players = socketIdToSockets.get(socket.id);
 
         if(players){
+            players.forEach((player) => {
+                io.to(player.id).emit("inQueue");
+            })
+
             // if there's an available room, join it
             if(roomStatus.length > 0){
                 roomStatus.forEach((room) =>{
