@@ -54,7 +54,6 @@
 			socket.emit('socketChange', username, (newusername) => {
 				document.getElementById('player_info').innerHTML = `
 					<p>Name: ${newusername}</p>
-					<p>id: ${socket.id}</p>
 				`;
 
 				myUsername = newusername;
