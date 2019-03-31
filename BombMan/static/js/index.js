@@ -9,6 +9,8 @@
 			this.core.addGameGui(this.gui);
 		}
 
+		let messages = [];
+		let myUsername = ''
 		let game;
 		var updateInterval = null;
 		let roomId = null;
@@ -52,8 +54,9 @@
 			socket.emit('socketChange', username, (newusername) => {
 				document.getElementById('player_info').innerHTML = `
 					<p>Name: ${newusername}</p>
-					<p>id: ${socket.id}</p>
 				`;
+
+				myUsername = newusername;
 			});
 		}
 		
@@ -73,11 +76,39 @@
 				case LEFT: intent.left = 1; break;
 				case RIGHT: intent.right = 1; break;
 				case PLACEBOMB: socket.emit('placeBomb', {room: roomId}); break;
-				case 80: // P : Debug key USED FOR DEVELOPMENT
-					console.log('DEBUG');
-					localStorage.clear();
+				case 13: // enter key
+					showOrOffCharBar();
 				break;
 			}
+		});
+
+		function showOrOffCharBar() {
+			let chatBar = document.getElementById('chat_holder');
+
+			if(chatBar.style.visibility == 'hidden') {
+				chatBar.style.visibility = 'visible';
+				chatBar.focus();
+			} else {
+				chatBar.style.visibility = 'hidden';
+				let message = myUsername + ": " + chatBar.value;
+				if(chatBar.value != '') socket.emit('message', message);
+				chatBar.value = '';
+			}
+		}
+
+		socket.on("addMessage", function(message) {
+			messages.push(message);
+
+			if (messages.length > 11) {
+				messages.shift();
+			}
+
+			let str = ''
+			messages.forEach((m) => {
+				str = str + '<p class="chat_message">'  + m + '</p>';
+			});
+
+			document.getElementById('chat').innerHTML = str;
 		});
 
 		/**
@@ -101,6 +132,10 @@
 		socket.on('gamestate', function(state){
 			if(game) game.core.updateGameState(state);
 		}); 
+
+		socket.on('showParticipentMenu', function() {
+			showRoomParticipantMenu();
+		});
 
 		// socket handler for starting a game
 		socket.on('gamestart', (gameplay, room) =>{
@@ -154,10 +189,13 @@
 			toggleGameOver(result);
 		});
 
+		socket.on('inQueue', () => {
+			setQueueMsg();
+		});
+
 		document.getElementById('play_game_btn').addEventListener('click', async ()=>{
 			// notify server to enqueue player
 			socket.emit('enqueuePlayer');
-			setQueueMsg();
 			let promise = new Promise((resolve, reject) =>{
 				setTimeout(() => {resolve("done");},6000);
 			});
@@ -277,7 +315,7 @@
 
 	let setQueueMsg = () => {
 		let msg = document.getElementById('queue_msg');
-		msg.innerHTML = `Looking for players <div class="loader"></div>`;
+		msg.innerHTML = `<div class="modal">Looking for players...<div class="loader"></div></div>`;
 	}
 
 	let showErrorMessage = (message) => {
