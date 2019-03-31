@@ -224,8 +224,6 @@ io.on('connection', function(socket) {
         //remove from the group
         group = socketIdToSockets.get(roomId);
         if(group) {
-            console.log(socketIdToSockets.get(roomId).length);
-
             let index = group.findIndex((player) => {
                 return player.id == playerId;
             });
