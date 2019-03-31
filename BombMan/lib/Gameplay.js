@@ -79,6 +79,7 @@ Gameplay.prototype._collisionDetection = function(x, y, player) {
     let dy = Util._normalize(player.movement.y);
     let xPos = Math.floor((x + 196 + (dx * 10 + player.speed))/24.2);
     let yPos = Math.floor((y + 130.5 + (dy * 10 + player.speed))/24.2);
+    let delta = 2;
     if(xPos == xOrig && yPos == yOrig) return false;
 
     if(xPos < 0 || yPos < 0 || xPos >= this.gameboard.length || yPos >= this.gameboard.length){
@@ -86,6 +87,19 @@ Gameplay.prototype._collisionDetection = function(x, y, player) {
     }
     let location = this.gameboard[xPos][yPos];
     let ret = Util.isCollision(location);
+
+    // check hitbox
+    if(dx != 0){
+        let yUp = Math.floor((y + 130.5 - delta)/24.2);
+        let yDown = Math.floor((y + 130.5 + delta)/24.2);
+        ret = ret || Util.isCollision(this.gameboard[xPos][yUp]) || Util.isCollision(this.gameboard[xPos][yDown]);
+    }
+    if(dy != 0){
+        let xLeft = Math.floor((x + 196 - delta)/24.2);
+        let xRight = Math.floor((x + 196 + delta)/24.2);
+        ret = ret || Util.isCollision(this.gameboard[xLeft][yPos]) || Util.isCollision(this.gameboard[xRight][yPos]);
+    }
+
     // in case of diagonal, calculate adjacent collisions
     if(this.isValidPosition(xPos, yPos - dy) && 
             this.isValidPosition(xPos - dx, yPos)){
