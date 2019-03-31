@@ -21,7 +21,7 @@ In the Beta version, all basic game mechanics will be implemented. Players can q
 * J: Place Bomb
 
 ## Final Version
-In the Final version, we will implement a game menu, power-up items, and more maps! The game menu will allow players to practice controls in a mini game room. The game menu also lets users to join/invite other players' game room by providing a username. It will also allow players to start a game with their friends without having to queue. Power-up items gives players the ability to walk faster, place more bombs, and place more powerful bombs. We will also implement more game maps.
+In the Final version, we will implement a game menu, power-up items, and in-game chat! The game menu will allow players to practice controls in a mini game room. The game menu also lets users to join/invite other players' game room by providing a username. It will also allow players to start a game with their friends. Power-up items gives players the ability to walk faster, place more bombs, and place more powerful bombs.
 
 ## Technologies
 * WebGL - JavaScript API for rendering interactive 2D and 3D graphics 
