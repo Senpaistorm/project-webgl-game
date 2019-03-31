@@ -7,10 +7,10 @@ const Constants = require('./Constants');
 const Util = require('./Util');
 
 // types of materials on the gameboard
-const UNBLOCKED = 0;
-const SOFTBLOCK = 1;
-const BOMB = 2;
-const HARDBLOCK = 4;
+const UNBLOCKED = Constants.UNBLOCKED;
+const SOFTBLOCK = Constants.SOFTBLOCK;
+const BOMB = Constants.BOMB;
+const HARDBLOCK = Constants.HARDBLOCK;
 
 
 function Gameplay(map, type, container) {
@@ -79,6 +79,7 @@ Gameplay.prototype._collisionDetection = function(x, y, player) {
     let dy = Util._normalize(player.movement.y);
     let xPos = Math.floor((x + 196 + (dx * 10 + player.speed))/24.2);
     let yPos = Math.floor((y + 130.5 + (dy * 10 + player.speed))/24.2);
+    let delta = 2;
     if(xPos == xOrig && yPos == yOrig) return false;
 
     if(xPos < 0 || yPos < 0 || xPos >= this.gameboard.length || yPos >= this.gameboard.length){
@@ -86,6 +87,19 @@ Gameplay.prototype._collisionDetection = function(x, y, player) {
     }
     let location = this.gameboard[xPos][yPos];
     let ret = Util.isCollision(location);
+
+    // check hitbox
+    if(dx != 0){
+        let yUp = Math.floor((y + 130.5 - delta)/24.2);
+        let yDown = Math.floor((y + 130.5 + delta)/24.2);
+        ret = ret || Util.isCollision(this.gameboard[xPos][yUp]) || Util.isCollision(this.gameboard[xPos][yDown]);
+    }
+    if(dy != 0){
+        let xLeft = Math.floor((x + 196 - delta)/24.2);
+        let xRight = Math.floor((x + 196 + delta)/24.2);
+        ret = ret || Util.isCollision(this.gameboard[xLeft][yPos]) || Util.isCollision(this.gameboard[xRight][yPos]);
+    }
+
     // in case of diagonal, calculate adjacent collisions
     if(this.isValidPosition(xPos, yPos - dy) && 
             this.isValidPosition(xPos - dx, yPos)){
@@ -95,7 +109,7 @@ Gameplay.prototype._collisionDetection = function(x, y, player) {
         ret = ret || (Util.isCollision(collidableX) && Util.isCollision(collidableY));
     }
     return ret;
-}
+};
 
 Gameplay.prototype.update = function(){
     var characters = this.getPlayers();
@@ -113,7 +127,7 @@ Gameplay.prototype.update = function(){
 
 Gameplay.prototype.isValidPosition = function(x, y){
     return x >= 0 && x < this.gameboard.length && y >= 0 && y < this.gameboard.length;
-}
+};
 
 /**
  * Serialize gameplay to a state for communication usage
@@ -131,7 +145,7 @@ Gameplay.prototype.getState = function(){
 
 Gameplay.prototype.getResult = function(){
     return this.result;
-}
+};
 
 /**
  * Change the movement vector of character based on intent of client
@@ -159,7 +173,7 @@ Gameplay.prototype.handleKey = function(id, intent){
 Gameplay.prototype.canPlaceBomb = function(character){
     let num_bombs = this.bombs.filter(x => x.name == character.name).length;
     return num_bombs < character.load;
-}
+};
 
 Gameplay.prototype.isValidBombPosition = function (x, y) {
     return this.isValidPosition(x,y) && Util.unOccupied(this.gameboard[x][y]);
@@ -226,7 +240,7 @@ Gameplay.prototype.checkPlayerHit = function(areaAffected, players) {
                 this.removePlayer(sid);
         });
     });
-}
+};
 
 Gameplay.prototype.explodeBomb = function(bombExplode) {
     let affected = {blocks: [], bombs: [], expCoords: []};
@@ -322,10 +336,10 @@ Gameplay.prototype.clearItemsHit = function(expCoords){
         let isFree = this.gameboard[expCoord.xPos][expCoord.yPos] == 0;
         if(isFree) this.items[expCoord.xPos][expCoord.yPos] = 0;
     });
-}
+};
 
 /**
- * Notify gameplay the new player position
+ * When a player's grid position changes, check if there's an item to be acquired
  */
 Gameplay.prototype.onPlayerMoveChanged = function(player) {
     //Check if there is any item on the current location
@@ -344,6 +358,6 @@ Gameplay.prototype.isGameOver = function(){
     }else {
         return this.players.size <= 1;
     }
-}
+};
 
 module.exports = Gameplay;
