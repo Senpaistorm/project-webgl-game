@@ -8,7 +8,7 @@
 Bomb Man is a WebGL based 3D multi-player game. The number of players in a single game can be 2-4. The goal of Bomb Man is to eliminate your opponent by placing your bombs in tactical positions. You can get closer to your opponent by blasting your way through the obstacles. The player side that eliminates all other players wins.  
 
 ### [Live Game](https://bombman.me)
-### [Demo]
+### [Demo](https://youtu.be/liAVEiFeZ7k)
 
 ## Beta Version 
 In the Beta version, all basic game mechanics will be implemented. Players can queue for a game whenever they open the website. The server refreshes periodically to check the number of players in queue. A game can be started with at least 2 players in queue. We will have one basic map ready for play. 
