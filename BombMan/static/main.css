@@ -242,6 +242,11 @@ button:hover {
 	top: 95%;
 }
 
+#credits{
+	position: absolute;
+	top: 95%;
+	left: 50%;
+}
 
 @media (max-width: 800px) {
 	.btn{
