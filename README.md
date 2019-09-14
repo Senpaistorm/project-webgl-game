@@ -9,7 +9,6 @@ Bomb Man is a WebGL based 3D multi-player game. The number of players in a singl
 [Web Socket Documentation](BombMan)
 [Game Module Documentation](BombMan/lib)
 
-### [Live Game](https://bombman.me)
 ### [Demo](https://youtu.be/liAVEiFeZ7k)
 
 ## Beta Version 
