@@ -17,6 +17,10 @@ const Constants = require('./lib/Constants');
 const HashMap = require('hashmap');
 const Util = require('./lib/Util');
 
+// setup ports
+var server_port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
+var server_ip_address = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
+
 var bodyParser = require('body-parser');
 app.use(bodyParser.json());
 
@@ -350,7 +354,7 @@ setInterval(function() {
 
 const PORT = 3000;
 
-httpServer.listen(PORT, function (err) {
+httpServer.listen(server_port, server_ip_address, function (err) {
     if (err) console.log(err);
     else console.log("HTTP server on http://localhost:%s", PORT);
 });
