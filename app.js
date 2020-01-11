@@ -356,5 +356,5 @@ const PORT = 3000;
 
 httpServer.listen(server_port, server_ip_address, function (err) {
     if (err) console.log(err);
-    else console.log("HTTP server on http://localhost:%s", PORT);
+    else console.log( "Listening on " + server_ip_address + ", server_port " + server_port  );
 });
